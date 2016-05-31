@@ -11,16 +11,26 @@ var meeba = tank.append('circle')
 var getDest = function(x, y, angle, speed) {
   // Convert angle from Turn or Degrees into Radians
   angle = Math.abs(angle);
-  angle = angle / 1 ? angle * 2 : angle / 180;
+  angle = angle < 1 ? angle * 2 : angle / 180;
   angle *= Math.PI;
 
   return {
-    x: Math.cos(angle) * speed + x,
-    y: Math.sin(angle) * speed + y
+    x: Math.cos(angle) * speed + Number(x),
+    y: Math.sin(angle) * speed + Number(y)
   };
-}
+};
 
-meeba.transition()
-  .duration(settings.dur)
-  .attr('cx', getDest(settings.w / 2, settings.h / 2, settings.angle, settings.speed).x)
-  .attr('cy', getDest(settings.w / 2, settings.h / 2, settings.angle, settings.speed).y);
+var move = function() {
+  var cx = d3.select(this).attr('cx');
+  var cy = d3.select(this).attr('cy');
+  var dest = getDest(cx, cy, settings.angle, settings.speed);
+
+  d3.select(this).transition()
+    .duration(settings.dur)
+    .ease('linear')
+    .attr('cx', dest.x)
+    .attr('cy', dest.y)
+    .each('end', move);
+};
+
+meeba.each(move);
