@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+lib/
+
+
+# Build Folders
+build/
+dist/
+
+# OS X
+.DS_Store
+
+#Floobits
+.floo
+.floobit
+.floo
+.flooignore
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+.travis.yml
