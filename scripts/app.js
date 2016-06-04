@@ -33,4 +33,17 @@ var move = function() {
     .each('end', move);
 };
 
+var bounceX = function(angle) {
+  if (angle === 0.5) return 0;
+  if (angle < 0.5) return 0.25 - (angle - 0.25);
+  return 0.75 - (angle - 0.75);
+};
+
+var bounceY = function(angle) {
+  if (angle === 0) return 0;
+  if (angle < 0.25 || angle > 0.75) return 1 - angle;
+  return 0.5 - (angle - 0.5);
+};
+
 meeba.each(move);
+
