@@ -16,21 +16,29 @@ var getDest = function(x, y, angle, speed) {
 
   return {
     x: Math.cos(angle) * speed + Number(x),
-    y: Math.sin(angle) * speed + Number(y)
+    y: -Math.sin(angle) * speed + Number(y)
   };
 };
 
 var move = function() {
-  var cx = d3.select(this).attr('cx');
-  var cy = d3.select(this).attr('cy');
-  var dest = getDest(cx, cy, settings.angle, settings.speed);
+  var meeba = this;
+  var cx = d3.select(meeba).attr('cx');
+  var cy = d3.select(meeba).attr('cy');
+  var angle = settings.angle;
+  var dest = getDest(cx, cy, angle, settings.speed);
 
-  d3.select(this).transition()
+  d3.select(meeba).transition()
     .duration(settings.dur)
     .ease('linear')
     .attr('cx', dest.x)
     .attr('cy', dest.y)
-    .each('end', move);
+    .each('end', function() {
+      if (angle === settings.angle) {
+        move.call(meeba);
+      } else {
+        return true;
+      }
+    });
 };
 
 var bounceX = function(angle) {
@@ -45,5 +53,25 @@ var bounceY = function(angle) {
   return 0.5 - (angle - 0.5);
 };
 
+var checkBounce = function() {
+  var b = settings.speed * 0.02;
+
+  var x = meeba.attr('cx');
+  var y = meeba.attr('cy');
+
+  var eastwards = settings.angle < 0.25 || settings.angle > 0.75;
+  var northwards = settings.angle < 0.5;
+  var westwards = settings.angle > 0.25 && settings.angle < 0.75;
+  var southwards = settings.angle > 0.5;
+
+  if (eastwards && x > settings.w - settings.r - 2 * b) settings.angle = bounceX(settings.angle);
+  if (northwards && y < settings.r + b) settings.angle = bounceY(settings.angle);
+  if (westwards && x < settings.r + b) settings.angle = bounceX(settings.angle);
+  if (southwards && y > settings.h - settings.r - b) settings.angle = bounceY(settings.angle);
+
+  meeba.each(move);
+};
+
 meeba.each(move);
 
+d3.timer(checkBounce);
