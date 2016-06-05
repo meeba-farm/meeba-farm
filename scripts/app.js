@@ -26,21 +26,21 @@ var move = function() {
 };
 
 var checkBounce = function() {
-  var meeba = d3.select(this).datum();
-  var b = meeba.speed * 0.02;
+  var d = d3.select(this).datum();
 
-  var x = d3.select(this).attr('cx');
-  var y = d3.select(this).attr('cy');
+  var cx = d3.select(this).attr('cx');
+  var cy = d3.select(this).attr('cy');
+  var buffer = d.speed * 0.02;
 
-  var eastwards = meeba.angle < 0.25 || meeba.angle > 0.75;
-  var northwards = meeba.angle < 0.5;
-  var westwards = meeba.angle > 0.25 && meeba.angle < 0.75;
-  var southwards = meeba.angle > 0.5;
+  var eastwards = d.angle < 0.25 || d.angle > 0.75;
+  var northwards = d.angle < 0.5;
+  var westwards = d.angle > 0.25 && d.angle < 0.75;
+  var southwards = d.angle > 0.5;
 
-  if (eastwards && x > config.w - meeba.r - 2 * b) meeba.angle = bounceX(meeba.angle);
-  if (northwards && y < meeba.r + b) meeba.angle = bounceY(meeba.angle);
-  if (westwards && x < meeba.r + b) meeba.angle = bounceX(meeba.angle);
-  if (southwards && y > config.h - meeba.r - b) meeba.angle = bounceY(meeba.angle);
+  if (eastwards && cx > config.w - d.r - 2 * buffer) d.angle = bounceX(d.angle);
+  if (northwards && cy < d.r + buffer) d.angle = bounceY(d.angle);
+  if (westwards && cx < d.r + buffer) d.angle = bounceX(d.angle);
+  if (southwards && cy > config.h - d.r - buffer) d.angle = bounceY(d.angle);
 
   move.call(this);
 };
@@ -55,10 +55,11 @@ var meebas = tank.selectAll('circle')
   .data( d3.range(config.quantity).map(() => new Meeba()) )
   .enter()
   .append('circle')
-  .attr( 'r', (d) => d.r )
-  .attr( 'fill', (d) => d.color )
-  .attr( 'cx', (d) => d.cx )
-  .attr( 'cy', (d) => d.cy );
+  .attr('r', d => d.r)
+  .attr('fill', d => d.color)
+  .attr( 'cx', d => rand(d.r, config.w - d.r) )
+  .attr( 'cy', d => rand(d.r, config.h - d.r) )
+  .attr( 'id', (d, i) => d.id = 'm' + ('00' + i).slice(-3) );
 
 
 /**  RUN  **/
