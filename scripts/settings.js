@@ -3,12 +3,14 @@
 var config = {
   w: window.innerWidth - 20,
   h: window.innerHeight - 20,
-  minR: 5,
-  maxR: 25,
+  minR: 20,
+  maxR: 20,
   color: '#34A853',
-  speed: 500,
+  speed: 250,
   dur: 1000,
-  quantity: 20
+  quantity: 10
 };
 
-var state = {};
+var state = {
+  count: 0
+};
