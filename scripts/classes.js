@@ -3,78 +3,6 @@ var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION."
 
 var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
-  this.getSize = function() { // returns size of meeba.
-  	// TODO: THIS
-  	// size should be based on initial calorie count
-  	return 0;
-  };
-  this.getDeadCalories = function() { // calculates calories of corpse on death. One time calculation.
-  	// TODO: THIS
-  	return 0;
-  };
-  this.drainDamage = function(baseDamage) { // calculates and returns damage dealt (based on resistance of meeba). Adds to round damage.
-    var endDamage = baseDamage; // TODO: CALCULATE DAMAGE HERE
-    this.damageCurRound += endDamage;
-    curCalories -= endDamage;
-    return endDamage;
-  };
-  this.feed = function(_calories) { // feeds the meeba the number of calories specified in the arguments
-    this.curCalories += _calories;
-  }
-  
-  // returns array of all actions to be taken this round
-  this.roundActions = function() { 
-    var ret = [];
-    for (i = 0; i < traits.length; i++) {
-      var traitAction = traits[i].getActionEffect();
-      if (traitAction.type == ActionEnum.NOTHING) {
-        continue;
-      }
-      ret.push(traitAction);
-    }
-    return ret;
-  };
-  
-  // returns array with 2 child meebas (with possible mutations) then sets calories to 0 and dies.
-  // cost = cost of reproduction (to allow higher costs at higher sizes)
-  this.reproduce = function(cost) { 
-    var childCals = (curCalories - cost)/2;
-    var childOneTraits = [];
-    var childTwoTraits = [];
-    
-    // TODO: Depending on how adding/recopying/skipping genes works, re-write the two below loops
-    for (i = 0; i < traits.length; i++) {
-      // TODO: Add logic here to re-copy an arbitrary number of traits, to add a random trait, or to skip copying current trait
-      childOneTraits.push(traits[i].duplicate());
-    }
-    for (i = 0; i < traits.length; i++) {
-      // TODO: Add logic here to re-copy an arbitrary number of traits, to add a random trait, or to skip copying current trait
-      childTwoTraits.push(traits[i].duplicate());
-    }
-    
-    return [Meeba(childOneTraits, childCals, environment), Meeba(childTwoTraits, childCals, environment)]
-  };
-  this.getMinCalories = function() { // calculates minimum number of calories a meeba can have without dying
-    // TODO: THIS
-    return 0;
-  }
-  
-  // checks status at end of round and updates accordingly
-  this.roundEndCheck = function() { 
-    if (curCalories < minCalories 
-      || damageCurRound >= criticalHit)
-    {
-      isAlive = false;
-      curCalories = getDeadCalories();
-    }
-    damageCurRound = 0;
-  }
-  
-  this. getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
-    // TODO: THIS
-    return 0;
-  }
-  
   this.id = '#m' + ('00' + state.count++).slice(-3);
   this.speed = config.speed;
   this.color = config.color;
@@ -86,17 +14,94 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.angle = rand();
   // <--  REMOVE AND PUT ALL LOCATION INFORMATION IN ENVIRONMENT
   
-  var traits = []; // the digital genes of a meeba
-  var isAlive = true;
-  var maxCalories = _initialCalories;
-  var minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
-  var curCalories = maxCalories;
-  var criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
-  var damageCurRound = 0; // damage dealt in current round. Reset each round.
-  var environment = environment;
+  this.traits = []; // the digital genes of a meeba
+  this.isAlive = true;
+  this.maxCalories = _initialCalories;
+  this.minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
+  this.curCalories = this.maxCalories;
+  this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
+  this.damageCurRound = 0; // damage dealt in current round. Reset each round.
+  this.environment = _environment;
 };
 
-  // a condition to be tested on either a local meeba or its surroundings
+Meeba.prototype.getSize = function() { // returns size of meeba.
+  // TODO: THIS
+  // size should be based on initial calorie count
+  return 0;
+};
+Meeba.prototype.getDeadCalories = function() { // calculates calories of corpse on death. One time calculation.
+  // TODO: THIS
+  return 0;
+};
+Meeba.prototype.drainDamage = function(baseDamage) { // calculates and returns damage dealt (based on resistance of meeba). Adds to round damage.
+  var endDamage = baseDamage; // TODO: CALCULATE DAMAGE HERE
+  this.damageCurRound += endDamage;
+  curCalories -= endDamage;
+  return endDamage;
+};
+Meeba.prototype.feed = function(_calories) { // feeds the meeba the number of calories specified in the arguments
+  this.curCalories += _calories;
+}
+  
+  // returns array of all actions to be taken this round
+Meeba.prototype.roundActions = function() { 
+  var ret = [];
+  for (i = 0; i < traits.length; i++) {
+    var traitAction = traits[i].getActionEffect();
+    if (traitAction.type == ActionEnum.NOTHING) {
+      continue;
+    }
+    ret.push(traitAction);
+  }
+  return ret;
+};
+  
+  // returns array with 2 child meebas (with possible mutations) then sets calories to 0 and dies.
+  // cost = cost of reproduction (to allow higher costs at higher sizes)
+Meeba.prototype.reproduce = function(cost) { 
+  var childCals = (curCalories - cost)/2;
+  var childOneTraits = [];
+  var childTwoTraits = [];
+    
+  // TODO: Depending on how adding/recopying/skipping genes works, re-write the two below loops
+  for (i = 0; i < traits.length; i++) {
+    // TODO: Add logic here to re-copy an arbitrary number of traits, to add a random trait, or to skip copying current trait
+    childOneTraits.push(traits[i].duplicate());
+  }
+  for (i = 0; i < traits.length; i++) {
+    // TODO: Add logic here to re-copy an arbitrary number of traits, to add a random trait, or to skip copying current trait
+    childTwoTraits.push(traits[i].duplicate());
+  }
+   
+  return [Meeba(childOneTraits, childCals, environment), Meeba(childTwoTraits, childCals, environment)]
+};
+Meeba.prototype.getMinCalories = function() { // calculates minimum number of calories a meeba can have without dying
+  // TODO: THIS
+  return 0;
+}
+  
+// checks status at end of round and updates accordingly
+Meeba.prototype.roundEndCheck = function() { 
+  if (curCalories < minCalories 
+    || damageCurRound >= criticalHit)
+  {
+    isAlive = false;
+    curCalories = getDeadCalories();
+  }
+  damageCurRound = 0;
+}
+  
+Meeba.prototype.getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
+  // TODO: THIS
+  return 0;
+}
+
+
+
+
+
+
+// a condition to be tested on either a local meeba or its surroundings
 var ConditionNode = function() {
   // TODO: THIS
   this.conditionMet = function() { // returns true if condition met, false otherwise
