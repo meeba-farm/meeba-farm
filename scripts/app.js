@@ -30,7 +30,7 @@ var updateXY = function() {
 // Bounces meebas off the walls as needed
 var checkBounce = function() {
   var d = d3.select(this).datum();
-  var buffer = d.speed / config.dur * 10;
+  var buffer = d.speed / config.dur * config.buffFactor;
 
   var eastwards = d.angle < 0.25 || d.angle > 0.75;
   var northwards = d.angle < 0.5;
@@ -51,27 +51,38 @@ var checkCollision = function() {
 
   meebas.each(function() {
     var d = d3.select(this).datum();
-    if (d.collided) return;
 
     tree.visit(function(quad, x1, y1, x2, y2) {
-    if (quad.point && (quad.point !== d)) {
-      if (quad.point.collided) return;
+    if (!quad.point) return;
+    if (quad.point === d) return;
+    if (!collidable(d, quad.point)) return;
 
-      var buffer = (d.speed + quad.point.speed) / config.dur * 10;
-      var x = d.x - quad.point.x;
-      var y = d.y - quad.point.y;
-      var dist = Math.sqrt(x * x + y * y);
-      var widths = d.r + quad.point.r + buffer;
+    var buffer = (d.speed + quad.point.speed) / config.dur * config.buffFactor;
+    var x = d.x - quad.point.x;
+    var y = d.y - quad.point.y;
+    var dist = Math.sqrt(x * x + y * y);
+    var widths = d.r + quad.point.r + buffer;
 
-      if (dist < widths) {
-        collide(d, quad.point);
-        d3.select(d.id).each(move);
-        d3.select(quad.point.id).each(move);
-      }
+    if (dist < widths) {
+      collide(d, quad.point);
+      d3.select(d.id).each(move);
+      d3.select(quad.point.id).each(move);
     }
+
     return x1 > d.x+d.r || x2 < d.x-d.r || y1 > d.y+d.r || y2 < d.y-d.r;
     });
   });
+};
+
+// Determines whether or not two meeba are heading towards each other
+var collidable = function(meeba1, meeba2) {
+  var dest = getDest(meeba1.x, meeba1.y, meeba1.angle, 100);
+
+  if (dest.x > meeba1.x && meeba2.x < meeba1.x) return false;
+  if (dest.x < meeba1.x && meeba2.x > meeba1.x) return false;
+  if (dest.y > meeba1.y && meeba2.y < meeba1.y) return false;
+  if (dest.y < meeba1.y && meeba2.y > meeba1.y) return false;
+  return true;
 };
 
 // Handles a collision between two meebas
@@ -80,14 +91,6 @@ var collide = function(meeba1, meeba2) {
   var swap = meeba1.angle;
   meeba1.angle = meeba2.angle;
   meeba2.angle = swap;
-
-  // Hacky workaround to prevent repeated rapid-fire collisions
-  meeba1.collided = true;
-  meeba2.collided = true;
-  setTimeout(function() {
-    meeba1.collided = false;
-    meeba2.collided = false;
-  }, config.dur / 5);
 };
 
 /**  SET UP  **/

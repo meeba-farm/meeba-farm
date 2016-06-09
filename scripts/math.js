@@ -1,4 +1,4 @@
-// Helper functions for general math calculations
+// Helper functions for general math calculation
 
 var rand = function(low, high) {
   if (arguments.length === 1) {
@@ -36,4 +36,20 @@ var bounceY = function(angle) {
   if (angle === 0) return 0;
   if (angle < 0.25 || angle > 0.75) return 1 - angle;
   return 0.5 - (angle - 0.5);
+};
+
+var getMass = function(radius) {
+  return Math.PI * radius * radius;
+};
+
+var getRadians = function(turn) {
+  return 2 * Math.PI * turn;
+}
+
+var getCollision = function(object1, object2) {
+  var m1 = getMass(object1.r), m2 = getMass(object2.r);
+  var s1 = object1.speed, s2 = object2.speed;
+  var a1 = getRadians(object1.angle), a2 = getRadians(object2.angle);
+
+  
 };
