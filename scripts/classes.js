@@ -15,13 +15,12 @@ var Node = function(item, x, y, r, angle, speed) {
 
 // Gets a destination x/y for a node
 Node.prototype.getDest = function() {
-  var angle = getRadians(this.angle);
+  var vector = breakVector(this.angle, this.speed);
+  vector.x += this.x;
+  vector.y += this.y;
 
-  return {
-    x: Math.cos(angle) * this.speed + this.x,
-    y: -Math.sin(angle) * this.speed + this.y
-  };
-}
+  return vector;
+};
 
 var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works

@@ -78,12 +78,12 @@ var collidable = function(node1, node2) {
 };
 
 // Handles a collision between two nodes
-var collide = function(node1, node2) {
-  // Angles can be swapped in collisions of equal mass and speed
-  var swap = node1.angle;
-  node1.angle = node2.angle;
-  node2.angle = swap;
-};
+// var collide = function(node1, node2) {
+//   // Angles can be swapped in collisions of equal mass and speed
+//   var swap = node1.angle;
+//   node1.angle = node2.angle;
+//   node2.angle = swap;
+// };
 
 /**  SET UP  **/
 var tank = d3.select('body').append('svg')

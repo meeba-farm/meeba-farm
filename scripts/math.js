@@ -14,18 +14,6 @@ var rand = function(low, high) {
   return Math.random() * (high - low) + low;
 };
 
-var getDest = function(x, y, angle, speed) {
-  // Convert angle from Turn or Degrees into Radians
-  angle = Math.abs(angle);
-  angle = angle < 1 ? angle * 2 : angle / 180;
-  angle *= Math.PI;
-
-  return {
-    x: Math.cos(angle) * speed + Number(x),
-    y: -Math.sin(angle) * speed + Number(y)
-  };
-};
-
 var bounceX = function(angle) {
   if (angle === 0.5) return 0;
   if (angle < 0.5) return 0.25 - (angle - 0.25);
@@ -42,14 +30,78 @@ var getMass = function(radius) {
   return Math.PI * radius * radius;
 };
 
-var getRadians = function(turn) {
-  return 2 * Math.PI * turn;
-}
+// Convert angle from turn or degrees into radians
+var getRadians = function(angle) {
+  angle = angle > -1 && angle < 1 ? angle * 2 : angle / 180;
+  return angle * Math.PI;
+};
 
-var getCollision = function(object1, object2) {
-  var m1 = getMass(object1.r), m2 = getMass(object2.r);
-  var s1 = object1.speed, s2 = object2.speed;
-  var a1 = getRadians(object1.angle), a2 = getRadians(object2.angle);
+// Break magnitude and angle into x/y vector
+var breakVector = function(angle, magnitude) {
+  return {
+    x: Math.cos( getRadians(angle) ) * magnitude,
+    y: -Math.sin( getRadians(angle) ) * magnitude
+  };
+};
 
-  
+// Takes an x/y vector and combines it to an angle(in turns) and a magnitude
+mergeVector = function(x, y) {
+  var speed = Math.sqrt(x * x + y * y);
+  var angle = y > -1e-9 && y < 1e-9 ? x<0?0.5 : 0 : Math.asin(y/speed)/Math.PI/2;
+
+  return {
+    speed: speed,
+    angle: angle
+  };
+};
+
+// Calculate a collision between two nodes, using math outlined here:
+// http://vobarian.com/collisions/2dcollisions2.pdf
+var collide = function(node1, node2) {
+  var m1 = getMass(node1.r);
+  var m2 = getMass(node2.r);
+  var v1 = breakVector(node1.angle, node1.speed); 
+  var v2 = breakVector(node2.angle, node2.speed);
+
+  // Calculate unit normal vector and unit tangent vector
+  var n = {x: node2.x-node1.x, y: node2.y-node1.y};
+  var mn = Math.sqrt(n.x * n.x + n.y * n.y);
+  var un = {x: n.x / mn, y: n.y / mn};
+  var ut = {x: un.y, y: un.x};
+
+  // Calculate scalar velocities on the normal and the tangent
+  var vn1 = un.x * v1.x + un.y * v1.y;
+  var vt1 = ut.x * v1.x + ut.y * v1.y;
+  var vn2 = un.x * v2.x + un.y * v2.y;
+  var vt2 = ut.x * v2.x + ut.y * v2.y;
+
+  // Calculate final velocites along the normal (tangent will not change)
+  var vn1_f = ( vn1*(m1-m2) + 2*m2*vn2 ) / (m1+m2);
+  var vn2_f = ( vn2*(m2-m1) + 2*m1*vn1 ) / (m1+m2);
+
+  // Convert scalar velocities back into vectors
+  vn1_f = {x: vn1_f * un.x, y: vn1_f * un.y};
+  vt1   = {x: vt1   * ut.x, y: vt1   * ut.y};
+  vn2_f = {x: vn2_f * un.x, y: vn2_f * un.y};
+  vt2   = {x: vt2   * ut.x, y: vt2   * ut.y};
+
+  // Calculate final vectors, by adding normal and tangent vectors
+  v1 = {x: vn1_f.x + vt1.x, y: vn1_f.y + vt1.y};
+  v2 = {x: vn2_f.x + vt2.x, y: vn2_f.y + vt2.y};
+
+  console.log(v1);
+  console.log(v2);
+
+  // Convert back to angle (in turns) and magntitude and save to nodes
+  v1 = mergeVector(v1.x, v1.y);
+  v2 = mergeVector(v2.x, v2.y);
+
+  node1.speed = v1.speed;
+  node1.angle = v1.angle;
+  node2.speed = v2.speed;
+  node2.angle = v2.angle;
+
+  console.log(node1);
+  console.log(node2);
+  debugger;
 };
