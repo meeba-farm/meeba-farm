@@ -30,10 +30,9 @@ var getMass = function(radius) {
   return Math.PI * radius * radius;
 };
 
-// Convert angle from turn or degrees into radians
-var getRadians = function(angle) {
-  angle = angle > -1 && angle < 1 ? angle * 2 : angle / 180;
-  return angle * Math.PI;
+// Convert angle from turns into radians
+var getRadians = function(turns) {
+  return turns * Math.PI * 2;
 };
 
 // Break magnitude and angle into x/y vector
@@ -46,28 +45,39 @@ var breakVector = function(angle, magnitude) {
 
 // Takes an x/y vector and combines it to an angle(in turns) and a magnitude
 mergeVector = function(x, y) {
+  var angle = Math.atan(-y/x) / (2 * Math.PI);
   var speed = Math.sqrt(x * x + y * y);
-  var angle = y > -1e-9 && y < 1e-9 ? x<0?0.5 : 0 : Math.asin(y/speed)/Math.PI/2;
+
+  // ATan will always return rightwards angles
+  if (angle < 0) angle += 1;
+  if (x < 0 && y < 0) angle -= 0.5;
+  if (x < 0 && y > 0) angle += 0.5;
 
   return {
-    speed: speed,
-    angle: angle
+    angle: angle,
+    speed: speed
   };
 };
 
 // Calculate a collision between two nodes, using math outlined here:
 // http://vobarian.com/collisions/2dcollisions2.pdf
 var collide = function(node1, node2) {
+  console.log('angle1:', node1.angle, ' speed1:', node1.speed);
+  console.log('angle2:', node2.angle, ' speed2:', node2.speed);
+
   var m1 = getMass(node1.r);
   var m2 = getMass(node2.r);
   var v1 = breakVector(node1.angle, node1.speed); 
   var v2 = breakVector(node2.angle, node2.speed);
 
+  // console.log('x1:', v1.x, ' y1:', v1.y);
+  // console.log('x2:', v2.x, ' y2:', v2.y);
+
   // Calculate unit normal vector and unit tangent vector
   var n = {x: node2.x-node1.x, y: node2.y-node1.y};
   var mn = Math.sqrt(n.x * n.x + n.y * n.y);
   var un = {x: n.x / mn, y: n.y / mn};
-  var ut = {x: un.y, y: un.x};
+  var ut = {x: -un.y, y: un.x};
 
   // Calculate scalar velocities on the normal and the tangent
   var vn1 = un.x * v1.x + un.y * v1.y;
@@ -89,8 +99,8 @@ var collide = function(node1, node2) {
   v1 = {x: vn1_f.x + vt1.x, y: vn1_f.y + vt1.y};
   v2 = {x: vn2_f.x + vt2.x, y: vn2_f.y + vt2.y};
 
-  console.log(v1);
-  console.log(v2);
+  // console.log('x1:', v1.x, ' y1:', v1.y);
+  // console.log('x2:', v2.x, ' y2:', v2.y);
 
   // Convert back to angle (in turns) and magntitude and save to nodes
   v1 = mergeVector(v1.x, v1.y);
@@ -101,7 +111,7 @@ var collide = function(node1, node2) {
   node2.speed = v2.speed;
   node2.angle = v2.angle;
 
-  console.log(node1);
-  console.log(node2);
-  debugger;
+  // console.log('angle1:', node1.angle, ' speed1:', node1.speed);
+  // console.log('angle2:', node2.angle, ' speed2:', node2.speed);
+  // debugger;
 };

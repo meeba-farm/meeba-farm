@@ -5,11 +5,11 @@ var config = {
   h: window.innerHeight - 20,
   buffFactor: 15,
   dur: 1000,
-  speed: 250,
-  minR: 20,
-  maxR: 20,
+  maxSpeed: 500,
+  minR: 5,
+  maxR: 35,
   color: '#34A853',
-  quantity: 6
+  quantity: 25
 };
 
 var state = {

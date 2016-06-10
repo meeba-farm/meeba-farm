@@ -1,5 +1,5 @@
 // In-game classes
-var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION."
+var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
 
 // An environmental object with information needed to draw and move
 // Wraps an `item` which should be a Meeba or similar data
@@ -10,7 +10,7 @@ var Node = function(item, x, y, r, angle, speed) {
   this.x = x || rand(this.r, config.w - this.r);
   this.y = y || rand(this.r, config.h - this.r);
   this.angle = angle || rand();
-  this.speed = speed || config.speed;
+  this.speed = speed || rand(config.maxSpeed);
 };
 
 // Gets a destination x/y for a node
@@ -53,7 +53,7 @@ Meeba.prototype.drainDamage = function(baseDamage) { // calculates and returns d
 };
 Meeba.prototype.feed = function(_calories) { // feeds the meeba the number of calories specified in the arguments
   this.curCalories += _calories;
-}
+};
   
   // returns array of all actions to be taken this round
 Meeba.prototype.roundActions = function() { 
@@ -85,12 +85,12 @@ Meeba.prototype.reproduce = function(cost) {
     childTwoTraits.push(traits[i].duplicate());
   }
    
-  return [Meeba(childOneTraits, childCals, environment), Meeba(childTwoTraits, childCals, environment)]
+  return [Meeba(childOneTraits, childCals, environment), Meeba(childTwoTraits, childCals, environment)];
 };
 Meeba.prototype.getMinCalories = function() { // calculates minimum number of calories a meeba can have without dying
   // TODO: THIS
   return 0;
-}
+};
   
 // checks status at end of round and updates accordingly
 Meeba.prototype.roundEndCheck = function() { 
@@ -101,12 +101,12 @@ Meeba.prototype.roundEndCheck = function() {
     curCalories = getDeadCalories();
   }
   damageCurRound = 0;
-}
+};
   
 Meeba.prototype.getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
   // TODO: THIS
   return 0;
-}
+};
 
 
 
@@ -169,7 +169,7 @@ var ActionEnum = {
   MOVE : 2, // move the meeba along a vector path
   REPRODUCE : 3,
   NOTHING : 4
-}
+};
 
 // an action that is to be performed by a meeba
 var Action = function(_actionType) { // TODO: CONSIDER WHETHER THEIS SHOULD BE ABSTRACT
@@ -179,4 +179,4 @@ var Action = function(_actionType) { // TODO: CONSIDER WHETHER THEIS SHOULD BE A
   
   // performs action and sets all states to meebas (hp for damage, calories for eating, etc) as they should be set
   this.doAction = function() {throw abstractMethodError;}; 
-}
+};
