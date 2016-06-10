@@ -98,11 +98,11 @@ var meebas = tank.selectAll('circle')
   .data(state.nodes)
   .enter()
   .append('circle')
-  .attr('id', d => d.id.slice(1))
-  .attr('r', d => d.r)
-  .attr('fill', d => d.item.color)
-  .attr('cx', d => d.x)
-  .attr('cy', d => d.y);
+  .attr('id', function(d){ return d.id.slice(1); })
+  .attr('r', function(d){ return d.r; })
+  .attr('fill', function(d){ return d.item.color; })
+  .attr('cx', function(d){ return d.x; })
+  .attr('cy', function(d){ return d.y; });
 
 
 /**  RUN  **/
