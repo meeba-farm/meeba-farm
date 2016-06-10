@@ -24,15 +24,27 @@ var checkBounce = function() {
   var d = d3.select(this).datum();
   var buffer = d.speed / config.dur * config.buffFactor;
 
-  var eastwards = d.angle < 0.25 || d.angle > 0.75;
-  var northwards = d.angle < 0.5;
-  var westwards = d.angle > 0.25 && d.angle < 0.75;
-  var southwards = d.angle > 0.5;
+  var eastwards = d.lastHit !== '#east-wall' && d.angle <= 0.25 || d.angle > 0.75;
+  var northwards = d.lastHit !== '#north-wall' && d.angle <= 0.5;
+  var westwards = d.lastHit !== '#west-wall' && d.angle > 0.25 && d.angle <= 0.75;
+  var southwards = d.lastHit !== '#south-wall' && d.angle > 0.5;
 
-  if (eastwards && d.x > config.w - d.r - 2 * buffer) d.angle = bounceX(d.angle);
-  if (northwards && d.y < d.r + buffer) d.angle = bounceY(d.angle);
-  if (westwards && d.x < d.r + buffer) d.angle = bounceX(d.angle);
-  if (southwards && d.y > config.h - d.r - buffer) d.angle = bounceY(d.angle);
+  if (eastwards && d.x > config.w - d.r - buffer) {
+    d.lastHit = '#east-wall';
+    d.angle = bounceX(d.angle);
+  }
+  if (northwards && d.y < d.r + buffer) {
+    d.lastHit = '#north-wall';
+    d.angle = bounceY(d.angle);
+  }
+  if (westwards && d.x < d.r + buffer) {
+    d.lastHit = '#west-wall';
+    d.angle = bounceX(d.angle);
+  }
+  if (southwards && d.y > config.h - d.r - buffer) {
+    d.lastHit = '#south-wall';
+    d.angle = bounceY(d.angle);
+  }
 
   d3.select(d.id).each(move);
 };
@@ -57,6 +69,10 @@ var checkCollision = function() {
 
     if (dist < widths) {
       collide(d, quad.point);
+
+      d.lastHit = quad.point.id;
+      quad.lastHit = d.id;
+
       d3.select(d.id).each(move);
       d3.select(quad.point.id).each(move);
     }
@@ -68,22 +84,10 @@ var checkCollision = function() {
 
 // Determines whether or not two nodes are heading towards each other
 var collidable = function(node1, node2) {
-  var dest = node1.getDest();
-
-  if (dest.x > node1.x && node2.x < node1.x) return false;
-  if (dest.x < node1.x && node2.x > node1.x) return false;
-  if (dest.y > node1.y && node2.y < node1.y) return false;
-  if (dest.y < node1.y && node2.y > node1.y) return false;
+  if (node1.lastHit === node2.id) return false;
+  if (node2.lastHit === node1.id) return false;
   return true;
 };
-
-// Handles a collision between two nodes
-// var collide = function(node1, node2) {
-//   // Angles can be swapped in collisions of equal mass and speed
-//   var swap = node1.angle;
-//   node1.angle = node2.angle;
-//   node2.angle = swap;
-// };
 
 /**  SET UP  **/
 var tank = d3.select('body').append('svg')

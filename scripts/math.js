@@ -62,8 +62,8 @@ mergeVector = function(x, y) {
 // Calculate a collision between two nodes, using math outlined here:
 // http://vobarian.com/collisions/2dcollisions2.pdf
 var collide = function(node1, node2) {
-  console.log('angle1:', node1.angle, ' speed1:', node1.speed);
-  console.log('angle2:', node2.angle, ' speed2:', node2.speed);
+  // console.log('angle1:', node1.angle, ' speed1:', node1.speed);
+  // console.log('angle2:', node2.angle, ' speed2:', node2.speed);
 
   var m1 = getMass(node1.r);
   var m2 = getMass(node2.r);
