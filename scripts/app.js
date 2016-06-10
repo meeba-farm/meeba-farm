@@ -2,18 +2,10 @@
 
 // Moves meeba continuously at the same angle
 var move = function() {
-  var m = this;
-  var meeba = d3.select(m);
+  var d = d3.select(this);
+  var dest = d.datum().getDest();
 
-  var cx = meeba.attr('cx');
-  var cy = meeba.attr('cy');
-  var angle = meeba.datum().angle;
-  var speed = meeba.datum().speed;
-
-  var dest = getDest(cx, cy, angle, speed);
-
-
-  meeba.transition()
+  d.transition()
     .duration(config.dur)
     .ease('linear')
     .attr('cx', dest.x)
@@ -47,7 +39,7 @@ var checkBounce = function() {
 
 // Uses a quadtree to check for collisions between meebas
 var checkCollision = function() {
-  var tree = d3.geom.quadtree(state.data);
+  var tree = d3.geom.quadtree(state.nodes);
 
   meebas.each(function() {
     var d = d3.select(this).datum();
@@ -74,23 +66,23 @@ var checkCollision = function() {
   });
 };
 
-// Determines whether or not two meeba are heading towards each other
-var collidable = function(meeba1, meeba2) {
-  var dest = getDest(meeba1.x, meeba1.y, meeba1.angle, 100);
+// Determines whether or not two nodes are heading towards each other
+var collidable = function(node1, node2) {
+  var dest = node1.getDest();
 
-  if (dest.x > meeba1.x && meeba2.x < meeba1.x) return false;
-  if (dest.x < meeba1.x && meeba2.x > meeba1.x) return false;
-  if (dest.y > meeba1.y && meeba2.y < meeba1.y) return false;
-  if (dest.y < meeba1.y && meeba2.y > meeba1.y) return false;
+  if (dest.x > node1.x && node2.x < node1.x) return false;
+  if (dest.x < node1.x && node2.x > node1.x) return false;
+  if (dest.y > node1.y && node2.y < node1.y) return false;
+  if (dest.y < node1.y && node2.y > node1.y) return false;
   return true;
 };
 
-// Handles a collision between two meebas
-var collide = function(meeba1, meeba2) {
+// Handles a collision between two nodes
+var collide = function(node1, node2) {
   // Angles can be swapped in collisions of equal mass and speed
-  var swap = meeba1.angle;
-  meeba1.angle = meeba2.angle;
-  meeba2.angle = swap;
+  var swap = node1.angle;
+  node1.angle = node2.angle;
+  node2.angle = swap;
 };
 
 /**  SET UP  **/
@@ -98,15 +90,17 @@ var tank = d3.select('body').append('svg')
   .attr('width', config.w)
   .attr('height', config.h);
 
-state.data = d3.range(config.quantity).map(() => new Meeba());
+state.nodes = d3.range(config.quantity).map(function() {
+  return new Node( new Meeba() );
+});
 
 var meebas = tank.selectAll('circle')
-  .data(state.data)
+  .data(state.nodes)
   .enter()
   .append('circle')
   .attr('id', d => d.id.slice(1))
   .attr('r', d => d.r)
-  .attr('fill', d => d.color)
+  .attr('fill', d => d.item.color)
   .attr('cx', d => d.x)
   .attr('cy', d => d.y);
 

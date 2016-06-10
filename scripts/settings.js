@@ -9,7 +9,7 @@ var config = {
   minR: 20,
   maxR: 20,
   color: '#34A853',
-  quantity: 3
+  quantity: 25
 };
 
 var state = {

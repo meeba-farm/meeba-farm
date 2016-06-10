@@ -1,18 +1,31 @@
 // In-game classes
 var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION."
 
+// An environmental object with information needed to draw and move
+// Wraps an `item` which should be a Meeba or similar data
+var Node = function(item, x, y, r, angle, speed) {
+  this.item = item;
+  this.id = '#n' + ('00' + state.count++).slice(-3);
+  this.r = r || rand(config.minR, config.maxR);
+  this.x = x || rand(this.r, config.w - this.r);
+  this.y = y || rand(this.r, config.h - this.r);
+  this.angle = angle || rand();
+  this.speed = speed || config.speed;
+};
+
+// Gets a destination x/y for a node
+Node.prototype.getDest = function() {
+  var angle = getRadians(this.angle);
+
+  return {
+    x: Math.cos(angle) * this.speed + this.x,
+    y: -Math.sin(angle) * this.speed + this.y
+  };
+}
+
 var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
-  this.id = '#m' + ('00' + state.count++).slice(-3);
-  this.speed = config.speed;
   this.color = config.color;
-  
-  // REMOVE AND PUT ALL LOCATION INFORMATION IN ENVIRONMENT -->
-  this.r = rand(config.minR, config.maxR);
-  this.x = rand(this.r, config.w - this.r);
-  this.y = rand(this.r, config.h - this.r);
-  this.angle = rand();
-  // <--  REMOVE AND PUT ALL LOCATION INFORMATION IN ENVIRONMENT
   
   this.traits = []; // the digital genes of a meeba
   this.isAlive = true;
