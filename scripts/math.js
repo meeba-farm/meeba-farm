@@ -62,16 +62,10 @@ mergeVector = function(x, y) {
 // Calculate a collision between two nodes, using math outlined here:
 // http://vobarian.com/collisions/2dcollisions2.pdf
 var collide = function(node1, node2) {
-  // console.log('angle1:', node1.angle, ' speed1:', node1.speed);
-  // console.log('angle2:', node2.angle, ' speed2:', node2.speed);
-
   var m1 = getMass(node1.r);
   var m2 = getMass(node2.r);
   var v1 = breakVector(node1.angle, node1.speed); 
   var v2 = breakVector(node2.angle, node2.speed);
-
-  // console.log('x1:', v1.x, ' y1:', v1.y);
-  // console.log('x2:', v2.x, ' y2:', v2.y);
 
   // Calculate unit normal vector and unit tangent vector
   var n = {x: node2.x-node1.x, y: node2.y-node1.y};
@@ -99,9 +93,6 @@ var collide = function(node1, node2) {
   v1 = {x: vn1_f.x + vt1.x, y: vn1_f.y + vt1.y};
   v2 = {x: vn2_f.x + vt2.x, y: vn2_f.y + vt2.y};
 
-  // console.log('x1:', v1.x, ' y1:', v1.y);
-  // console.log('x2:', v2.x, ' y2:', v2.y);
-
   // Convert back to angle (in turns) and magntitude and save to nodes
   v1 = mergeVector(v1.x, v1.y);
   v2 = mergeVector(v2.x, v2.y);
@@ -110,8 +101,4 @@ var collide = function(node1, node2) {
   node1.angle = v1.angle;
   node2.speed = v2.speed;
   node2.angle = v2.angle;
-
-  // console.log('angle1:', node1.angle, ' speed1:', node1.speed);
-  // console.log('angle2:', node2.angle, ' speed2:', node2.speed);
-  // debugger;
 };
