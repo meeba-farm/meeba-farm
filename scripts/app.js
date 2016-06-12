@@ -54,9 +54,6 @@ var checkCollision = function() {
     var d = d3.select(this).datum();
 
     tree.visit(function(quad, x1, y1, x2, y2) {
-      if (!quad.point) return;
-      if (quad.point === d) return;
-      console.log(collidable(d, quad.point));
       if (!collidable(d, quad.point)) return;
 
       var buffer = (d.speed + quad.point.speed) / config.dur * config.nodeBuffer;
@@ -68,8 +65,8 @@ var checkCollision = function() {
       if (dist < widths) {
         collide(d, quad.point);
 
-        d.lastHit = quad.point.id;
-        quad.lastHit = d.id;
+        d.lastHit = quad.point;
+        quad.point.lastHit = d;
 
         d3.select(d.id).each(move);
         d3.select(quad.point.id).each(move);
@@ -80,10 +77,11 @@ var checkCollision = function() {
   });
 };
 
-// Checks whether or not two nodeshave already collided
+// Checks whether or not two nodes have already collided
 var collidable = function(node1, node2) {
-  if (node1.lastHit === node2.id) return false;
-  if (node2.lastHit === node1.id) return false;
+  if (!node1 || !node2) return false;
+  if (node1 === node2) return false;
+  if (node1.lastHit === node2 && node2.lastHit === node1) return false;
   return true;
 };
 
