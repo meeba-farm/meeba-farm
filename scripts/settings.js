@@ -3,12 +3,14 @@
 var config = {
   w: window.innerWidth - 20,
   h: window.innerHeight - 20,
-  minR: 20,
-  maxR: 20,
-  color: '#34A853',
-  speed: 250,
+  wallBuffer: 50,
+  nodeBuffer: 20,
   dur: 1000,
-  quantity: 10
+  maxSpeed: 150,
+  minR: 5,
+  maxR: 50,
+  color: '#34A853',
+  quantity: 12
 };
 
 var state = {

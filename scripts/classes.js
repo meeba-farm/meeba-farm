@@ -1,18 +1,30 @@
 // In-game classes
-var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION."
+var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
+
+// An environmental object with information needed to draw and move
+// Wraps an `item` which should be a Meeba or similar data
+var Node = function(item, x, y, r, angle, speed) {
+  this.item = item;
+  this.id = '#n' + ('00' + state.count++).slice(-3);
+  this.r = r || rand(config.minR, config.maxR);
+  this.x = x || rand(this.r, config.w - this.r);
+  this.y = y || rand(this.r, config.h - this.r);
+  this.angle = angle || rand();
+  this.speed = speed || rand(config.maxSpeed);
+};
+
+// Gets a destination x/y for a node
+Node.prototype.getDest = function() {
+  var vector = breakVector(this.angle, this.speed);
+  vector.x += this.x;
+  vector.y += this.y;
+
+  return vector;
+};
 
 var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
-  this.id = '#m' + ('00' + state.count++).slice(-3);
-  this.speed = config.speed;
   this.color = config.color;
-  
-  // REMOVE AND PUT ALL LOCATION INFORMATION IN ENVIRONMENT -->
-  this.r = rand(config.minR, config.maxR);
-  this.x = rand(this.r, config.w - this.r);
-  this.y = rand(this.r, config.h - this.r);
-  this.angle = rand();
-  // <--  REMOVE AND PUT ALL LOCATION INFORMATION IN ENVIRONMENT
   
   this.traits = []; // the digital genes of a meeba
   this.isAlive = true;
@@ -41,7 +53,7 @@ Meeba.prototype.drainDamage = function(baseDamage) { // calculates and returns d
 };
 Meeba.prototype.feed = function(_calories) { // feeds the meeba the number of calories specified in the arguments
   this.curCalories += _calories;
-}
+};
   
   // returns array of all actions to be taken this round
 Meeba.prototype.roundActions = function() { 
@@ -73,12 +85,12 @@ Meeba.prototype.reproduce = function(cost) {
     childTwoTraits.push(traits[i].duplicate());
   }
    
-  return [Meeba(childOneTraits, childCals, environment), Meeba(childTwoTraits, childCals, environment)]
+  return [Meeba(childOneTraits, childCals, environment), Meeba(childTwoTraits, childCals, environment)];
 };
 Meeba.prototype.getMinCalories = function() { // calculates minimum number of calories a meeba can have without dying
   // TODO: THIS
   return 0;
-}
+};
   
 // checks status at end of round and updates accordingly
 Meeba.prototype.roundEndCheck = function() { 
@@ -89,12 +101,12 @@ Meeba.prototype.roundEndCheck = function() {
     curCalories = getDeadCalories();
   }
   damageCurRound = 0;
-}
+};
   
 Meeba.prototype.getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
   // TODO: THIS
   return 0;
-}
+};
 
 
 
@@ -157,7 +169,7 @@ var ActionEnum = {
   MOVE : 2, // move the meeba along a vector path
   REPRODUCE : 3,
   NOTHING : 4
-}
+};
 
 // an action that is to be performed by a meeba
 var Action = function(_actionType) { // TODO: CONSIDER WHETHER THEIS SHOULD BE ABSTRACT
@@ -167,4 +179,4 @@ var Action = function(_actionType) { // TODO: CONSIDER WHETHER THEIS SHOULD BE A
   
   // performs action and sets all states to meebas (hp for damage, calories for eating, etc) as they should be set
   this.doAction = function() {throw abstractMethodError;}; 
-}
+};
