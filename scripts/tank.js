@@ -1,10 +1,10 @@
 // Classes, methods, and functions relating to the environment and engine
 
 // An environmental object with information needed to draw and move
-// Wraps an `seed` which will be a Meeba or similar data
-var Body = function(seed, x, y, r, angle, speed) {
-  this.seed = seed;
-  this.seed.body = this;
+// Wraps a `core` which will be a Meeba or similar data
+var Body = function(core, x, y, r, angle, speed) {
+  this.core = core;
+  this.core.body = this;
   this.id = '#n' + ('00' + state.count++).slice(-3);
 
   this.r = r || rand(config.minR, config.maxR);
@@ -15,10 +15,12 @@ var Body = function(seed, x, y, r, angle, speed) {
   this.angle = angle || rand();
   this.speed = speed || rand(config.maxSpeed);
 
+  // An array of methods to be run everytime two bodies interact
   this.queries = [ Body.prototype.getCollision ];
 };
 
 // TODO: May need to refactor queries to use some sort of hashtable
+// or build off a Query object
 Body.prototype.addQuery = function(query) {
   if (this.queries.indexOf(query) === -1) {
     this.queries.push(query);

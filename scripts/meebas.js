@@ -14,6 +14,9 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
   this.damageCurRound = 0; // damage dealt in current round. Reset each round.
   this.environment = _environment;
+
+  // An array of methods to be run on each animation frame
+  this.tasks = [];
 };
 
 Meeba.prototype.getSize = function() { // returns size of meeba.

@@ -46,9 +46,21 @@ var bounceWall = function() {
   d3.select(d.id).each(move);
 };
 
+// Runs each meeba's core tasks
+var runTasks = function() {
+  var meeba = d3.select(this).datum().core;
+
+  if (!meeba.tasks) return;
+
+  meeba.tasks.forEach(function(task) {
+    if (task) task.call(meeba);
+  });
+};
+
 // Uses a quadtree to allow pairs of nearby meebas to interact
 var interact = function() {
   var tree = d3.geom.quadtree(state.bodies);
+  var actions = [];
   var met = {};
 
   meebas.each(function() {
@@ -58,13 +70,10 @@ var interact = function() {
     tree.visit(function(quad, x1, y1, x2, y2) {
       var stopping = x1 > d.x+d.r || x2 < d.x-d.r || y1 > d.y+d.r || y2 < d.y-d.r;
       var q = quad.point;
-      var actions = [];
-
 
       if (!q || q === d) return stopping;
       if (met[q.id] && met[q.id][d.id]) return stopping;
       met[d.id][q.id] = true;
-
 
       // Goes through each body's queries, and adds resulting
       // actions to a queue, which is then executed
@@ -76,14 +85,14 @@ var interact = function() {
         actions.push( query.call(q, d) );
       });
 
-      actions.forEach(function(action) {
-        if (action) action();
-      });
-
-
       return stopping;
     });
   });
+
+  actions.forEach(function(action) {
+    if (action) action();
+  });
+
 };
 
 /**  SET UP  **/
@@ -101,7 +110,7 @@ var meebas = tank.selectAll('circle')
   .append('circle')
   .attr('id', function(d){ return d.id.slice(1); })
   .attr('r', function(d){ return d.r; })
-  .attr('fill', function(d){ return d.seed.color; })
+  .attr('fill', function(d){ return d.core.color; })
   .attr('cx', function(d){ return d.x; })
   .attr('cy', function(d){ return d.y; });
 
@@ -113,4 +122,5 @@ d3.timer(function() {
   meebas.each(updateXY);
   meebas.each(bounceWall);
   interact();
+  meebas.each(runTasks);
 });
