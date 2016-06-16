@@ -20,7 +20,7 @@ var updateXY = function() {
 };
 
 // Bounces meebas off the walls as needed
-var checkBounce = function() {
+var bounceWall = function() {
   var d = d3.select(this).datum();
   var buffer = d.speed / config.dur * config.wallBuffer;
 
@@ -77,7 +77,7 @@ var interact = function() {
       });
 
       actions.forEach(function(action) {
-        if (action) action(d, q);
+        if (action) action();
       });
 
 
@@ -111,6 +111,6 @@ meebas.each(move);
 
 d3.timer(function() {
   meebas.each(updateXY);
-  meebas.each(checkBounce);
+  meebas.each(bounceWall);
   interact();
 });
