@@ -4,6 +4,7 @@
 // Wraps an `item` which should be a Meeba or similar data
 var Node = function(item, x, y, r, angle, speed) {
   this.item = item;
+  this.item.node = this;
   this.id = '#n' + ('00' + state.count++).slice(-3);
 
   this.r = r || rand(config.minR, config.maxR);
@@ -15,6 +16,21 @@ var Node = function(item, x, y, r, angle, speed) {
   this.speed = speed || rand(config.maxSpeed);
 
   this.queries = [ Node.prototype.getCollision ];
+};
+
+// TODO: May need to refactor queries to use some sort of hashtable
+Node.prototype.addQuery = function(query) {
+  if (this.queries.indexOf(query) === -1) {
+    this.queries.push(query);
+  }
+};
+
+Node.prototype.removeQuery = function(query) {
+  var index = this.queries.indexOf(query);
+
+  if (index !== -1) {
+    this.queries.splice(index, 1);
+  }
 };
 
 // Gets a destination x/y for a node
