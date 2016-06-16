@@ -26,10 +26,6 @@ var bounceY = function(angle) {
   return 0.5 - (angle - 0.5);
 };
 
-var getMass = function(radius) {
-  return Math.PI * radius * radius;
-};
-
 // Convert angle from turns into radians
 var getRadians = function(turns) {
   return turns * Math.PI * 2;
@@ -62,8 +58,8 @@ mergeVector = function(x, y) {
 // Calculate a collision between two nodes, using math outlined here:
 // http://vobarian.com/collisions/2dcollisions2.pdf
 var collide = function(node1, node2) {
-  var m1 = getMass(node1.r);
-  var m2 = getMass(node2.r);
+  var m1 = node1.m;
+  var m2 = node2.m;
   var v1 = breakVector(node1.angle, node1.speed); 
   var v2 = breakVector(node2.angle, node2.speed);
 

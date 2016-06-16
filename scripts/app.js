@@ -46,43 +46,44 @@ var checkBounce = function() {
   d3.select(d.id).each(move);
 };
 
-// Uses a quadtree to check for collisions between meebas
-var checkCollision = function() {
+// Uses a quadtree to allow pairs of nearby meebas to interact
+var interact = function() {
   var tree = d3.geom.quadtree(state.nodes);
+  var met = {};
 
   meebas.each(function() {
     var d = d3.select(this).datum();
+    met[d.id] = {};
 
     tree.visit(function(quad, x1, y1, x2, y2) {
-      if (!collidable(d, quad.point)) return;
+      var stopping = x1 > d.x+d.r || x2 < d.x-d.r || y1 > d.y+d.r || y2 < d.y-d.r;
+      var q = quad.point;
+      var actions = [];
 
-      var buffer = (d.speed + quad.point.speed) / config.dur * config.nodeBuffer;
-      var x = d.x - quad.point.x;
-      var y = d.y - quad.point.y;
-      var dist = Math.sqrt(x * x + y * y);
-      var widths = d.r + quad.point.r + buffer;
 
-      if (dist < widths) {
-        collide(d, quad.point);
+      if (!q || q === d) return stopping;
+      if (met[q.id] && met[q.id][d.id]) return stopping;
+      met[d.id][q.id] = true;
 
-        d.lastHit = quad.point;
-        quad.point.lastHit = d;
 
-        d3.select(d.id).each(move);
-        d3.select(quad.point.id).each(move);
-      }
+      // Goes through each node's queries, and adds resulting
+      // actions to a queue, which is then executed
+      d.queries.forEach(function(query) {
+        actions.push( query.call(d, q) );
+      });
 
-      return x1 > d.x+d.r || x2 < d.x-d.r || y1 > d.y+d.r || y2 < d.y-d.r;
+      q.queries.forEach(function(query) {
+        actions.push( query.call(q, d) );
+      });
+
+      actions.forEach(function(action) {
+        if (action) action(d, q);
+      });
+
+
+      return stopping;
     });
   });
-};
-
-// Checks whether or not two nodes have already collided
-var collidable = function(node1, node2) {
-  if (!node1 || !node2) return false;
-  if (node1 === node2) return false;
-  if (node1.lastHit === node2 && node2.lastHit === node1) return false;
-  return true;
 };
 
 /**  SET UP  **/
@@ -111,5 +112,5 @@ meebas.each(move);
 d3.timer(function() {
   meebas.each(updateXY);
   meebas.each(checkBounce);
-  checkCollision();
+  interact();
 });
