@@ -48,7 +48,7 @@ var bounceWall = function() {
 
 // Uses a quadtree to allow pairs of nearby meebas to interact
 var interact = function() {
-  var tree = d3.geom.quadtree(state.nodes);
+  var tree = d3.geom.quadtree(state.bodies);
   var met = {};
 
   meebas.each(function() {
@@ -66,7 +66,7 @@ var interact = function() {
       met[d.id][q.id] = true;
 
 
-      // Goes through each node's queries, and adds resulting
+      // Goes through each body's queries, and adds resulting
       // actions to a queue, which is then executed
       d.queries.forEach(function(query) {
         actions.push( query.call(d, q) );
@@ -91,17 +91,17 @@ var tank = d3.select('body').append('svg')
   .attr('width', config.w)
   .attr('height', config.h);
 
-state.nodes = d3.range(config.quantity).map(function() {
-  return new Node( new Meeba() );
+state.bodies = d3.range(config.quantity).map(function() {
+  return new Body( new Meeba() );
 });
 
 var meebas = tank.selectAll('circle')
-  .data(state.nodes)
+  .data(state.bodies)
   .enter()
   .append('circle')
   .attr('id', function(d){ return d.id.slice(1); })
   .attr('r', function(d){ return d.r; })
-  .attr('fill', function(d){ return d.item.color; })
+  .attr('fill', function(d){ return d.seed.color; })
   .attr('cx', function(d){ return d.x; })
   .attr('cy', function(d){ return d.y; });
 

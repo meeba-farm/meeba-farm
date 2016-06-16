@@ -1,10 +1,10 @@
 // Classes, methods, and functions relating to the environment and engine
 
 // An environmental object with information needed to draw and move
-// Wraps an `item` which should be a Meeba or similar data
-var Node = function(item, x, y, r, angle, speed) {
-  this.item = item;
-  this.item.node = this;
+// Wraps an `seed` which will be a Meeba or similar data
+var Body = function(seed, x, y, r, angle, speed) {
+  this.seed = seed;
+  this.seed.body = this;
   this.id = '#n' + ('00' + state.count++).slice(-3);
 
   this.r = r || rand(config.minR, config.maxR);
@@ -15,17 +15,17 @@ var Node = function(item, x, y, r, angle, speed) {
   this.angle = angle || rand();
   this.speed = speed || rand(config.maxSpeed);
 
-  this.queries = [ Node.prototype.getCollision ];
+  this.queries = [ Body.prototype.getCollision ];
 };
 
 // TODO: May need to refactor queries to use some sort of hashtable
-Node.prototype.addQuery = function(query) {
+Body.prototype.addQuery = function(query) {
   if (this.queries.indexOf(query) === -1) {
     this.queries.push(query);
   }
 };
 
-Node.prototype.removeQuery = function(query) {
+Body.prototype.removeQuery = function(query) {
   var index = this.queries.indexOf(query);
 
   if (index !== -1) {
@@ -33,8 +33,8 @@ Node.prototype.removeQuery = function(query) {
   }
 };
 
-// Gets a destination x/y for a node
-Node.prototype.getDest = function() {
+// Gets a destination x/y for a body
+Body.prototype.getDest = function() {
   var vector = breakVector(this.angle, this.speed);
   vector.x += this.x;
   vector.y += this.y;
@@ -42,25 +42,25 @@ Node.prototype.getDest = function() {
   return vector;
 };
 
-// Checks to see if a node should collide with another
+// Checks to see if a body should collide with another
 // Returns an action function to create the collision
-Node.prototype.getCollision = function(node) {
-  if (this.lastHit === node && node.lastHit === this) return;
-  var buffer = (this.speed + node.speed) / config.dur * config.nodeBuffer;
+Body.prototype.getCollision = function(body) {
+  if (this.lastHit === body && body.lastHit === this) return;
+  var buffer = (this.speed + body.speed) / config.dur * config.bodyBuffer;
 
-  var dist = Math.sqrt( Math.pow(this.x-node.x, 2) + Math.pow(this.y-node.y, 2) );
-  var widths = this.r + node.r + buffer;
+  var dist = Math.sqrt( Math.pow(this.x-body.x, 2) + Math.pow(this.y-body.y, 2) );
+  var widths = this.r + body.r + buffer;
 
   if (dist < widths) {
-    var thisNode = this;
-    this.lastHit = node;
-    node.lastHit = this;
+    var thisBody = this;
+    this.lastHit = body;
+    body.lastHit = this;
 
     return function() {
-      collide(thisNode, node);
+      collide(thisBody, body);
 
-      d3.select(thisNode.id).each(move);
-      d3.select(node.id).each(move);
+      d3.select(thisBody.id).each(move);
+      d3.select(body.id).each(move);
     };
   }
 };
