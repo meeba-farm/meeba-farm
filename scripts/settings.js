@@ -17,7 +17,7 @@ var config = {
   spikeW: 0.025,
 
   color: '#34A853',
-  quantity: 15
+  quantity: 4
 };
 
 var state = {
