@@ -109,6 +109,10 @@ var drawMeebas = function() {
       return 'translate(' + d.x + ',' + d.y + ')';
     });
 
+  groups.append('polygon')
+    .attr('fill', 'black')
+    .attr('points', function(d) { return d.getSpikes()[0]; });
+
   groups.append('circle')
     .attr('r', function(d){ return d.r; })
     .attr('fill', function(d){ return d.core.color; });

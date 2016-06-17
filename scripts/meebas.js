@@ -17,6 +17,12 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
 
   // An array of methods to be run on each animation frame
   this.tasks = [];
+
+  // TODO: Refactor spikes array to use traits
+  this.spikes = [];
+  for (var i = 0; i < rand(config.maxSpikes); i++) {
+    this.spikes.push(new Spike());
+  }
 };
 
 Meeba.prototype.getSize = function() { // returns size of meeba.
@@ -92,7 +98,11 @@ Meeba.prototype.getCriticalHit = function() { // gets critical hit value for mee
 };
 
 
-
+// A simple spike object with length and the angle its positioned at
+var Spike = function(angle, length) {
+  this.angle = angle === undefined ? rand() : angle;
+  this.length = length === undefined ? rand(config.maxR) : length;
+};
 
 
 
