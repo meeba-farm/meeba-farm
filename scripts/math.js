@@ -44,6 +44,10 @@ var getPos = function(transform) {
   }, {});
 };
 
+var getDist = function(x1, y1, x2, y2) {
+  return Math.sqrt( Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) );
+};
+
 var bounceX = function(angle) {
   if (angle === 0.5) return 0;
   if (angle < 0.5) return 0.25 - (angle - 0.25);

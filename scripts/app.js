@@ -109,9 +109,14 @@ var drawMeebas = function() {
       return 'translate(' + d.x + ',' + d.y + ')';
     });
 
-  groups.append('polygon')
-    .attr('fill', 'black')
-    .attr('points', function(d) { return d.getSpikes()[0]; });
+  groups.each(function() {
+    var meeba = d3.select(this);
+    meeba.datum().getSpikes().forEach(function(spike) {
+      meeba.append('polygon')
+        .attr('fill', 'black')
+        .attr('points', spike);
+    });
+  });
 
   groups.append('circle')
     .attr('r', function(d){ return d.r; })

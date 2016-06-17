@@ -104,6 +104,9 @@ var Spike = function(angle, length) {
   this.length = length === undefined ? rand(config.maxR) : length;
 };
 
+Spike.prototype.drain = function(body) {
+  console.log(body.id);
+};
 
 
 // a condition to be tested on either a local meeba or its surroundings
