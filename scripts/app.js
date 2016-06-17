@@ -126,7 +126,7 @@ drawMeebas();
 
 
 /**  RUN  **/
-d3.select('body').on('click', function() {
+state.tank.on('click', function() {
   state.bodies.push(new Body(new Meeba(), d3.event.x, d3.event.y));
   
   drawMeebas();
