@@ -55,7 +55,7 @@ mergeVector = function(x, y) {
   };
 };
 
-// Calculate a collision between two bodys, using math outlined here:
+// Calculate a collision between two bodies, using math outlined here:
 // http://vobarian.com/collisions/2dcollisions2.pdf
 var collide = function(body1, body2) {
   var m1 = body1.m;

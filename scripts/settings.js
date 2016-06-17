@@ -4,7 +4,7 @@ var config = {
   w: window.innerWidth - 20,
   h: window.innerHeight - 20,
   wallBuffer: 40,
-  bodyBuffer: 15,
+  bodyBuffer: 10,
   dur: 1000,
   maxSpeed: 150,
   minR: 5,
