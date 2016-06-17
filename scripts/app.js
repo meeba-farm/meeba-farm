@@ -22,7 +22,7 @@ var syncDatum = function() {
   d.y = pos.y;
 
   meeba.select('circle')
-    .attr('fill', d.core.color);
+    .attr('fill', d.core.color.toRgbString());
 };
 
 // Bounces meebas off the walls as needed
@@ -126,7 +126,7 @@ var drawMeebas = function() {
 
   groups.append('circle')
     .attr('r', function(d){ return d.r; })
-    .attr('fill', function(d){ return d.core.color; });
+    .attr('fill', function(d){ return d.core.color.toRgbString(); });
 
   state.meebas.each(move);
 };

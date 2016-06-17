@@ -4,7 +4,9 @@ var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
 
 var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
-  this.color = config.color;
+
+  // Color saved as a 'tinycolor': https://github.com/bgrins/TinyColor
+  this.color = tinycolor(config.color);
   
   this.traits = []; // the digital genes of a meeba
   this.isAlive = true;
@@ -18,7 +20,7 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.size = Math.PI * Math.pow(rand(config.minR, config.maxR), 2);
 
   // An array of methods to be run on each animation frame
-  this.tasks = [this.update];
+  this.tasks = [this.tick, this.metabolize];
 
   // TODO: Refactor spikes array to use traits
   this.spikes = [];
@@ -29,9 +31,10 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.calories = this.size * config.startFactor;
   this.deathLine = this.calories * config.deathFactor;
   this.spawnLine = this.calories * config.spawnFactor;
-
   this.upkeep = this.size * config.upkeepFactor;
+
   this.lastTick = Date.now();
+  this.time = 0;
 
 };
 
@@ -90,24 +93,52 @@ Meeba.prototype.getMinCalories = function() { // calculates minimum number of ca
   // TODO: THIS
   return 0;
 };
-  
-// checks status at end of round and updates accordingly
-Meeba.prototype.update = function() { 
+
+//Runs basic meeba updates
+Meeba.prototype.tick = function() {
   var now = Date.now();
-  var time = now - this.lastTick;
+  this.time = (now - this.lastTick)/1000;
   this.lastTick = now;
+};
+  
+// Runs updates specific to living meebas
+Meeba.prototype.metabolize = function() { 
+  this.calories -= this.upkeep * this.time;
+  
+  var hsl = this.color.toHsl();
+  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
+  this.color = tinycolor(hsl);
 
+  if (this.calories < this.deathLine) {
+    this.isAlive = false;
+    this.removeTask(this.metabolize);
+    this.addTask(this.decay);
+  }
+};
 
-  // this.calories -= this.upkeep * time/1000;
-  // this.color = 
+// Runs updates specific to dead meebas
+Meeba.prototype.decay = function() {
+  this.calories -= this.upkeep * this.time; //temporary
 
-  // if (curCalories < minCalories 
-  //   || damageCurRound >= criticalHit)
-  // {
-  //   isAlive = false;
-  //   curCalories = getDeadCalories();
-  // }
-  // damageCurRound = 0;
+  var rgba = this.color.toRgb();
+  rgba.a = getPerc(this.calories, this.deathLine);
+  this.color = tinycolor( rgba );
+
+  if (this.calories < 0) this.removeTask(this.decay);
+};
+
+Meeba.prototype.addTask = function(task) {
+  if (this.tasks.indexOf(task) === -1) {
+    this.tasks.push(task);
+  }
+};
+
+Meeba.prototype.removeTask = function(task) {
+  var index = this.tasks.indexOf(task);
+
+  if (index !== -1) {
+    this.tasks.splice(index, 1);
+  }
 };
   
 Meeba.prototype.getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
@@ -125,7 +156,7 @@ var Spike = function(angle, length) {
 // Drains a body spike is in contact with
 // TODO: Implement effect other than color change
 Spike.prototype.drain = function(body) {
-  var rgb = tinycolor(body.core.color).toRgb();
+  var rgb = body.core.color.toRgb();
 
   var damage = { r: Math.floor(255 / this.length) };
   damage.g = Math.floor(damage.r / -2);
@@ -137,17 +168,17 @@ Spike.prototype.drain = function(body) {
     rgb[c] += damage[c];
   }
 
-  body.core.color = '#' + tinycolor( rgb ).toHex();
+  body.core.color = tinycolor( rgb );
 
 
   setTimeout(function() {
-    rgb = tinycolor( body.core.color ).toRgb();
+    rgb = body.core.color.toRgb();
 
     for (var c in rgb) {
       rgb[c] -= damage[c];
     }
     
-    body.core.color = '#' + tinycolor( rgb ).toHex();
+    body.core.color = tinycolor( rgb );
   }, config.dur);
 };
 

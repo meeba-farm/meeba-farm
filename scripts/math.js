@@ -14,6 +14,14 @@ var rand = function(low, high) {
   return Math.random() * (high - low) + low;
 };
 
+// Returns a percentage between 0 and 1;
+var getPerc = function(fraction, total) {
+  var perc = fraction/total;
+  if (perc < 0) perc = 0;
+  if (perc > 1) perc = 1;
+  return perc;
+};
+
 // Takes in a string attribute and returns an array of any values
 var getValues = function(attr) {
   var start = attr.indexOf('(');
