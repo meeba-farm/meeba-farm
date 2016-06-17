@@ -14,6 +14,36 @@ var rand = function(low, high) {
   return Math.random() * (high - low) + low;
 };
 
+// Takes in a string attribute and returns an array of any values
+var getValues = function(attr) {
+  var start = attr.indexOf('(');
+  var end = attr.indexOf(')');
+
+  if (start === -1 || end === -1) {
+    return console.log('WARNING! Attribute not recognized!', attr);
+  }
+
+  return attr.slice(start+1, end).split(',').map(function(num) {
+    return Number(num);
+  });
+};
+
+var getPos = function(transform) {
+  return transform.split(' ').reduce(function(pos, attr) {
+    if (attr.indexOf('rotate') !== -1) {
+      pos.rotate = getValues(attr)[0];
+    }
+
+    if (attr.indexOf('translate') !== -1) {
+      attr = getValues(attr);
+      pos.x = attr[0];
+      pos.y = attr[1];
+    }
+
+    return pos;
+  }, {});
+};
+
 var bounceX = function(angle) {
   if (angle === 0.5) return 0;
   if (angle < 0.5) return 0.25 - (angle - 0.25);

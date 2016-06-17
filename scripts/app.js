@@ -2,21 +2,21 @@
 
 // Moves meeba continuously at the same angle
 var move = function() {
-  var d = d3.select(this);
-  var dest = d.datum().getDest();
+  var meeba = d3.select(this);
+  var dest = meeba.datum().getDest();
 
-  d.transition()
+  meeba.transition()
     .duration(config.dur)
     .ease('linear')
-    .attr('cx', dest.x)
-    .attr('cy', dest.y)
+    .attr('transform', 'translate(' + dest.x + ',' + dest.y + ')')
     .each('end', move);
 };
 
 var updateXY = function() {
-  var d = d3.select(this).datum();
-  d.x = d3.select(this).attr('cx') * 1;
-  d.y = d3.select(this).attr('cy') * 1;
+  var meeba = d3.select(this);
+  var pos = getPos( meeba.attr('transform') );
+  meeba.datum().x = pos.x;
+  meeba.datum().y = pos.y;
 };
 
 // Bounces meebas off the walls as needed
@@ -98,17 +98,20 @@ var interact = function() {
 // Adds any new meebas to the tank and starts them moving
 var drawMeebas = function() {
   state.meebas = state.tank
-    .selectAll('circle')
+    .selectAll('g')
     .data(state.bodies);
 
-  state.meebas
+  var groups = state.meebas
     .enter()
-    .append('circle')
+    .append('g')
     .attr('id', function(d){ return d.id.slice(1); })
+    .attr('transform', function(d) { 
+      return 'translate(' + d.x + ',' + d.y + ')';
+    });
+
+  groups.append('circle')
     .attr('r', function(d){ return d.r; })
-    .attr('fill', function(d){ return d.core.color; })
-    .attr('cx', function(d){ return d.x; })
-    .attr('cy', function(d){ return d.y; });
+    .attr('fill', function(d){ return d.core.color; });
 
   state.meebas.each(move);
 };
