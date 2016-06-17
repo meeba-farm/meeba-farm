@@ -20,18 +20,20 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.size = Math.PI * Math.pow(rand(config.minR, config.maxR), 2);
 
   // An array of methods to be run on each animation frame
-  this.tasks = [this.tick, this.metabolize];
+  this.tasks = [this.tick, this.metabolize ];
 
   // TODO: Refactor spikes array to use traits
   this.spikes = [];
   for (var i = 0; i < rand(config.maxSpikes); i++) {
-    this.spikes.push(new Spike());
+    this.spikes.push(new Spike(this));
   }
 
   this.calories = this.size * config.startFactor;
   this.deathLine = this.calories * config.deathFactor;
   this.spawnLine = this.calories * config.spawnFactor;
-  this.upkeep = this.size * config.upkeepFactor;
+
+  this.upkeep = this.size * config.pixelCost;
+  this.upkeep *= this.spikes.length * config.spikeCost;
 
   this.lastTick = Date.now();
   this.time = 0;
@@ -113,6 +115,7 @@ Meeba.prototype.metabolize = function() {
     this.isAlive = false;
     this.removeTask(this.metabolize);
     this.addTask(this.decay);
+    this.body.removeQuery(this.body.getDrain);
   }
 };
 
@@ -148,7 +151,8 @@ Meeba.prototype.getCriticalHit = function() { // gets critical hit value for mee
 
 
 // A simple spike object with length and the angle its positioned at
-var Spike = function(angle, length) {
+var Spike = function(meeba, angle, length) {
+  this.meeba = meeba;
   this.angle = angle === undefined ? rand() : angle;
   this.length = length === undefined ? rand(config.maxR) : length;
 };
@@ -156,16 +160,20 @@ var Spike = function(angle, length) {
 // Drains a body spike is in contact with
 // TODO: Implement effect other than color change
 Spike.prototype.drain = function(body) {
+  var damage = config.damageFactor / this.length;
+  this.meeba.calories += damage;
+  body.core.calories -= damage;
+
   var rgb = body.core.color.toRgb();
 
-  var damage = { r: Math.floor(255 / this.length) };
-  damage.g = Math.floor(damage.r / -2);
-  damage.b = damage.g;
+  var flash = { r: damage * 255/config.damageFactor };
+  flash.g = Math.floor(flash.r / -2);
+  flash.b = flash.g;
 
-  for (var c in rgb) {
-    if (rgb[c]+damage[c] > 255) damage[c] = 255-rgb[c];
-    if (rgb[c]+damage[c] < 0) damage[c] = -rgb[c];
-    rgb[c] += damage[c];
+  for (var c in flash) {
+    if (rgb[c]+flash[c] > 255) flash[c] = 255-rgb[c];
+    if (rgb[c]+flash[c] < 0) flash[c] = -rgb[c];
+    rgb[c] += flash[c];
   }
 
   body.core.color = tinycolor( rgb );
@@ -174,8 +182,8 @@ Spike.prototype.drain = function(body) {
   setTimeout(function() {
     rgb = body.core.color.toRgb();
 
-    for (var c in rgb) {
-      rgb[c] -= damage[c];
+    for (var c in flash) {
+      rgb[c] -= flash[c];
     }
     
     body.core.color = tinycolor( rgb );

@@ -17,9 +17,13 @@ var config = {
   spikeW: 0.025,
 
   startFactor: 1,
-  deathFactor: 0.5,
-  spawnFactor: 2,
-  upkeepFactor: 0.05,
+  deathFactor: 0.25,
+  spawnFactor: 1.5,
+
+  pixelCost: 0.005,
+  spikeCost: 1,
+
+  damageFactor: 20,
 
   color: '#34A853',
   quantity: 15
