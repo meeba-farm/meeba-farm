@@ -16,6 +16,11 @@ var config = {
   maxSpikes: 8,
   spikeW: 0.025,
 
+  startFactor: 1,
+  deathFactor: 0.5,
+  spawnFactor: 2,
+  upkeepFactor: 0.05,
+
   color: '#34A853',
   quantity: 15
 };

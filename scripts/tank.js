@@ -2,13 +2,12 @@
 
 // An environmental object with information needed to draw and move
 // Wraps a `core` which will be a Meeba or similar data
-var Body = function(core, x, y, r, angle, speed) {
+var Body = function(core, x, y, angle, speed) {
   this.core = core;
   this.core.body = this;
   this.id = '#n' + ('00' + state.count++).slice(-3);
 
-  this.r = r || rand(config.minR, config.maxR);
-  this.m = Math.PI * this.r * this.r;
+  this.r = Math.sqrt(this.core.size/Math.PI);
   this.x = x || rand(this.r, config.w - this.r);
   this.y = y || rand(this.r, config.h - this.r);
 
@@ -16,8 +15,9 @@ var Body = function(core, x, y, r, angle, speed) {
   this.speed = speed || rand(config.maxSpeed);
 
   // An array of methods to be run everytime two bodies interact
-  this.queries = [ Body.prototype.getCollision, Body.prototype.getDrain ];
+  this.queries = [ this.getCollision, this.getDrain ];
 
+  // Collision detection work-rounds
   this.lastHit = '#none';
   this.cantHit = {};
 };

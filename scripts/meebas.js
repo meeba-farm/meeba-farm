@@ -15,14 +15,24 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.damageCurRound = 0; // damage dealt in current round. Reset each round.
   this.environment = _environment;
 
+  this.size = Math.PI * Math.pow(rand(config.minR, config.maxR), 2);
+
   // An array of methods to be run on each animation frame
-  this.tasks = [];
+  this.tasks = [this.update];
 
   // TODO: Refactor spikes array to use traits
   this.spikes = [];
   for (var i = 0; i < rand(config.maxSpikes); i++) {
     this.spikes.push(new Spike());
   }
+
+  this.calories = this.size * config.startFactor;
+  this.deathLine = this.calories * config.deathFactor;
+  this.spawnLine = this.calories * config.spawnFactor;
+
+  this.upkeep = this.size * config.upkeepFactor;
+  this.lastTick = Date.now();
+
 };
 
 Meeba.prototype.getSize = function() { // returns size of meeba.
@@ -82,14 +92,22 @@ Meeba.prototype.getMinCalories = function() { // calculates minimum number of ca
 };
   
 // checks status at end of round and updates accordingly
-Meeba.prototype.roundEndCheck = function() { 
-  if (curCalories < minCalories 
-    || damageCurRound >= criticalHit)
-  {
-    isAlive = false;
-    curCalories = getDeadCalories();
-  }
-  damageCurRound = 0;
+Meeba.prototype.update = function() { 
+  var now = Date.now();
+  var time = now - this.lastTick;
+  this.lastTick = now;
+
+
+  // this.calories -= this.upkeep * time/1000;
+  // this.color = 
+
+  // if (curCalories < minCalories 
+  //   || damageCurRound >= criticalHit)
+  // {
+  //   isAlive = false;
+  //   curCalories = getDeadCalories();
+  // }
+  // damageCurRound = 0;
 };
   
 Meeba.prototype.getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
@@ -107,29 +125,29 @@ var Spike = function(angle, length) {
 // Drains a body spike is in contact with
 // TODO: Implement effect other than color change
 Spike.prototype.drain = function(body) {
-  var rgb = parseRGB(body.core.color);
+  var rgb = tinycolor(body.core.color).toRgb();
 
-  var damages = [ Math.floor(255 / this.length) ];
-  damages[1] = Math.floor(damages[0] / -2);
-  damages[2] = damages[1];
+  var damage = { r: Math.floor(255 / this.length) };
+  damage.g = Math.floor(damage.r / -2);
+  damage.b = damage.g;
 
-  for (var i = 0; i < 3; i++) {
-    if (rgb[i]+damages[i] > 255) damages[i] = 255-rgb[i];
-    if (rgb[i]+damages[i] < 0) damages[i] = -rgb[i];
-    rgb[i] += damages[i];
+  for (var c in rgb) {
+    if (rgb[c]+damage[c] > 255) damage[c] = 255-rgb[c];
+    if (rgb[c]+damage[c] < 0) damage[c] = -rgb[c];
+    rgb[c] += damage[c];
   }
 
-  body.core.color = parseHex(rgb);
+  body.core.color = '#' + tinycolor( rgb ).toHex();
 
 
   setTimeout(function() {
-    rgb = parseRGB(body.core.color);
+    rgb = tinycolor( body.core.color ).toRgb();
 
-    for (var i = 0; i < 3; i++) {
-      rgb[i] -= damages[i];
+    for (var c in rgb) {
+      rgb[c] -= damage[c];
     }
     
-    body.core.color = parseHex(rgb);
+    body.core.color = '#' + tinycolor( rgb ).toHex();
   }, config.dur);
 };
 
