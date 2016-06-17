@@ -26,10 +26,6 @@ var bounceY = function(angle) {
   return 0.5 - (angle - 0.5);
 };
 
-var getMass = function(radius) {
-  return Math.PI * radius * radius;
-};
-
 // Convert angle from turns into radians
 var getRadians = function(turns) {
   return turns * Math.PI * 2;
@@ -59,16 +55,16 @@ mergeVector = function(x, y) {
   };
 };
 
-// Calculate a collision between two nodes, using math outlined here:
+// Calculate a collision between two bodies, using math outlined here:
 // http://vobarian.com/collisions/2dcollisions2.pdf
-var collide = function(node1, node2) {
-  var m1 = getMass(node1.r);
-  var m2 = getMass(node2.r);
-  var v1 = breakVector(node1.angle, node1.speed); 
-  var v2 = breakVector(node2.angle, node2.speed);
+var collide = function(body1, body2) {
+  var m1 = body1.m;
+  var m2 = body2.m;
+  var v1 = breakVector(body1.angle, body1.speed); 
+  var v2 = breakVector(body2.angle, body2.speed);
 
   // Calculate unit normal vector and unit tangent vector
-  var n = {x: node2.x-node1.x, y: node2.y-node1.y};
+  var n = {x: body2.x-body1.x, y: body2.y-body1.y};
   var mn = Math.sqrt(n.x * n.x + n.y * n.y);
   var un = {x: n.x / mn, y: n.y / mn};
   var ut = {x: -un.y, y: un.x};
@@ -93,12 +89,12 @@ var collide = function(node1, node2) {
   v1 = {x: vn1_f.x + vt1.x, y: vn1_f.y + vt1.y};
   v2 = {x: vn2_f.x + vt2.x, y: vn2_f.y + vt2.y};
 
-  // Convert back to angle (in turns) and magntitude and save to nodes
+  // Convert back to angle (in turns) and magntitude and save to bodies
   v1 = mergeVector(v1.x, v1.y);
   v2 = mergeVector(v2.x, v2.y);
 
-  node1.speed = v1.speed;
-  node1.angle = v1.angle;
-  node2.speed = v2.speed;
-  node2.angle = v2.angle;
+  body1.speed = v1.speed;
+  body1.angle = v1.angle;
+  body2.speed = v2.speed;
+  body2.angle = v2.angle;
 };

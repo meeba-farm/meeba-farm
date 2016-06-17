@@ -1,26 +1,6 @@
-// In-game classes
+// Classes, methods, and functions relating to meebas
+
 var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
-
-// An environmental object with information needed to draw and move
-// Wraps an `item` which should be a Meeba or similar data
-var Node = function(item, x, y, r, angle, speed) {
-  this.item = item;
-  this.id = '#n' + ('00' + state.count++).slice(-3);
-  this.r = r || rand(config.minR, config.maxR);
-  this.x = x || rand(this.r, config.w - this.r);
-  this.y = y || rand(this.r, config.h - this.r);
-  this.angle = angle || rand();
-  this.speed = speed || rand(config.maxSpeed);
-};
-
-// Gets a destination x/y for a node
-Node.prototype.getDest = function() {
-  var vector = breakVector(this.angle, this.speed);
-  vector.x += this.x;
-  vector.y += this.y;
-
-  return vector;
-};
 
 var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
@@ -34,6 +14,9 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
   this.damageCurRound = 0; // damage dealt in current round. Reset each round.
   this.environment = _environment;
+
+  // An array of methods to be run on each animation frame
+  this.tasks = [];
 };
 
 Meeba.prototype.getSize = function() { // returns size of meeba.

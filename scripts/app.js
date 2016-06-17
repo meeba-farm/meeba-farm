@@ -20,7 +20,7 @@ var updateXY = function() {
 };
 
 // Bounces meebas off the walls as needed
-var checkBounce = function() {
+var bounceWall = function() {
   var d = d3.select(this).datum();
   var buffer = d.speed / config.dur * config.wallBuffer;
 
@@ -46,70 +46,95 @@ var checkBounce = function() {
   d3.select(d.id).each(move);
 };
 
-// Uses a quadtree to check for collisions between meebas
-var checkCollision = function() {
-  var tree = d3.geom.quadtree(state.nodes);
+// Runs each meeba's core tasks
+var runTasks = function() {
+  var meeba = d3.select(this).datum().core;
 
-  meebas.each(function() {
-    var d = d3.select(this).datum();
+  if (!meeba.tasks) return;
 
-    tree.visit(function(quad, x1, y1, x2, y2) {
-      if (!collidable(d, quad.point)) return;
-
-      var buffer = (d.speed + quad.point.speed) / config.dur * config.nodeBuffer;
-      var x = d.x - quad.point.x;
-      var y = d.y - quad.point.y;
-      var dist = Math.sqrt(x * x + y * y);
-      var widths = d.r + quad.point.r + buffer;
-
-      if (dist < widths) {
-        collide(d, quad.point);
-
-        d.lastHit = quad.point;
-        quad.point.lastHit = d;
-
-        d3.select(d.id).each(move);
-        d3.select(quad.point.id).each(move);
-      }
-
-      return x1 > d.x+d.r || x2 < d.x-d.r || y1 > d.y+d.r || y2 < d.y-d.r;
-    });
+  meeba.tasks.forEach(function(task) {
+    if (task) task.call(meeba);
   });
 };
 
-// Checks whether or not two nodes have already collided
-var collidable = function(node1, node2) {
-  if (!node1 || !node2) return false;
-  if (node1 === node2) return false;
-  if (node1.lastHit === node2 && node2.lastHit === node1) return false;
-  return true;
+// Uses a quadtree to allow pairs of nearby meebas to interact
+var interact = function() {
+  var tree = d3.geom.quadtree(state.bodies);
+  var actions = [];
+  var met = {};
+
+  state.meebas.each(function() {
+    var d = d3.select(this).datum();
+    met[d.id] = {};
+
+    tree.visit(function(quad, x1, y1, x2, y2) {
+      var stopping = x1 > d.x+d.r || x2 < d.x-d.r || y1 > d.y+d.r || y2 < d.y-d.r;
+      var q = quad.point;
+
+      if (!q || q === d) return stopping;
+      if (met[q.id] && met[q.id][d.id]) return stopping;
+      met[d.id][q.id] = true;
+
+      // Goes through each body's queries, and adds resulting
+      // actions to a queue, which is then executed
+      d.queries.forEach(function(query) {
+        actions.push( query.call(d, q) );
+      });
+
+      q.queries.forEach(function(query) {
+        actions.push( query.call(q, d) );
+      });
+
+      return stopping;
+    });
+  });
+
+  actions.forEach(function(action) {
+    if (action) action();
+  });
+
+};
+
+// Adds any new meebas to the tank and starts them moving
+var drawMeebas = function() {
+  state.meebas = state.tank
+    .selectAll('circle')
+    .data(state.bodies);
+
+  state.meebas
+    .enter()
+    .append('circle')
+    .attr('id', function(d){ return d.id.slice(1); })
+    .attr('r', function(d){ return d.r; })
+    .attr('fill', function(d){ return d.core.color; })
+    .attr('cx', function(d){ return d.x; })
+    .attr('cy', function(d){ return d.y; });
+
+  state.meebas.each(move);
 };
 
 /**  SET UP  **/
-var tank = d3.select('body').append('svg')
+state.bodies = d3.range(config.quantity).map(function() {
+  return new Body( new Meeba() );
+});
+
+state.tank = d3.select('body').append('svg')
   .attr('width', config.w)
   .attr('height', config.h);
 
-state.nodes = d3.range(config.quantity).map(function() {
-  return new Node( new Meeba() );
-});
-
-var meebas = tank.selectAll('circle')
-  .data(state.nodes)
-  .enter()
-  .append('circle')
-  .attr('id', function(d){ return d.id.slice(1); })
-  .attr('r', function(d){ return d.r; })
-  .attr('fill', function(d){ return d.item.color; })
-  .attr('cx', function(d){ return d.x; })
-  .attr('cy', function(d){ return d.y; });
+drawMeebas();
 
 
 /**  RUN  **/
-meebas.each(move);
+d3.select('body').on('click', function() {
+  state.bodies.push(new Body(new Meeba(), d3.event.x, d3.event.y));
+  
+  drawMeebas();
+});
 
 d3.timer(function() {
-  meebas.each(updateXY);
-  meebas.each(checkBounce);
-  checkCollision();
+  state.meebas.each(updateXY);
+  state.meebas.each(bounceWall);
+  interact();
+  state.meebas.each(runTasks);
 });
