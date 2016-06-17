@@ -63,7 +63,7 @@ var interact = function() {
   var actions = [];
   var met = {};
 
-  meebas.each(function() {
+  state.meebas.each(function() {
     var d = d3.select(this).datum();
     met[d.id] = {};
 
@@ -95,32 +95,46 @@ var interact = function() {
 
 };
 
-/**  SET UP  **/
-var tank = d3.select('body').append('svg')
-  .attr('width', config.w)
-  .attr('height', config.h);
+// Adds any new meebas to the tank and starts them moving
+var drawMeebas = function() {
+  state.meebas = state.tank
+    .selectAll('circle')
+    .data(state.bodies);
 
+  state.meebas
+    .enter()
+    .append('circle')
+    .attr('id', function(d){ return d.id.slice(1); })
+    .attr('r', function(d){ return d.r; })
+    .attr('fill', function(d){ return d.core.color; })
+    .attr('cx', function(d){ return d.x; })
+    .attr('cy', function(d){ return d.y; });
+
+  state.meebas.each(move);
+};
+
+/**  SET UP  **/
 state.bodies = d3.range(config.quantity).map(function() {
   return new Body( new Meeba() );
 });
 
-var meebas = tank.selectAll('circle')
-  .data(state.bodies)
-  .enter()
-  .append('circle')
-  .attr('id', function(d){ return d.id.slice(1); })
-  .attr('r', function(d){ return d.r; })
-  .attr('fill', function(d){ return d.core.color; })
-  .attr('cx', function(d){ return d.x; })
-  .attr('cy', function(d){ return d.y; });
+state.tank = d3.select('body').append('svg')
+  .attr('width', config.w)
+  .attr('height', config.h);
+
+drawMeebas();
 
 
 /**  RUN  **/
-meebas.each(move);
+d3.select('body').on('click', function() {
+  state.bodies.push(new Body(new Meeba(), d3.event.x, d3.event.y));
+  
+  drawMeebas();
+});
 
 d3.timer(function() {
-  meebas.each(updateXY);
-  meebas.each(bounceWall);
+  state.meebas.each(updateXY);
+  state.meebas.each(bounceWall);
   interact();
-  meebas.each(runTasks);
+  state.meebas.each(runTasks);
 });
