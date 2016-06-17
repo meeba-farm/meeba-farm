@@ -17,6 +17,12 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
 
   // An array of methods to be run on each animation frame
   this.tasks = [];
+
+  // TODO: Refactor spikes array to use traits
+  this.spikes = [];
+  for (var i = 0; i < rand(config.maxSpikes); i++) {
+    this.spikes.push(new Spike());
+  }
 };
 
 Meeba.prototype.getSize = function() { // returns size of meeba.
@@ -92,8 +98,40 @@ Meeba.prototype.getCriticalHit = function() { // gets critical hit value for mee
 };
 
 
+// A simple spike object with length and the angle its positioned at
+var Spike = function(angle, length) {
+  this.angle = angle === undefined ? rand() : angle;
+  this.length = length === undefined ? rand(config.maxR) : length;
+};
+
+// Drains a body spike is in contact with
+// TODO: Implement effect other than color change
+Spike.prototype.drain = function(body) {
+  var rgb = parseRGB(body.core.color);
+
+  var damages = [ Math.floor(255 / this.length) ];
+  damages[1] = Math.floor(damages[0] / -2);
+  damages[2] = damages[1];
+
+  for (var i = 0; i < 3; i++) {
+    if (rgb[i]+damages[i] > 255) damages[i] = 255-rgb[i];
+    if (rgb[i]+damages[i] < 0) damages[i] = -rgb[i];
+    rgb[i] += damages[i];
+  }
+
+  body.core.color = parseHex(rgb);
 
 
+  setTimeout(function() {
+    rgb = parseRGB(body.core.color);
+
+    for (var i = 0; i < 3; i++) {
+      rgb[i] -= damages[i];
+    }
+    
+    body.core.color = parseHex(rgb);
+  }, config.dur);
+};
 
 
 // a condition to be tested on either a local meeba or its surroundings

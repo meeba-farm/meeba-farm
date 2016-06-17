@@ -1,0 +1,4 @@
+/* Disable click highlighting on iOS device */
+svg {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}

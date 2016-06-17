@@ -14,6 +14,40 @@ var rand = function(low, high) {
   return Math.random() * (high - low) + low;
 };
 
+// Takes in a string attribute and returns an array of any values
+var getValues = function(attr) {
+  var start = attr.indexOf('(');
+  var end = attr.indexOf(')');
+
+  if (start === -1 || end === -1) {
+    return console.log('WARNING! Attribute not recognized!', attr);
+  }
+
+  return attr.slice(start+1, end).split(',').map(function(num) {
+    return Number(num);
+  });
+};
+
+var getPos = function(transform) {
+  return transform.split(' ').reduce(function(pos, attr) {
+    if (attr.indexOf('rotate') !== -1) {
+      pos.rotate = getValues(attr)[0];
+    }
+
+    if (attr.indexOf('translate') !== -1) {
+      attr = getValues(attr);
+      pos.x = attr[0];
+      pos.y = attr[1];
+    }
+
+    return pos;
+  }, {});
+};
+
+var getDist = function(x1, y1, x2, y2) {
+  return Math.sqrt( Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) );
+};
+
 var bounceX = function(angle) {
   if (angle === 0.5) return 0;
   if (angle < 0.5) return 0.25 - (angle - 0.25);
@@ -97,4 +131,21 @@ var collide = function(body1, body2) {
   body1.angle = v1.angle;
   body2.speed = v2.speed;
   body2.angle = v2.angle;
+};
+
+// Translates a hex value into a valid RGB array
+var parseRGB = function(hex) {
+  return hex.replace('#', '').match(/.{1,2}/g).map(function(val) {
+    return parseInt(val, 16);
+  });
+};
+
+// Translates rgb values into a valid hex string
+var parseHex = function(rgb) {
+  if (typeof rgb === 'string') rgb = getValues(rgb);
+
+  return rgb.reduce(function(hex, val) {
+    val = Math.floor(val).toString(16);
+    return hex + ('0' + val).slice(-2);
+  }, '#');
 };

@@ -16,7 +16,7 @@ var Body = function(core, x, y, r, angle, speed) {
   this.speed = speed || rand(config.maxSpeed);
 
   // An array of methods to be run everytime two bodies interact
-  this.queries = [ Body.prototype.getCollision ];
+  this.queries = [ Body.prototype.getCollision, Body.prototype.getDrain ];
 
   this.lastHit = '#none';
   this.cantHit = {};
@@ -47,6 +47,23 @@ Body.prototype.getDest = function() {
   return vector;
 };
 
+// Returns an array of x/y points for each spike
+Body.prototype.getSpikes = function() {
+  var r = this.r;
+
+  return this.core.spikes.map(function(spike) {
+    var points = [];
+
+    points[0] = breakVector(spike.angle, spike.length + r);
+    points[1] = breakVector(spike.angle + config.spikeW, r);
+    points[2] = breakVector(spike.angle - config.spikeW, r);
+
+    return points.reduce(function(str, point) {
+      return str + point.x + ',' + point.y + ' ';
+    }, '').slice(0, -1);
+  });
+};
+
 // Checks to see if a body should collide with another
 // Returns an action function to create the collision
 Body.prototype.getCollision = function(body) {
@@ -54,10 +71,10 @@ Body.prototype.getCollision = function(body) {
   if (this.cantHit[body.id] || body.cantHit[this.id]) return;
 
   var buffer = (this.speed + body.speed) / config.dur * config.bodyBuffer;
-  var dist = Math.sqrt( Math.pow(this.x-body.x, 2) + Math.pow(this.y-body.y, 2) );
+  var distance = getDist(this.x, this.y, body.x, body.y);
   var widths = this.r + body.r + buffer;
 
-  if (dist < widths) {
+  if (distance < widths) {
     var thisBody = this;
 
     // Two bodies may not collide twice in a row
@@ -82,4 +99,25 @@ Body.prototype.getCollision = function(body) {
       d3.select(body.id).each(move);
     };
   }
+};
+
+Body.prototype.getDrain = function(body) {
+  var thisBody = this;
+  var drains = this.core.spikes.reduce(function(drains, spike) {
+    var tip = breakVector(spike.angle, spike.length + thisBody.r);
+    tip.x += thisBody.x;
+    tip.y += thisBody.y;
+
+    if (getDist(tip.x, tip.y, body.x, body.y) < body.r) {
+      drains.push( spike.drain.bind(spike, body) );
+    }
+
+    return drains;
+  }, []);
+
+  if (drains.length) return function() {
+    drains.forEach(function(drain) {
+      drain();
+    });
+  };
 };

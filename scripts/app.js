@@ -2,21 +2,27 @@
 
 // Moves meeba continuously at the same angle
 var move = function() {
-  var d = d3.select(this);
-  var dest = d.datum().getDest();
+  var meeba = d3.select(this);
+  var dest = meeba.datum().getDest();
 
-  d.transition()
+  meeba.transition()
     .duration(config.dur)
     .ease('linear')
-    .attr('cx', dest.x)
-    .attr('cy', dest.y)
+    .attr('transform', 'translate(' + dest.x + ',' + dest.y + ')')
     .each('end', move);
 };
 
-var updateXY = function() {
-  var d = d3.select(this).datum();
-  d.x = d3.select(this).attr('cx') * 1;
-  d.y = d3.select(this).attr('cy') * 1;
+// Reflects environment changes on the datum, and vice versa
+var syncDatum = function() {
+  var meeba = d3.select(this);
+  var d = meeba.datum();
+
+  var pos = getPos( meeba.attr('transform') );
+  d.x = pos.x;
+  d.y = pos.y;
+
+  meeba.select('circle')
+    .attr('fill', d.core.color);
 };
 
 // Bounces meebas off the walls as needed
@@ -98,17 +104,29 @@ var interact = function() {
 // Adds any new meebas to the tank and starts them moving
 var drawMeebas = function() {
   state.meebas = state.tank
-    .selectAll('circle')
+    .selectAll('g')
     .data(state.bodies);
 
-  state.meebas
+  var groups = state.meebas
     .enter()
-    .append('circle')
+    .append('g')
     .attr('id', function(d){ return d.id.slice(1); })
+    .attr('transform', function(d) { 
+      return 'translate(' + d.x + ',' + d.y + ')';
+    });
+
+  groups.each(function() {
+    var meeba = d3.select(this);
+    meeba.datum().getSpikes().forEach(function(spike) {
+      meeba.append('polygon')
+        .attr('fill', 'black')
+        .attr('points', spike);
+    });
+  });
+
+  groups.append('circle')
     .attr('r', function(d){ return d.r; })
-    .attr('fill', function(d){ return d.core.color; })
-    .attr('cx', function(d){ return d.x; })
-    .attr('cy', function(d){ return d.y; });
+    .attr('fill', function(d){ return d.core.color; });
 
   state.meebas.each(move);
 };
@@ -126,14 +144,14 @@ drawMeebas();
 
 
 /**  RUN  **/
-d3.select('body').on('click', function() {
+state.tank.on('click', function() {
   state.bodies.push(new Body(new Meeba(), d3.event.x, d3.event.y));
   
   drawMeebas();
 });
 
 d3.timer(function() {
-  state.meebas.each(updateXY);
+  state.meebas.each(syncDatum);
   state.meebas.each(bounceWall);
   interact();
   state.meebas.each(runTasks);
