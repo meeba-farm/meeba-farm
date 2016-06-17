@@ -21,12 +21,12 @@ var config = {
   spawnFactor: 1.5,
 
   pixelCost: 0.005,
-  spikeCost: 1,
+  spikeCost: 1.5,
 
-  damageFactor: 20,
+  damageFactor: 50,
 
   color: '#34A853',
-  quantity: 15
+  quantity: 25
 };
 
 var state = {

@@ -23,6 +23,25 @@ var syncDatum = function() {
 
   meeba.select('circle')
     .attr('fill', d.core.color.toRgbString());
+
+  meeba.selectAll('polygon')
+    .each(function(d, i){
+      d3.select(this)
+        .attr('fill', d.core.spikes[i].color.toRgbString());
+    });
+
+  if (d.core.calories < 0) {
+    state.bodies.splice(state.bodies.indexOf(d), 1);
+    meeba.remove();
+    refreshData();
+  }
+};
+
+// Updates state.meebas with the current data
+var refreshData = function() {
+  state.meebas = state.tank
+    .selectAll('g')
+    .data(state.bodies);
 };
 
 // Bounces meebas off the walls as needed
@@ -103,11 +122,9 @@ var interact = function() {
 
 // Adds any new meebas to the tank and starts them moving
 var drawMeebas = function() {
-  state.meebas = state.tank
-    .selectAll('g')
-    .data(state.bodies);
+  refreshData();
 
-  var groups = state.meebas
+  var newMeebas = state.meebas
     .enter()
     .append('g')
     .attr('id', function(d){ return d.id.slice(1); })
@@ -115,16 +132,16 @@ var drawMeebas = function() {
       return 'translate(' + d.x + ',' + d.y + ')';
     });
 
-  groups.each(function() {
+  newMeebas.each(function() {
     var meeba = d3.select(this);
-    meeba.datum().getSpikes().forEach(function(spike) {
+    meeba.datum().core.spikes.forEach(function(spike) {
       meeba.append('polygon')
-        .attr('fill', 'black')
-        .attr('points', spike);
+        .attr('fill', spike.color.toRgbString())
+        .attr('points', spike.getPoints());
     });
   });
 
-  groups.append('circle')
+  newMeebas.append('circle')
     .attr('r', function(d){ return d.r; })
     .attr('fill', function(d){ return d.core.color.toRgbString(); });
 

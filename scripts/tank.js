@@ -47,23 +47,6 @@ Body.prototype.getDest = function() {
   return vector;
 };
 
-// Returns an array of x/y points for each spike
-Body.prototype.getSpikes = function() {
-  var r = this.r;
-
-  return this.core.spikes.map(function(spike) {
-    var points = [];
-
-    points[0] = breakVector(spike.angle, spike.length + r);
-    points[1] = breakVector(spike.angle + config.spikeW, r);
-    points[2] = breakVector(spike.angle - config.spikeW, r);
-
-    return points.reduce(function(str, point) {
-      return str + point.x + ',' + point.y + ' ';
-    }, '').slice(0, -1);
-  });
-};
-
 // Checks to see if a body should collide with another
 // Returns an action function to create the collision
 Body.prototype.getCollision = function(body) {

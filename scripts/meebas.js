@@ -121,11 +121,17 @@ Meeba.prototype.metabolize = function() {
 
 // Runs updates specific to dead meebas
 Meeba.prototype.decay = function() {
-  this.calories -= this.upkeep * this.time; //temporary
+  var fade = getPerc(this.calories, this.deathLine);
 
   var rgba = this.color.toRgb();
-  rgba.a = getPerc(this.calories, this.deathLine);
+  rgba.a = fade;
   this.color = tinycolor( rgba );
+
+  this.spikes.forEach(function(spike) {
+    var rgba = spike.color.toRgb();
+    rgba.a = fade;
+    spike.color = tinycolor( rgba );
+  });
 
   if (this.calories < 0) this.removeTask(this.decay);
 };
@@ -155,6 +161,21 @@ var Spike = function(meeba, angle, length) {
   this.meeba = meeba;
   this.angle = angle === undefined ? rand() : angle;
   this.length = length === undefined ? rand(config.maxR) : length;
+  this.color = tinycolor('black');
+  this.drainCount = 0;
+};
+
+Spike.prototype.getPoints = function() {
+  var points = [];
+  var r = this.meeba.body.r;
+
+  points[0] = breakVector(this.angle, this.length + r);
+  points[1] = breakVector(this.angle + config.spikeW, r);
+  points[2] = breakVector(this.angle - config.spikeW, r);
+
+  return points.reduce(function(str, point) {
+    return str + point.x + ',' + point.y + ' ';
+  }, '').slice(0, -1);
 };
 
 // Drains a body spike is in contact with
@@ -164,31 +185,15 @@ Spike.prototype.drain = function(body) {
   this.meeba.calories += damage;
   body.core.calories -= damage;
 
-  var rgb = body.core.color.toRgb();
+  this.color = tinycolor( 'red' );
+  this.drainCount++;
 
-  var flash = { r: damage * 255/config.damageFactor };
-  flash.g = Math.floor(flash.r / -2);
-  flash.b = flash.g;
-
-  for (var c in flash) {
-    if (rgb[c]+flash[c] > 255) flash[c] = 255-rgb[c];
-    if (rgb[c]+flash[c] < 0) flash[c] = -rgb[c];
-    rgb[c] += flash[c];
-  }
-
-  body.core.color = tinycolor( rgb );
-
-
+  var spike = this;
   setTimeout(function() {
-    rgb = body.core.color.toRgb();
-
-    for (var c in flash) {
-      rgb[c] -= flash[c];
-    }
-    
-    body.core.color = tinycolor( rgb );
+    if (--spike.drainCount === 0) spike.color = tinycolor( 'black' );
   }, config.dur);
 };
+
 
 
 // a condition to be tested on either a local meeba or its surroundings
