@@ -99,13 +99,19 @@ Meeba.prototype.getCriticalHit = function() { // gets critical hit value for mee
 
 
 // A simple spike object with length and the angle its positioned at
+// TODO: Implement effect other than color change.
 var Spike = function(angle, length) {
   this.angle = angle === undefined ? rand() : angle;
   this.length = length === undefined ? rand(config.maxR) : length;
 };
 
 Spike.prototype.drain = function(body) {
-  console.log(body.id);
+  body.core.color = 'red';
+  body.currentDrains = body.currentDrains + 1 || 1;
+
+  setTimeout(function() {
+    if (--body.currentDrains === 0) body.core.color = config.color;
+  }, config.dur);
 };
 
 

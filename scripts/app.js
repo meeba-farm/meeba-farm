@@ -12,11 +12,17 @@ var move = function() {
     .each('end', move);
 };
 
-var updateXY = function() {
+// Reflects environment changes on the datum, and vice versa
+var syncDatum = function() {
   var meeba = d3.select(this);
+  var d = meeba.datum();
+
   var pos = getPos( meeba.attr('transform') );
-  meeba.datum().x = pos.x;
-  meeba.datum().y = pos.y;
+  d.x = pos.x;
+  d.y = pos.y;
+
+  meeba.select('circle')
+    .attr('fill', d.core.color);
 };
 
 // Bounces meebas off the walls as needed
@@ -145,7 +151,7 @@ state.tank.on('click', function() {
 });
 
 d3.timer(function() {
-  state.meebas.each(updateXY);
+  state.meebas.each(syncDatum);
   state.meebas.each(bounceWall);
   interact();
   state.meebas.each(runTasks);
