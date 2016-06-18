@@ -120,6 +120,12 @@ var interact = function() {
 
 };
 
+var spawnMote = function() {
+  state.bodies.push(new Body( new Mote() ));
+  drawMeebas();
+  setTimeout(spawnMote, rand(2000/config.moteSpawnRate));
+};
+
 // Adds any new meebas to the tank and starts them moving
 var drawMeebas = function() {
   refreshData();
@@ -163,7 +169,6 @@ drawMeebas();
 /**  RUN  **/
 state.tank.on('click', function() {
   state.bodies.push(new Body(new Meeba(), d3.event.x, d3.event.y));
-  
   drawMeebas();
 });
 
@@ -173,3 +178,5 @@ d3.timer(function() {
   interact();
   state.meebas.each(runTasks);
 });
+
+spawnMote();

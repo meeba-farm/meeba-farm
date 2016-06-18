@@ -5,17 +5,17 @@ var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
 // A basic meeba, which is only good for food, that Meeba extends
 var Mote = function() {
   // Color saved as a 'tinycolor': https://github.com/bgrins/TinyColor
-  this.color = tinycolor(config.color);
+  this.color = tinycolor(config.color).greyscale();
   this.size = Math.PI * Math.pow(config.minR, 2);
 
-  // An array of methods to be run on each animation frame
-  this.tasks = [this.tick, this.decay];
+  this.spikes = [];
 
   this.calories = this.size * config.startFactor;
   this.deathLine = this.calories;
-
   this.upkeep = 0;
 
+  // An array of methods to be run on each animation frame
+  this.tasks = [this.tick, this.decay];
   this.lastTick = Date.now();
   this.time = 0;
 };
@@ -59,6 +59,7 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   // TODO: Figure out how damage resistance works
 
   Mote.call(this);
+  this.color = tinycolor(config.color);
   this.size += Math.PI * Math.pow(rand(config.maxR), 2);
 
   this.traits = []; // the digital genes of a meeba
@@ -71,7 +72,6 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.environment = _environment;
 
   // TODO: Refactor spikes array to use traits
-  this.spikes = [];
   for (var i = 0; i < rand(config.maxSpikes); i++) {
     this.spikes.push(new Spike(this));
   }
