@@ -20,8 +20,9 @@ var config = {
   deathFactor: 0.25,
   spawnFactor: 1.5,
 
-  pixelCost: 0.005,
-  spikeCost: 1.5,
+  fixedCost: 3,
+  pixelCost: 0.002,
+  spikeCost: 0.2,
 
   damageFactor: 50,
 
