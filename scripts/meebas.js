@@ -2,10 +2,66 @@
 
 var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
 
+// A basic meeba, which is only good for food, that Meeba extends
+var Mote = function() {
+  // Color saved as a 'tinycolor': https://github.com/bgrins/TinyColor
+  this.color = tinycolor(config.color).greyscale();
+  this.size = Math.PI * Math.pow(config.minR, 2);
+
+  this.spikes = [];
+
+  this.calories = this.size * config.startFactor;
+  this.deathLine = this.calories;
+  this.upkeep = 0;
+
+  // An array of methods to be run on each animation frame
+  this.tasks = [this.tick, this.decay];
+  this.lastTick = Date.now();
+  this.time = 0;
+};
+
+//Runs basic meeba updates
+Mote.prototype.tick = function() {
+  var now = Date.now();
+  this.time = (now - this.lastTick)/1000;
+  this.lastTick = now;
+};
+
+// Runs updates specific to dead meebas
+Mote.prototype.decay = function() {
+  if (this.calories < 0) this.removeTask(this.decay);
+  var fade = getPerc(this.calories, this.deathLine);
+
+  var rgba = this.color.toRgb();
+  rgba.a = fade;
+  this.color = tinycolor( rgba );
+
+  return fade;
+};
+
+Mote.prototype.addTask = function(task) {
+  if (this.tasks.indexOf(task) === -1) {
+    this.tasks.push(task);
+  }
+};
+
+Mote.prototype.removeTask = function(task) {
+  var index = this.tasks.indexOf(task);
+
+  if (index !== -1) {
+    this.tasks.splice(index, 1);
+  }
+};
+
+
+// Subclass of Mote, these meebas have full functionality
 var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
-  this.color = config.color;
-  
+
+  Mote.call(this);
+  this.color = tinycolor(config.color);
+  this.size += Math.PI * Math.pow(rand(config.maxR), 2);
+
   this.traits = []; // the digital genes of a meeba
   this.isAlive = true;
   this.maxCalories = _initialCalories;
@@ -15,15 +71,25 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.damageCurRound = 0; // damage dealt in current round. Reset each round.
   this.environment = _environment;
 
-  // An array of methods to be run on each animation frame
-  this.tasks = [];
-
   // TODO: Refactor spikes array to use traits
-  this.spikes = [];
   for (var i = 0; i < rand(config.maxSpikes); i++) {
-    this.spikes.push(new Spike());
+    this.spikes.push(new Spike(this));
   }
+
+  this.calories = this.size * config.startFactor;
+  this.deathLine = this.calories * config.deathFactor;
+  this.spawnLine = this.calories * config.spawnFactor;
+
+  this.upkeep += config.fixedCost;
+  this.upkeep += this.size * config.pixelCost;
+  this.upkeep += this.spikes.length * config.spikeCost;
+
+  this.removeTask(Mote.prototype.decay);
+  this.addTask(this.metabolize);
 };
+
+Meeba.prototype = Object.create(Mote.prototype);
+Meeba.prototype.constructor = Meeba;
 
 Meeba.prototype.getSize = function() { // returns size of meeba.
   // TODO: THIS
@@ -81,17 +147,33 @@ Meeba.prototype.getMinCalories = function() { // calculates minimum number of ca
   return 0;
 };
   
-// checks status at end of round and updates accordingly
-Meeba.prototype.roundEndCheck = function() { 
-  if (curCalories < minCalories 
-    || damageCurRound >= criticalHit)
-  {
-    isAlive = false;
-    curCalories = getDeadCalories();
-  }
-  damageCurRound = 0;
-};
+// Runs updates specific to living meebas
+Meeba.prototype.metabolize = function() { 
+  this.calories -= this.upkeep * this.time;
   
+  var hsl = this.color.toHsl();
+  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
+  this.color = tinycolor(hsl);
+
+  if (this.calories < this.deathLine) {
+    this.isAlive = false;
+    this.removeTask(this.metabolize);
+    this.addTask(this.decay);
+    this.body.removeQuery(this.body.getDrain);
+  }
+};
+
+// Runs updates specific to dead meebas
+Meeba.prototype.decay = function() {
+  var fade = Mote.prototype.decay.call(this);
+
+  this.spikes.forEach(function(spike) {
+    var rgba = spike.color.toRgb();
+    rgba.a = fade;
+    spike.color = tinycolor( rgba );
+  });
+};
+
 Meeba.prototype.getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
   // TODO: THIS
   return 0;
@@ -99,39 +181,43 @@ Meeba.prototype.getCriticalHit = function() { // gets critical hit value for mee
 
 
 // A simple spike object with length and the angle its positioned at
-var Spike = function(angle, length) {
+var Spike = function(meeba, angle, length) {
+  this.meeba = meeba;
   this.angle = angle === undefined ? rand() : angle;
   this.length = length === undefined ? rand(config.maxR) : length;
+  this.color = tinycolor('black');
+  this.drainCount = 0;
+};
+
+Spike.prototype.getPoints = function() {
+  var points = [];
+  var r = this.meeba.body.r;
+
+  points[0] = breakVector(this.angle, this.length + r);
+  points[1] = breakVector(this.angle + config.spikeW, r);
+  points[2] = breakVector(this.angle - config.spikeW, r);
+
+  return points.reduce(function(str, point) {
+    return str + point.x + ',' + point.y + ' ';
+  }, '').slice(0, -1);
 };
 
 // Drains a body spike is in contact with
 // TODO: Implement effect other than color change
 Spike.prototype.drain = function(body) {
-  var rgb = parseRGB(body.core.color);
+  var damage = config.damageFactor / this.length;
+  this.meeba.calories += damage;
+  body.core.calories -= damage;
 
-  var damages = [ Math.floor(255 / this.length) ];
-  damages[1] = Math.floor(damages[0] / -2);
-  damages[2] = damages[1];
+  this.color = tinycolor( 'red' );
+  this.drainCount++;
 
-  for (var i = 0; i < 3; i++) {
-    if (rgb[i]+damages[i] > 255) damages[i] = 255-rgb[i];
-    if (rgb[i]+damages[i] < 0) damages[i] = -rgb[i];
-    rgb[i] += damages[i];
-  }
-
-  body.core.color = parseHex(rgb);
-
-
+  var spike = this;
   setTimeout(function() {
-    rgb = parseRGB(body.core.color);
-
-    for (var i = 0; i < 3; i++) {
-      rgb[i] -= damages[i];
-    }
-    
-    body.core.color = parseHex(rgb);
+    if (--spike.drainCount === 0) spike.color = tinycolor( 'black' );
   }, config.dur);
 };
+
 
 
 // a condition to be tested on either a local meeba or its surroundings

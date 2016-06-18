@@ -14,6 +14,14 @@ var rand = function(low, high) {
   return Math.random() * (high - low) + low;
 };
 
+// Returns a percentage between 0 and 1;
+var getPerc = function(fraction, total) {
+  var perc = fraction/total;
+  if (perc < 0) perc = 0;
+  if (perc > 1) perc = 1;
+  return perc;
+};
+
 // Takes in a string attribute and returns an array of any values
 var getValues = function(attr) {
   var start = attr.indexOf('(');
@@ -92,8 +100,8 @@ mergeVector = function(x, y) {
 // Calculate a collision between two bodies, using math outlined here:
 // http://vobarian.com/collisions/2dcollisions2.pdf
 var collide = function(body1, body2) {
-  var m1 = body1.m;
-  var m2 = body2.m;
+  var m1 = body1.core.size;
+  var m2 = body2.core.size;
   var v1 = breakVector(body1.angle, body1.speed); 
   var v2 = breakVector(body2.angle, body2.speed);
 
@@ -131,21 +139,4 @@ var collide = function(body1, body2) {
   body1.angle = v1.angle;
   body2.speed = v2.speed;
   body2.angle = v2.angle;
-};
-
-// Translates a hex value into a valid RGB array
-var parseRGB = function(hex) {
-  return hex.replace('#', '').match(/.{1,2}/g).map(function(val) {
-    return parseInt(val, 16);
-  });
-};
-
-// Translates rgb values into a valid hex string
-var parseHex = function(rgb) {
-  if (typeof rgb === 'string') rgb = getValues(rgb);
-
-  return rgb.reduce(function(hex, val) {
-    val = Math.floor(val).toString(16);
-    return hex + ('0' + val).slice(-2);
-  }, '#');
 };
