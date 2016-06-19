@@ -16,9 +16,9 @@ var config = {
   maxSpikes: 12,
   spikeW: 0.02,
 
-  startFactor: 1,
-  deathFactor: 0.25,
-  spawnFactor: 1.5,
+  startFactor: 1.5,
+  deathFactor: 0.5,
+  spawnFactor: 2,
 
   fixedCost: 6,
   pixelCost: 0.002,
@@ -33,16 +33,16 @@ var config = {
   mutateProportion: 10,
 
   minTraits: 5,
-  moreTraitRate: 0.9,
+  maxTraits: 200,
   startMin: 10, 
   startMax: 50,
   traitChances: {
-    size: 5,
-    spike: 1
+    size: 0.9,
+    spike: 0.1
   },
 
   color: '#34A853',
-  quantity: 35
+  quantity: 3
 };
 
 var state = {

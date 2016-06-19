@@ -30,6 +30,15 @@ var syncDatum = function() {
         .attr('fill', d.core.spikes[i].color.toRgbString());
     });
 
+  while (d.core.children && d.core.children.length) {
+    var child = d.core.children.pop();
+    console.log('Trying to draw child:', d.core.children.pop());
+    var body = new Body(child, d.x, d.y);
+    console.log('New body:', body);
+    state.bodies.push(body);
+    // drawMeebas();
+  }
+
   if (d.core.calories < 0) {
     state.bodies.splice(state.bodies.indexOf(d), 1);
     meeba.remove();

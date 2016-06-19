@@ -67,39 +67,29 @@ Mote.prototype.removeTask = function(task) {
 var Meeba = function(traits, calories) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
   Mote.call(this);
-
-  // the digital genes of a meeba
-  this.traits = traits || this.getStartTraits();
-
   this.color = tinycolor(config.color);
-  this.size += Math.PI * Math.pow(rand(config.maxR), 2);
+
+  // The digital genes of a meeba
+  this.traits = traits || this.getStartTraits();
+  this.buildStats();
 
   this.isAlive = true;
-  this.maxCalories = _initialCalories;
   this.minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
   this.curCalories = this.maxCalories;
   this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
   this.damageCurRound = 0; // damage dealt in current round. Reset each round.
-  this.environment = _environment;
-
-  // TODO: Refactor spikes array to use traits
-  for (var i = 0; i < rand(config.maxSpikes); i++) {
-    this.spikes.push(new Spike(this));
-  }
 
   this.calories = calories || this.size * config.startFactor;
-  this.deathLine = this.calories * config.deathFactor;
-  this.spawnLine = this.calories * config.spawnFactor;
-
-  this.upkeep += config.fixedCost;
-  this.upkeep += this.size * config.pixelCost;
-  this.upkeep += this.spikes.length * config.spikeCost;
+  this.deathLine = this.size * config.deathFactor;
+  this.spawnLine = this.size * config.spawnFactor;
 
   // Meebas added to this array will be spawned by the environment
   this.children = [];
 
   this.removeTask(Mote.prototype.decay);
   this.addTask(this.metabolize);
+
+  console.log('New Meeba:', this);
 };
 
 Meeba.prototype = Object.create(Mote.prototype);
@@ -108,15 +98,31 @@ Meeba.prototype.constructor = Meeba;
 Meeba.prototype.getStartTraits = function() {
   var traits = [];
 
-  for (var i = 0; i < config.minTraits; i++) {
-    traits.push(new Trait().randomize());
-  }
-
-  while (rand() < config.moreTraitRate) {
+  for (var i = 0; i < rand(config.minTraits, config.maxTraits); i++) {
     traits.push(new Trait().randomize());
   }
 
   return traits;
+};
+
+// Build core Meeba stats from a trait list
+Meeba.prototype.buildStats = function() {
+  var meeba = this;
+  var build = {
+    size: function(level) {
+      meeba.size += level;
+    },
+
+    spike: function(level, pos) {
+      pos /= meeba.traits.length;
+      meeba.spikes.push(new Spike(meeba, pos, level));
+    }
+  };
+
+  this.traits.forEach(function(trait, pos) {
+    if (build[trait.type]) build[trait.type](trait.level, pos);
+    if (trait.upkeep) meeba.upkeep += trait.upkeep;
+  });
 };
 
 Meeba.prototype.drainDamage = function(baseDamage) { // calculates and returns damage dealt (based on resistance of meeba). Adds to round damage.
@@ -150,29 +156,33 @@ Meeba.prototype.reproduce = function() {
   this.children.push(new Meeba(this.mutateTraits(), childCals));
   this.children.push(new Meeba(this.mutateTraits(), childCals));
 
+  console.log('SPAWNING:', this.children);
+
   this.calories = 0;
   this.decay();
 };
 
+// Returns a mutated version of the meeba's traits
 Meeba.prototype.mutateTraits = function() {
-  var traits = [];
+  var old = this.traits;
+  var mutated = [];
 
-  for (var i = 0; i < mutateVal(this.traits.length); i++) {
+  for (var i = 0; i < mutateVal(old.length); i++) {
     var index = mutateVal(i);
 
     if (index < 0) {
       break;
-    } else if (!this.traits[index] && !this.traits[i]) {
-      traits.push(new Trait().randomize());
-    } else if (!this.traits[index] && this.traits[i]) {
-      traits.push(this.traits[i].duplicate());
-      traits.push(this.traits[i].duplicate());
+    } else if (!old[index] && !old[i]) {
+      mutated.push(new Trait().randomize());
+    } else if (!old[index] && old[i]) {
+      mutated.push(old[i].duplicate());
+      mutated.push(old[i].duplicate());
     } else {
-      traits.push(this.traits[index].duplicate());
+      mutated.push(old[index].duplicate());
     }
   }
 
-  return traits;
+  return mutated;
 };
   
 // Runs updates specific to living meebas
@@ -258,14 +268,12 @@ Trait.prototype.exactDuplicate = function() {
 // Randomizes a trait (for spawning totally new ones)
 Trait.prototype.randomize = function() {
   var chances = config.traitChances;
-  var total = chances.keys.reduce(function(total, trait) {
-    return total + chances[trait];
-  }, 0);
-  var roll = rand(total);
+  var roll = rand();
+  var total = 0;
 
   for (var trait in chances) {
-    total -= chances[trait];
-    if (chances[trait] > total) {
+    total += chances[trait];
+    if (roll < total) {
       this.type = trait;
       break;
     }
