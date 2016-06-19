@@ -2,6 +2,11 @@
 
 var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
 
+
+/* * * * * * * * * * * * * * * * * * * *
+ *               MOTES                 *
+ * * * * * * * * * * * * * * * * * * * */
+
 // A basic meeba, which is only good for food, that Meeba extends
 var Mote = function() {
   // Color saved as a 'tinycolor': https://github.com/bgrins/TinyColor
@@ -54,6 +59,10 @@ Mote.prototype.removeTask = function(task) {
 };
 
 
+/* * * * * * * * * * * * * * * * * * * *
+ *              MEEBAS                 *
+ * * * * * * * * * * * * * * * * * * * */
+
 // Subclass of Mote, these meebas have full functionality
 var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
@@ -91,21 +100,13 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
 Meeba.prototype = Object.create(Mote.prototype);
 Meeba.prototype.constructor = Meeba;
 
-Meeba.prototype.getSize = function() { // returns size of meeba.
-  // TODO: THIS
-  // size should be based on initial calorie count
-  return 0;
-};
-Meeba.prototype.getDeadCalories = function() { // calculates calories of corpse on death. One time calculation.
-  // TODO: THIS
-  return 0;
-};
 Meeba.prototype.drainDamage = function(baseDamage) { // calculates and returns damage dealt (based on resistance of meeba). Adds to round damage.
   var endDamage = baseDamage; // TODO: CALCULATE DAMAGE HERE
   this.damageCurRound += endDamage;
   curCalories -= endDamage;
   return endDamage;
 };
+
 Meeba.prototype.feed = function(_calories) { // feeds the meeba the number of calories specified in the arguments
   this.curCalories += _calories;
 };
@@ -142,10 +143,6 @@ Meeba.prototype.reproduce = function(cost) {
    
   return [Meeba(childOneTraits, childCals, environment), Meeba(childTwoTraits, childCals, environment)];
 };
-Meeba.prototype.getMinCalories = function() { // calculates minimum number of calories a meeba can have without dying
-  // TODO: THIS
-  return 0;
-};
   
 // Runs updates specific to living meebas
 Meeba.prototype.metabolize = function() { 
@@ -174,11 +171,54 @@ Meeba.prototype.decay = function() {
   });
 };
 
+Meeba.prototype.getSize = function() { // returns size of meeba.
+  // TODO: THIS
+  // size should be based on initial calorie count
+  return 0;
+};
+
+Meeba.prototype.getDeadCalories = function() { // calculates calories of corpse on death. One time calculation.
+  // TODO: THIS
+  return 0;
+};
+
+Meeba.prototype.getMinCalories = function() { // calculates minimum number of calories a meeba can have without dying
+  // TODO: THIS
+  return 0;
+};
+
 Meeba.prototype.getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
   // TODO: THIS
   return 0;
 };
 
+
+/* * * * * * * * * * * * * * * * * * * *
+ *              TRAITS                 *
+ * * * * * * * * * * * * * * * * * * * */
+
+ // abstract class should never be instantiated
+var Trait = function() {
+  // returns trait of same type but with random duplication errors
+  this.duplicate = function() {throw abstractMethodError;};
+  
+  //returns EXACT duplicate of trait with no errors
+  this.exactDuplicate = function() {throw abstractMethodError;};
+  
+  // returns # of calories consumed passively by possessing this trait
+  this.inactiveConsumeCalories = function() {throw abstractMethodError;};
+  
+  // returns # of calories consumed when this trait's action is activated (0 if no action or free action)
+  this.activeConsumeCalories = function() {throw abstractMethodError;};
+  
+  // returns action object describing effects carried out by this action when activated (empty if none)
+  this.actionEffect = function() {throw abstractMethodError;};
+};
+
+
+/* * * * * * * * * * * * * * * * * * * *
+ *              SPIKES                 *
+ * * * * * * * * * * * * * * * * * * * */
 
 // A simple spike object with length and the angle its positioned at
 var Spike = function(meeba, angle, length) {
@@ -219,6 +259,9 @@ Spike.prototype.drain = function(body) {
 };
 
 
+/* * * * * * * * * * * * * * * * * * * *
+ *          CONDITION NODES            *
+ * * * * * * * * * * * * * * * * * * * */
 
 // a condition to be tested on either a local meeba or its surroundings
 var ConditionNode = function() {
@@ -251,23 +294,10 @@ var ConditionList = function() {
   };
 };
 
- // abstract class should never be instantiated
-var Trait = function() {
-  // returns trait of same type but with random duplication errors
-  this.duplicate = function() {throw abstractMethodError;};
-  
-  //returns EXACT duplicate of trait with no errors
-  this.exactDuplicate = function() {throw abstractMethodError;};
-  
-  // returns # of calories consumed passively by possessing this trait
-  this.inactiveConsumeCalories = function() {throw abstractMethodError;};
-  
-  // returns # of calories consumed when this trait's action is activated (0 if no action or free action)
-  this.activeConsumeCalories = function() {throw abstractMethodError;};
-  
-  // returns action object describing effects carried out by this action when activated (empty if none)
-  this.actionEffect = function() {throw abstractMethodError;};
-};
+
+/* * * * * * * * * * * * * * * * * * * *
+ *              ACTIONS                *
+ * * * * * * * * * * * * * * * * * * * */
 
 // the type for actions
 var ActionEnum = {
