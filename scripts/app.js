@@ -30,19 +30,28 @@ var syncDatum = function() {
         .attr('fill', d.core.spikes[i].color.toRgbString());
     });
 
-  while (d.core.children && d.core.children.length) {
-    var child = d.core.children.pop();
-    console.log('Trying to draw child:', d.core.children.pop());
-    var body = new Body(child, d.x, d.y);
-    console.log('New body:', body);
-    state.bodies.push(body);
-    // drawMeebas();
-  }
-
   if (d.core.calories < 0) {
     state.bodies.splice(state.bodies.indexOf(d), 1);
     meeba.remove();
     refreshData();
+
+    if (d.core.children && d.core.children.length) {
+      state.bodies.push(new Body(
+        d.core.children.pop(), 
+        d.x - d.r, 
+        d.y - d.r,
+        d.angle - 0.25,
+        d.speed
+      ));
+      state.bodies.push(new Body(
+        d.core.children.pop(), 
+        d.x + d.r, 
+        d.y + d.r,
+        d.angle + 0.25,
+        d.speed
+      ));
+      drawMeebas();
+    }
   }
 };
 
@@ -138,12 +147,14 @@ var spawnMote = function() {
 // Adds any new meebas to the tank and starts them moving
 var drawMeebas = function() {
   refreshData();
+  console.log('drawing...');
 
   var newMeebas = state.meebas
     .enter()
     .append('g')
     .attr('id', function(d){ return d.id.slice(1); })
-    .attr('transform', function(d) { 
+    .attr('transform', function(d) {
+      console.log(d);
       return 'translate(' + d.x + ',' + d.y + ')';
     });
 

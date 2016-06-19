@@ -156,9 +156,7 @@ Meeba.prototype.reproduce = function() {
   this.children.push(new Meeba(this.mutateTraits(), childCals));
   this.children.push(new Meeba(this.mutateTraits(), childCals));
 
-  console.log('SPAWNING:', this.children);
-
-  this.calories = 0;
+  this.calories = -Infinity;
   this.decay();
 };
 

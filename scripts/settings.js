@@ -32,17 +32,17 @@ var config = {
   mutateSpread: 0.5,
   mutateProportion: 10,
 
-  minTraits: 5,
-  maxTraits: 200,
-  startMin: 10, 
+  minTraits: 20,
+  maxTraits: 400,
+  startMin: 0, 
   startMax: 50,
   traitChances: {
-    size: 0.9,
-    spike: 0.1
+    size: 0.95,
+    spike: 0.05
   },
 
   color: '#34A853',
-  quantity: 3
+  quantity: 25
 };
 
 var state = {
