@@ -23,10 +23,23 @@ var config = {
   fixedCost: 6,
   pixelCost: 0.002,
   spikeCost: 0.5,
+  spawnCost: 0,
 
   damageFactor: 80,
 
   moteSpawnRate: 0.1,
+  mutateRate: 0.25,
+  mutateSpread: 0.5,
+  mutateProportion: 10,
+
+  minTraits: 5,
+  moreTraitRate: 0.9,
+  startMin: 10, 
+  startMax: 50,
+  traitChances: {
+    size: 5,
+    spike: 1
+  },
 
   color: '#34A853',
   quantity: 35

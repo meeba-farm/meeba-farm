@@ -64,14 +64,16 @@ Mote.prototype.removeTask = function(task) {
  * * * * * * * * * * * * * * * * * * * */
 
 // Subclass of Mote, these meebas have full functionality
-var Meeba = function(_traits, _initialCalories, _environment) { // traits = array of traits, calories = initial calories
+var Meeba = function(traits, calories) { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
-
   Mote.call(this);
+
+  // the digital genes of a meeba
+  this.traits = traits || this.getStartTraits();
+
   this.color = tinycolor(config.color);
   this.size += Math.PI * Math.pow(rand(config.maxR), 2);
 
-  this.traits = []; // the digital genes of a meeba
   this.isAlive = true;
   this.maxCalories = _initialCalories;
   this.minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
@@ -85,7 +87,7 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
     this.spikes.push(new Spike(this));
   }
 
-  this.calories = this.size * config.startFactor;
+  this.calories = calories || this.size * config.startFactor;
   this.deathLine = this.calories * config.deathFactor;
   this.spawnLine = this.calories * config.spawnFactor;
 
@@ -93,12 +95,29 @@ var Meeba = function(_traits, _initialCalories, _environment) { // traits = arra
   this.upkeep += this.size * config.pixelCost;
   this.upkeep += this.spikes.length * config.spikeCost;
 
+  // Meebas added to this array will be spawned by the environment
+  this.children = [];
+
   this.removeTask(Mote.prototype.decay);
   this.addTask(this.metabolize);
 };
 
 Meeba.prototype = Object.create(Mote.prototype);
 Meeba.prototype.constructor = Meeba;
+
+Meeba.prototype.getStartTraits = function() {
+  var traits = [];
+
+  for (var i = 0; i < config.minTraits; i++) {
+    traits.push(new Trait().randomize());
+  }
+
+  while (rand() < config.moreTraitRate) {
+    traits.push(new Trait().randomize());
+  }
+
+  return traits;
+};
 
 Meeba.prototype.drainDamage = function(baseDamage) { // calculates and returns damage dealt (based on resistance of meeba). Adds to round damage.
   var endDamage = baseDamage; // TODO: CALCULATE DAMAGE HERE
@@ -124,24 +143,36 @@ Meeba.prototype.roundActions = function() {
   return ret;
 };
   
-  // returns array with 2 child meebas (with possible mutations) then sets calories to 0 and dies.
-  // cost = cost of reproduction (to allow higher costs at higher sizes)
-Meeba.prototype.reproduce = function(cost) { 
-  var childCals = (curCalories - cost)/2;
-  var childOneTraits = [];
-  var childTwoTraits = [];
-    
-  // TODO: Depending on how adding/recopying/skipping genes works, re-write the two below loops
-  for (i = 0; i < traits.length; i++) {
-    // TODO: Add logic here to re-copy an arbitrary number of traits, to add a random trait, or to skip copying current trait
-    childOneTraits.push(traits[i].duplicate());
+// Creates two child meebas (with possible mutations) then sets calories to 0 and dies.
+Meeba.prototype.reproduce = function() {
+  var childCals = (this.calories - config.spawnCost)/2;
+
+  this.children.push(new Meeba(this.mutateTraits(), childCals));
+  this.children.push(new Meeba(this.mutateTraits(), childCals));
+
+  this.calories = 0;
+  this.decay();
+};
+
+Meeba.prototype.mutateTraits = function() {
+  var traits = [];
+
+  for (var i = 0; i < mutateVal(this.traits.length); i++) {
+    var index = mutateVal(i);
+
+    if (index < 0) {
+      break;
+    } else if (!this.traits[index] && !this.traits[i]) {
+      traits.push(new Trait().randomize());
+    } else if (!this.traits[index] && this.traits[i]) {
+      traits.push(this.traits[i].duplicate());
+      traits.push(this.traits[i].duplicate());
+    } else {
+      traits.push(this.traits[index].duplicate());
+    }
   }
-  for (i = 0; i < traits.length; i++) {
-    // TODO: Add logic here to re-copy an arbitrary number of traits, to add a random trait, or to skip copying current trait
-    childTwoTraits.push(traits[i].duplicate());
-  }
-   
-  return [Meeba(childOneTraits, childCals, environment), Meeba(childTwoTraits, childCals, environment)];
+
+  return traits;
 };
   
 // Runs updates specific to living meebas
@@ -157,6 +188,10 @@ Meeba.prototype.metabolize = function() {
     this.removeTask(this.metabolize);
     this.addTask(this.decay);
     this.body.removeQuery(this.body.getDrain);
+  }
+
+  if (this.calories > this.spawnLine) {
+    this.reproduce();
   }
 };
 
@@ -197,23 +232,58 @@ Meeba.prototype.getCriticalHit = function() { // gets critical hit value for mee
  *              TRAITS                 *
  * * * * * * * * * * * * * * * * * * * */
 
- // abstract class should never be instantiated
-var Trait = function() {
-  // returns trait of same type but with random duplication errors
-  this.duplicate = function() {throw abstractMethodError;};
-  
-  //returns EXACT duplicate of trait with no errors
-  this.exactDuplicate = function() {throw abstractMethodError;};
-  
-  // returns # of calories consumed passively by possessing this trait
-  this.inactiveConsumeCalories = function() {throw abstractMethodError;};
-  
-  // returns # of calories consumed when this trait's action is activated (0 if no action or free action)
-  this.activeConsumeCalories = function() {throw abstractMethodError;};
-  
-  // returns action object describing effects carried out by this action when activated (empty if none)
-  this.actionEffect = function() {throw abstractMethodError;};
+var Trait = function(type, level) {
+  this.type = type || 'inactive';
+  this.level = level > 0 ? level : 0;
+
+  var traitCosts = {
+    inactive: 0,
+    size: config.pixelCost,
+    spike: config.spikeCost / this.level
+  };
+
+  this.upkeep = this.level * traitCosts[this.type];
 };
+
+// returns trait of same type but with random duplication errors
+Trait.prototype.duplicate = function() {
+  return new Trait( this.type, mutateVal(this.level) );
+};
+
+//returns EXACT duplicate of trait with no errors
+Trait.prototype.exactDuplicate = function() {
+  return new Trait(this.type, this.level);
+};
+
+// Randomizes a trait (for spawning totally new ones)
+Trait.prototype.randomize = function() {
+  var chances = config.traitChances;
+  var total = chances.keys.reduce(function(total, trait) {
+    return total + chances[trait];
+  }, 0);
+  var roll = rand(total);
+
+  for (var trait in chances) {
+    total -= chances[trait];
+    if (chances[trait] > total) {
+      this.type = trait;
+      break;
+    }
+  }
+
+  this.level = mutateVal( rand(config.startMin, config.startMax) );
+
+  return this;
+};
+
+// returns # of calories consumed passively by possessing this trait
+Trait.prototype.inactiveConsumeCalories = function() {throw abstractMethodError;};
+
+// returns # of calories consumed when this trait's action is activated (0 if no action or free action)
+Trait.prototype.activeConsumeCalories = function() {throw abstractMethodError;};
+
+// returns action object describing effects carried out by this action when activated (empty if none)
+Trait.prototype.actionEffect = function() {throw abstractMethodError;};
 
 
 /* * * * * * * * * * * * * * * * * * * *

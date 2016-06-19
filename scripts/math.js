@@ -14,6 +14,25 @@ var rand = function(low, high) {
   return Math.random() * (high - low) + low;
 };
 
+// Returns a number on a bell-curve range to the input
+var mutateVal = function(num) {
+  num = num || 0;
+
+  var rate = rand() < 0.5 ? -1 : 1;
+  rate *= Math.abs(num) > config.mutateProportion ? config.mutateProportion / 10 : 1;
+
+  var target = config.mutateRate;
+  var roll = rand();
+  var delta = 0;
+
+  while(roll < target) {
+    target *= config.mutateSpread;
+    delta++;
+  }
+
+  return Math.round(rate * delta + num);
+};
+
 // Returns a percentage between 0 and 1;
 var getPerc = function(fraction, total) {
   var perc = fraction/total;
