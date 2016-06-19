@@ -53,7 +53,7 @@ Body.prototype.getCollision = function(body) {
   if (this.lastHit === body && body.lastHit === this) return;
   if (this.cantHit[body.id] || body.cantHit[this.id]) return;
 
-  var buffer = (this.speed + body.speed) / config.dur * config.bodyBuffer;
+  var buffer = (this.speed + body.speed) / config.dur * config.buffer.body;
   var distance = getDist(this.x, this.y, body.x, body.y);
   var widths = this.r + body.r + buffer;
 
@@ -93,6 +93,12 @@ Body.prototype.getDrain = function(body) {
 
     if (getDist(tip.x, tip.y, body.x, body.y) < body.r) {
       drains.push( spike.drain.bind(spike, body) );
+    } else {
+      var vector = mergeVector(body.x-thisBody.x, body.y-thisBody.y);
+      if (vector.speed < spike.length) {
+        var drift = Math.sin(vector.angle - spike.angle) * vector.speed;
+        if (drift < body.r) drains.push( spike.drain.bind(spike, body) );
+      }
     }
 
     return drains;

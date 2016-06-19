@@ -15,7 +15,7 @@ var Mote = function() {
 
   this.spikes = [];
 
-  this.calories = this.size * config.startFactor;
+  this.calories = this.size;
   this.deathLine = this.calories;
   this.upkeep = 0;
 
@@ -79,9 +79,9 @@ var Meeba = function(traits, calories) { // traits = array of traits, calories =
   this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
   this.damageCurRound = 0; // damage dealt in current round. Reset each round.
 
-  this.calories = calories || this.size * config.startFactor;
-  this.deathLine = this.size * config.deathFactor;
-  this.spawnLine = this.size * config.spawnFactor;
+  this.calories = calories || this.size * config.scale.start;
+  this.deathLine = this.size * config.scale.death;
+  this.spawnLine = this.size * config.scale.spawn;
 
   // Meebas added to this array will be spawned by the environment
   this.children = [];
@@ -98,7 +98,7 @@ Meeba.prototype.constructor = Meeba;
 Meeba.prototype.getStartTraits = function() {
   var traits = [];
 
-  for (var i = 0; i < rand(config.minTraits, config.maxTraits); i++) {
+  for (var i = 0; i < rand(config.traits.count.min, config.traits.count.max); i++) {
     traits.push(new Trait().randomize());
   }
 
@@ -151,7 +151,7 @@ Meeba.prototype.roundActions = function() {
   
 // Creates two child meebas (with possible mutations) then sets calories to 0 and dies.
 Meeba.prototype.reproduce = function() {
-  var childCals = (this.calories - config.spawnCost)/2;
+  var childCals = (this.calories - config.cost.spawn)/2;
 
   this.children.push(new Meeba(this.mutateTraits(), childCals));
   this.children.push(new Meeba(this.mutateTraits(), childCals));
@@ -246,8 +246,8 @@ var Trait = function(type, level) {
 
   var traitCosts = {
     inactive: 0,
-    size: config.pixelCost,
-    spike: config.spikeCost / this.level
+    size: config.cost.pixel,
+    spike: config.cost.spike / this.level
   };
 
   this.upkeep = this.level * traitCosts[this.type];
@@ -265,19 +265,19 @@ Trait.prototype.exactDuplicate = function() {
 
 // Randomizes a trait (for spawning totally new ones)
 Trait.prototype.randomize = function() {
-  var chances = config.traitChances;
+  var odds = config.traits.odds;
   var roll = rand();
   var total = 0;
 
-  for (var trait in chances) {
-    total += chances[trait];
+  for (var trait in odds) {
+    total += odds[trait];
     if (roll < total) {
       this.type = trait;
       break;
     }
   }
 
-  this.level = mutateVal( rand(config.startMin, config.startMax) );
+  this.level = mutateVal( rand(config.traits.level.min, config.traits.level.max) );
 
   return this;
 };
@@ -319,9 +319,8 @@ Spike.prototype.getPoints = function() {
 };
 
 // Drains a body spike is in contact with
-// TODO: Implement effect other than color change
 Spike.prototype.drain = function(body) {
-  var damage = config.damageFactor / this.length;
+  var damage = config.scale.damage / this.length;
   this.meeba.calories += damage;
   body.core.calories -= damage;
 

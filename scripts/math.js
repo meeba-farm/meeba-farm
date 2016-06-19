@@ -19,14 +19,14 @@ var mutateVal = function(num) {
   num = num || 0;
 
   var rate = rand() < 0.5 ? -1 : 1;
-  rate *= Math.abs(num) > config.mutateProportion ? config.mutateProportion / 10 : 1;
+  rate *= Math.abs(num) > config.mutate.proportion ? num / config.mutate.proportion : 1;
 
-  var target = config.mutateRate;
+  var target = config.mutate.rate;
   var roll = rand();
   var delta = 0;
 
   while(roll < target) {
-    target *= config.mutateSpread;
+    target *= config.mutate.spread;
     delta++;
   }
 
@@ -105,7 +105,7 @@ mergeVector = function(x, y) {
   var angle = Math.atan(-y/x) / (2 * Math.PI);
   var speed = Math.sqrt(x * x + y * y);
 
-  // ATan will always return rightwards angles
+  // ATan will always return eastwards angles
   if (angle < 0) angle += 1;
   if (x < 0 && y < 0) angle -= 0.5;
   if (x < 0 && y > 0) angle += 0.5;

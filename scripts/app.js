@@ -65,7 +65,7 @@ var refreshData = function() {
 // Bounces meebas off the walls as needed
 var bounceWall = function() {
   var d = d3.select(this).datum();
-  var buffer = d.speed / config.dur * config.wallBuffer;
+  var buffer = d.speed / config.dur * config.buffer.wall;
 
   var eastwards = d.angle <= 0.25 || d.angle > 0.75;
   var northwards = d.angle <= 0.5;
@@ -147,14 +147,12 @@ var spawnMote = function() {
 // Adds any new meebas to the tank and starts them moving
 var drawMeebas = function() {
   refreshData();
-  console.log('drawing...');
 
   var newMeebas = state.meebas
     .enter()
     .append('g')
     .attr('id', function(d){ return d.id.slice(1); })
     .attr('transform', function(d) {
-      console.log(d);
       return 'translate(' + d.x + ',' + d.y + ')';
     });
 

@@ -3,46 +3,53 @@
 var config = {
   w: window.innerWidth - 20,
   h: window.innerHeight - 20,
-
-  wallBuffer: 40,
-  bodyBuffer: 10,
-
-  dur: 100,
-  maxSpeed: 10,
-
   minR: 10,
-  maxR: 50,
-
-  maxSpikes: 12,
   spikeW: 0.02,
-
-  startFactor: 1.5,
-  deathFactor: 0.5,
-  spawnFactor: 2,
-
-  fixedCost: 6,
-  pixelCost: 0.002,
-  spikeCost: 0.5,
-  spawnCost: 0,
-
-  damageFactor: 80,
+  quantity: 25,
 
   moteSpawnRate: 0.1,
-  mutateRate: 0.25,
-  mutateSpread: 0.5,
-  mutateProportion: 10,
+  color: '#34A853',
+  maxSpeed: 10,
+  dur: 100,
 
-  minTraits: 20,
-  maxTraits: 400,
-  startMin: 0, 
-  startMax: 50,
-  traitChances: {
-    size: 0.95,
-    spike: 0.05
+  buffer: {
+    wall: 40,
+    body: 10
   },
 
-  color: '#34A853',
-  quantity: 25
+  scale: {
+    start: 1.5,
+    death: 0.5,
+    spawn: 2,
+    damage: 100
+  },
+
+  cost: {
+    pixel: 0.002,
+    spike: 0.5,
+    spawn: 0
+  },
+
+  mutate: {
+    rate: 0.25,
+    spread: 0.5,
+    proportion: 10,
+  },
+
+  traits: {
+    count: {
+      min: 20,
+      max: 400
+    },
+    level: {
+      min: 0,
+      max: 50
+    },
+    odds: {
+      size: 0.95,
+      spike: 0.05
+    }
+  }
 };
 
 var state = {
