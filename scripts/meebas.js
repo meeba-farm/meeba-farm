@@ -73,15 +73,19 @@ var Meeba = function(traits, calories) { // traits = array of traits, calories =
   this.traits = traits || this.getStartTraits();
   this.buildStats();
 
-  this.isAlive = true;
-  this.minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
-  this.curCalories = this.maxCalories;
-  this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
-  this.damageCurRound = 0; // damage dealt in current round. Reset each round.
+  // this.isAlive = true;
+  // this.minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
+  // this.curCalories = this.maxCalories;
+  // this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
+  // this.damageCurRound = 0; // damage dealt in current round. Reset each round.
 
   this.calories = calories || this.size * config.scale.start;
   this.deathLine = this.size * config.scale.death;
   this.spawnLine = this.size * config.scale.spawn;
+
+  // Failsafe in case meebas are spawned with out-of-bounds limits
+  if (this.deathLine > this.calories) this.deathLine = this.calories - 50;
+  if (this.spawnLine < this.calories) this.spawnLine = this.calories + 50;
 
   // Meebas added to this array will be spawned by the environment
   this.children = [];
@@ -89,7 +93,7 @@ var Meeba = function(traits, calories) { // traits = array of traits, calories =
   this.removeTask(Mote.prototype.decay);
   this.addTask(this.metabolize);
 
-  console.log('New Meeba:', this);
+  console.log('Meeba Spawned:', this.traits);
 };
 
 Meeba.prototype = Object.create(Mote.prototype);
@@ -155,6 +159,15 @@ Meeba.prototype.reproduce = function() {
 
   this.children.push(new Meeba(this.mutateTraits(), childCals));
   this.children.push(new Meeba(this.mutateTraits(), childCals));
+
+  // var parent = this;
+  // this.children.forEach(function(child, i) {
+  //   if (!child.traits.length) {
+  //     console.log('Parent:', parent);
+  //     console.log('Child ' + i + ':', child);
+  //     debugger;
+  //   }
+  // });
 
   this.calories = -Infinity;
   this.decay();

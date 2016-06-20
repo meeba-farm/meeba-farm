@@ -30,28 +30,29 @@ var syncDatum = function() {
         .attr('fill', d.core.spikes[i].color.toRgbString());
     });
 
+  if (d.core.children && d.core.children.length) {
+    state.bodies.push(new Body(
+      d.core.children.pop(), 
+      d.x + breakVector(d.angle - 0.25, 2*d.r).x, 
+      d.y + breakVector(d.angle - 0.25, 2*d.r).y,
+      d.angle - 0.25,
+      d.speed
+    ));
+    state.bodies.push(new Body(
+      d.core.children.pop(), 
+      d.x + breakVector(d.angle + 0.25, 2*d.r).x, 
+      d.y + breakVector(d.angle + 0.25, 2*d.r).y,
+      d.angle + 0.25,
+      d.speed
+    ));
+    drawMeebas();
+  }
+
   if (d.core.calories < 0) {
     state.bodies.splice(state.bodies.indexOf(d), 1);
     meeba.remove();
     refreshData();
 
-    if (d.core.children && d.core.children.length) {
-      state.bodies.push(new Body(
-        d.core.children.pop(), 
-        d.x - d.r, 
-        d.y - d.r,
-        d.angle - 0.25,
-        d.speed
-      ));
-      state.bodies.push(new Body(
-        d.core.children.pop(), 
-        d.x + d.r, 
-        d.y + d.r,
-        d.angle + 0.25,
-        d.speed
-      ));
-      drawMeebas();
-    }
   }
 };
 
@@ -139,8 +140,10 @@ var interact = function() {
 };
 
 var spawnMote = function() {
-  state.bodies.push(new Body( new Mote() ));
-  drawMeebas();
+  if (state.bodies.length < config.maxBodies) {
+    state.bodies.push(new Body( new Mote() ));
+    drawMeebas();
+  }
   setTimeout(spawnMote, rand(2000/config.moteSpawnRate));
 };
 

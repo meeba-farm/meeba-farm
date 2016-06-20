@@ -95,8 +95,10 @@ Body.prototype.getDrain = function(body) {
       drains.push( spike.drain.bind(spike, body) );
     } else {
       var vector = mergeVector(body.x-thisBody.x, body.y-thisBody.y);
-      if (vector.speed < spike.length) {
-        var drift = Math.sin(vector.angle - spike.angle) * vector.speed;
+      if (vector.speed < spike.length + thisBody.r && 
+          vector.angle > spike.angle - 0.25 &&
+          vector.angle < spike.angle + 0.25) {
+        var drift = Math.sin(getRadians(vector.angle-spike.angle)) * vector.speed;
         if (drift < body.r) drains.push( spike.drain.bind(spike, body) );
       }
     }
