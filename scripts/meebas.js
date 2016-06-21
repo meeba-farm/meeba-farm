@@ -72,6 +72,7 @@ var Meeba = function(traits, calories) { // traits = array of traits, calories =
   // The digital genes of a meeba
   this.traits = traits || this.getStartTraits();
   this.buildStats();
+  this.upkeep *= this.size / Math.pow(this.size, config.cost.efficiency);
 
   // this.isAlive = true;
   // this.minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
@@ -333,7 +334,7 @@ Spike.prototype.getPoints = function() {
 
 // Drains a body spike is in contact with
 Spike.prototype.drain = function(body) {
-  var damage = config.scale.damage / this.length;
+  var damage = config.damage.base / Math.pow(this.length, config.damage.scale);
   this.meeba.calories += damage;
   body.core.calories -= damage;
 

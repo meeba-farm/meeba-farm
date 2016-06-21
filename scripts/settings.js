@@ -5,7 +5,7 @@ var config = {
   h: window.innerHeight - 20,
   minR: 10,
   spikeW: 0.025,
-  quantity: 1,
+  quantity: 25,
 
   color: '#34A853',
   moteSpawnRate: 0.4,
@@ -21,20 +21,25 @@ var config = {
   scale: {
     start: 1.5,
     death: 0.5,
-    spawn: 2,
-    damage: 200
+    spawn: 2
+  },
+
+  damage: {
+    base: 300,
+    scale: 1.02
   },
 
   cost: {
-    pixel: 0.002,
-    spike: 1,
-    spawn: 50
+    pixel: 0.003,
+    spike: 1.5,
+    spawn: 50,
+    efficiency: 1.2
   },
 
   mutate: {
     rate: 0.1,
     spread: 0.5,
-    proportion: 10,
+    proportion: 10
   },
 
   traits: {
