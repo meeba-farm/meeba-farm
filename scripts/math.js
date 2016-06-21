@@ -75,6 +75,28 @@ var getDist = function(x1, y1, x2, y2) {
   return Math.sqrt( Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) );
 };
 
+// Normalizes an angle (in turns) to be between 0 and 1
+var roundAngle = function(turns) {
+  if (turns >= 0 && turns < 1) return turns;
+  if (turns >= 1) return turns % 1;
+  if (turns < 0) return turns + Math.ceil(turns);
+};
+
+// Returns the size of the gap between two angles
+var getGap = function(angle1, angle2) {
+  angle1 = roundAngle(angle1);
+  angle2 = roundAngle(angle2);
+
+  var diff = angle1 - angle2;
+
+  if (Math.abs(diff) > 0.5) {
+    if (diff < 0) diff += 1;
+    else diff -= 1;
+  }
+
+  return Math.abs(diff);
+};
+
 var bounceX = function(angle) {
   if (angle === 0.5) return 0;
   if (angle < 0.5) return 0.25 - (angle - 0.25);

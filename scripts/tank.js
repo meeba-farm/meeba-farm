@@ -5,7 +5,7 @@
 var Body = function(core, x, y, angle, speed) {
   this.core = core;
   this.core.body = this;
-  this.id = '#n' + ('00' + state.count++).slice(-3);
+  this.id = '#b' + ('00' + state.count++).slice(-3);
 
   this.r = Math.sqrt(this.core.size/Math.PI);
   this.x = x || rand(this.r, config.w - this.r);
@@ -86,29 +86,43 @@ Body.prototype.getCollision = function(body) {
 
 Body.prototype.getDrain = function(body) {
   var thisBody = this;
-  var drains = this.core.spikes.reduce(function(drains, spike) {
+  var drainers = this.core.spikes.reduce(function(drainers, spike) {
+    // First make sure body is not "behind" spike base
+    var base = breakVector(spike.angle, thisBody.r);
+    base.x += thisBody.x;
+    base.y += thisBody.y;
+    var baseVect = mergeVector(body.x-base.x, body.y-base.y);
+    var baseGap = getGap(spike.angle, baseVect.angle);
+
+    if (baseGap > 0.25) {
+      return drainers;
+    }
+
+    // Then, if body is ahead of tip, check to see if they overlap
     var tip = breakVector(spike.angle, spike.length + thisBody.r);
     tip.x += thisBody.x;
     tip.y += thisBody.y;
+    var tipVect = mergeVector(body.x-tip.x, body.y-tip.y);
 
-    if (getDist(tip.x, tip.y, body.x, body.y) < body.r) {
-      drains.push( spike.drain.bind(spike, body) );
-    } else {
-      var vector = mergeVector(body.x-thisBody.x, body.y-thisBody.y);
-      if (vector.speed < spike.length + thisBody.r && 
-          vector.angle > spike.angle - 0.25 &&
-          vector.angle < spike.angle + 0.25) {
-        var drift = Math.sin(getRadians(vector.angle-spike.angle)) * vector.speed;
-        if (drift < body.r) drains.push( spike.drain.bind(spike, body) );
+    if (getGap(spike.angle, tipVect.angle) < 0.25) {
+      if (getDist(tip.x, tip.y, body.x, body.y) < body.r) {
+        drainers.push(spike);
       }
+      return drainers;
     }
 
-    return drains;
+    // Finally, body is between base and tip, check distance from spike
+    var dist = Math.sin(getRadians(baseGap)) * baseVect.speed;
+    if (dist < body.r) {
+      drainers.push(spike);
+    }
+    return drainers;
   }, []);
 
-  if (drains.length) return function() {
-    drains.forEach(function(drain) {
-      drain();
+  // If any spikes are draining, return a function to call them
+  if (drainers.length) return function() {
+    drainers.forEach(function(spike) {
+      spike.drain(body);
     });
   };
 };

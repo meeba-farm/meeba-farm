@@ -33,16 +33,16 @@ var syncDatum = function() {
   if (d.core.children && d.core.children.length) {
     state.bodies.push(new Body(
       d.core.children.pop(), 
-      d.x + breakVector(d.angle - 0.25, 2*d.r).x, 
-      d.y + breakVector(d.angle - 0.25, 2*d.r).y,
-      d.angle - 0.25,
+      d.x + breakVector(d.angle - 0.125, 2*d.r).x, 
+      d.y + breakVector(d.angle - 0.125, 2*d.r).y,
+      d.angle - 0.125,
       d.speed
     ));
     state.bodies.push(new Body(
       d.core.children.pop(), 
-      d.x + breakVector(d.angle + 0.25, 2*d.r).x, 
-      d.y + breakVector(d.angle + 0.25, 2*d.r).y,
-      d.angle + 0.25,
+      d.x + breakVector(d.angle + 0.125, 2*d.r).x, 
+      d.y + breakVector(d.angle + 0.125, 2*d.r).y,
+      d.angle + 0.125,
       d.speed
     ));
     drawMeebas();

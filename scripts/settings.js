@@ -5,10 +5,10 @@ var config = {
   h: window.innerHeight - 20,
   minR: 10,
   spikeW: 0.025,
-  quantity: 25,
+  quantity: 1,
 
   color: '#34A853',
-  moteSpawnRate: 0.2,
+  moteSpawnRate: 0.4,
   maxBodies: 200,
   maxSpeed: 10,
   dur: 100,
