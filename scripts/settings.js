@@ -9,7 +9,7 @@ var config = {
 
   color: '#34A853',
   moteSpawnRate: 0.4,
-  maxBodies: 200,
+  maxBodies: 100,
   maxSpeed: 10,
   dur: 100,
 
@@ -25,15 +25,15 @@ var config = {
   },
 
   damage: {
-    base: 300,
-    scale: 1.02
+    base: 250,
+    scale: 1.025
   },
 
   cost: {
-    pixel: 0.003,
-    spike: 1.5,
+    pixel: 0.005,
+    spike: 4,
     spawn: 50,
-    efficiency: 1.2
+    efficiency: 4
   },
 
   mutate: {

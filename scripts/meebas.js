@@ -30,6 +30,11 @@ Mote.prototype.tick = function() {
   var now = Date.now();
   this.time = (now - this.lastTick)/1000;
   this.lastTick = now;
+  var rgb = this.color.toRgb();
+  if (this.color.toHex() === '000000') {
+    console.log(this);
+    debugger;
+  }
 };
 
 // Runs updates specific to dead meebas
@@ -316,6 +321,7 @@ var Spike = function(meeba, angle, length) {
   this.angle = angle === undefined ? rand() : angle;
   this.length = length === undefined ? rand(config.maxR) : length;
   this.color = tinycolor('black');
+  this.damage = config.damage.base / Math.pow(this.length < 1 ? 1 : this.length, config.damage.scale);
   this.drainCount = 0;
 };
 
@@ -334,9 +340,8 @@ Spike.prototype.getPoints = function() {
 
 // Drains a body spike is in contact with
 Spike.prototype.drain = function(body) {
-  var damage = config.damage.base / Math.pow(this.length, config.damage.scale);
-  this.meeba.calories += damage;
-  body.core.calories -= damage;
+  this.meeba.calories += this.damage;
+  body.core.calories -= this.damage;
 
   this.color = tinycolor( 'red' );
   this.drainCount++;
