@@ -9,6 +9,19 @@ var getPerc = function(fraction, total) {
   return perc;
 };
 
+// Uses a lookup table to quickly get sine for an angle in turns
+var getSin = function(turns) {
+  return lut.sin[ getTurnIndex(turns) ];
+};
+
+var getCos = function(turns) {
+  return lut.cos[ getTurnIndex(turns) ];
+};
+
+var getTurnIndex = function(turns) {
+  return Math.floor( roundAngle(turns) * config.tableLevels );
+};
+
 
 /* * * * * * * * * * * * * * * * * * * *
  *             RANDOMNESS              *
@@ -92,16 +105,11 @@ var getDist = function(x1, y1, x2, y2) {
   return Math.sqrt( Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) );
 };
 
-// Convert angle from turns into radians
-var getRadians = function(turns) {
-  return turns * Math.PI * 2;
-};
-
 // Normalizes an angle (in turns) to be between 0 and 1
 var roundAngle = function(turns) {
   if (turns >= 0 && turns < 1) return turns;
   if (turns >= 1) return turns % 1;
-  if (turns < 0) return turns + Math.ceil(turns);
+  if (turns < 0) return turns + Math.ceil(Math.abs(turns));
 };
 
 // Returns the size of the gap between two angles
@@ -122,8 +130,8 @@ var getGap = function(angle1, angle2) {
 // Break magnitude and angle into x/y vector
 var breakVector = function(angle, magnitude) {
   return {
-    x: Math.cos( getRadians(angle) ) * magnitude,
-    y: -Math.sin( getRadians(angle) ) * magnitude
+    x: getCos(angle) * magnitude,
+    y: -getSin(angle) * magnitude
   };
 };
 

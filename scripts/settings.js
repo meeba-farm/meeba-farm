@@ -57,7 +57,8 @@ var config = {
     }
   },
 
-  logStats: true
+  logStats: true,
+  tableLevels: 1024
 };
 
 var state = {
@@ -65,4 +66,14 @@ var state = {
   minutes: 0,
   stats: [],
   averages: []
+};
+
+// Cached lookup tables of expensive to calculate values
+var lut = {
+  sin: d3.range(config.tableLevels).map(function(d, i) {
+    return Math.sin( 2 * Math.PI * i / config.tableLevels );
+  }),
+  cos: d3.range(config.tableLevels).map(function(d, i) {
+    return Math.cos( 2 * Math.PI * i / config.tableLevels );
+  })
 };

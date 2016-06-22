@@ -127,7 +127,7 @@ Body.prototype.checkDrain = function(body) {
     }
 
     // Finally, body is between base and tip, check distance from spike
-    var dist = Math.sin(getRadians(baseGap)) * baseVect.speed;
+    var dist = getSin(baseGap) * baseVect.speed;
     if (dist < body.r) {
       drainers.push(spike);
     }
