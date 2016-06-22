@@ -63,6 +63,17 @@ Mote.prototype.removeTask = function(task) {
   }
 };
 
+// Handles a drain against a meeba, returning the damage done
+Mote.prototype.handleDrain = function(damage) { 
+  if (this.calories - damage < 0) {
+    damage = this.calories > 0 ? this.calories - damage : 0;
+    this.calories = -Infinity;
+  }
+
+  this.calories -= damage;
+  return damage;
+};
+
 
 /* * * * * * * * * * * * * * * * * * * *
  *              MEEBAS                 *
@@ -133,13 +144,6 @@ Meeba.prototype.buildStats = function() {
     if (build[trait.type]) build[trait.type](trait.level, pos);
     if (trait.upkeep) meeba.upkeep += trait.upkeep;
   });
-};
-
-Meeba.prototype.drainDamage = function(baseDamage) { // calculates and returns damage dealt (based on resistance of meeba). Adds to round damage.
-  var endDamage = baseDamage; // TODO: CALCULATE DAMAGE HERE
-  this.damageCurRound += endDamage;
-  curCalories -= endDamage;
-  return endDamage;
 };
 
 Meeba.prototype.feed = function(_calories) { // feeds the meeba the number of calories specified in the arguments
@@ -340,8 +344,7 @@ Spike.prototype.getPoints = function() {
 
 // Drains a body spike is in contact with
 Spike.prototype.drain = function(body) {
-  this.meeba.calories += this.damage;
-  body.core.calories -= this.damage;
+  this.meeba.calories += body.core.handleDrain(this.damage);
 
   this.color = tinycolor( 'red' );
   this.drainCount++;
