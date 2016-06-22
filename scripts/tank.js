@@ -69,10 +69,9 @@ Body.prototype.checkCollision = function(body) {
   if (this.cantHit[body.id] || body.cantHit[this.id]) return;
 
   var buffer = (this.speed + body.speed) / config.dur * config.buffer.body;
-  var distance = getDist(this.x, this.y, body.x, body.y);
   var widths = this.r + body.r + buffer;
 
-  if (distance < widths) {
+  if ( isCloser(this.x, this.y, body.x, body.y, widths) ) {
     var thisBody = this;
 
     // Two bodies may not collide twice in a row
@@ -120,7 +119,7 @@ Body.prototype.checkDrain = function(body) {
     var tipVect = mergeVector(body.x-tip.x, body.y-tip.y);
 
     if (getGap(spike.angle, tipVect.angle) < 0.25) {
-      if (getDist(tip.x, tip.y, body.x, body.y) < body.r) {
+      if ( isCloser(tip.x, tip.y, body.x, body.y, body.r) ) {
         drainers.push(spike);
       }
       return drainers;

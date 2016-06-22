@@ -19,7 +19,7 @@ var getCos = function(turns) {
 };
 
 var getTurnIndex = function(turns) {
-  return Math.floor( roundAngle(turns) * config.tableLevels );
+  return Math.floor( roundAngle(turns) * config.lutLevels );
 };
 
 
@@ -101,8 +101,9 @@ var getPos = function(transform) {
  *             2D SPACE                *
  * * * * * * * * * * * * * * * * * * * */
 
-var getDist = function(x1, y1, x2, y2) {
-  return Math.sqrt( Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) );
+// Compares a line defined by four points to a fixed length without sqrt
+var isCloser = function(x1, y1, x2, y2, length) {
+  return (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2) < length * length;
 };
 
 // Normalizes an angle (in turns) to be between 0 and 1
