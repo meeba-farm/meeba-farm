@@ -55,9 +55,14 @@ var config = {
       size: 0.95,
       spike: 0.05
     }
-  }
+  },
+
+  logStats: true
 };
 
 var state = {
-  count: 0
+  count: 0,
+  minutes: 0,
+  stats: [],
+  averages: []
 };

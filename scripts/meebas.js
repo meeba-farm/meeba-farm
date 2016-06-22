@@ -109,8 +109,6 @@ var Meeba = function(traits, calories) { // traits = array of traits, calories =
 
   this.removeTask(Mote.prototype.decay);
   this.addTask(this.metabolize);
-
-  console.log('Meeba Spawned:', this.traits);
 };
 
 Meeba.prototype = Object.create(Mote.prototype);
