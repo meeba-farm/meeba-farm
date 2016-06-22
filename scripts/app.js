@@ -1,60 +1,9 @@
-/**  HELPERS  **/
+// Sets up and runs the actual D3 engine
 
-// Moves meeba continuously at the same angle
-var move = function() {
-  var meeba = d3.select(this);
-  var dest = meeba.datum().getDest();
 
-  meeba.transition()
-    .duration(config.dur)
-    .ease('linear')
-    .attr('transform', 'translate(' + dest.x + ',' + dest.y + ')')
-    .each('end', move);
-};
-
-// Reflects environment changes on the datum, and vice versa
-var syncDatum = function() {
-  var meeba = d3.select(this);
-  var d = meeba.datum();
-
-  var pos = getPos( meeba.attr('transform') );
-  d.x = pos.x;
-  d.y = pos.y;
-
-  meeba.select('circle')
-    .attr('fill', d.core.color.toRgbString());
-
-  meeba.selectAll('polygon')
-    .each(function(d, i){
-      d3.select(this)
-        .attr('fill', d.core.spikes[i].color.toRgbString());
-    });
-
-  if (d.core.children && d.core.children.length) {
-    state.bodies.push(new Body(
-      d.core.children.pop(), 
-      d.x + breakVector(d.angle - 0.125, 2*d.r).x, 
-      d.y + breakVector(d.angle - 0.125, 2*d.r).y,
-      d.angle - 0.125,
-      d.speed
-    ));
-    state.bodies.push(new Body(
-      d.core.children.pop(), 
-      d.x + breakVector(d.angle + 0.125, 2*d.r).x, 
-      d.y + breakVector(d.angle + 0.125, 2*d.r).y,
-      d.angle + 0.125,
-      d.speed
-    ));
-    drawMeebas();
-  }
-
-  if (d.core.calories < 0) {
-    state.bodies.splice(state.bodies.indexOf(d), 1);
-    meeba.remove();
-    refreshData();
-
-  }
-};
+/* * * * * * * * * * * * * * * * * * * *
+ *              UPKEEP                 *
+ * * * * * * * * * * * * * * * * * * * */
 
 // Updates state.meebas with the current data
 var refreshData = function() {
@@ -63,27 +12,132 @@ var refreshData = function() {
     .data(state.bodies);
 };
 
+// Apply environment changes to the datum, and vice versa
+var syncDatum = function(d) {
+  var current = d3.select(this);
+
+  var pos = getPos( current.attr('transform') );
+  d.x = pos.x;
+  d.y = pos.y;
+
+  current.select('circle')
+    .attr('fill', d.core.color.toRgbString());
+
+  current.selectAll('polygon')
+    .each(function(d, i){
+      d3.select(this)
+        .attr('fill', d.core.spikes[i].color.toRgbString());
+    });
+
+  if (d.core.children && d.core.children.length) {
+    spawnChildren(d);
+  }
+
+  if (d.core.calories < 0) {
+    removeSelection(current);
+  }
+};
+
+// Runs each body's core tasks
+var runTasks = function(d) {
+  if (!d.core.tasks) return;
+
+  d.core.tasks.forEach(function(task) {
+    if (task) task.call(d.core);
+  });
+};
+
+
+/* * * * * * * * * * * * * * * * * * * *
+ *          DRAWING BODIES             *
+ * * * * * * * * * * * * * * * * * * * */
+
+var spawnMote = function() {
+  if (state.bodies.length < config.maxBodies) {
+    state.bodies.push(new Body( new Mote() ));
+    drawMeebas();
+  }
+  setTimeout(spawnMote, rand(2000/config.moteSpawnRate));
+};
+
+var spawnChildren = function(body) {
+  var displace = -0.125;
+
+  while(body.core.children.length) {
+    state.bodies.push(new Body(
+      body.core.children.pop(), 
+      body.x + breakVector(body.angle + displace, 2*body.r).x, 
+      body.y + breakVector(body.angle + displace, 2*body.r).y,
+      body.angle + displace,
+      body.speed
+    ));
+    //NOTE: refactor `displace` if more than four children
+    displace += 0.25;
+  }
+
+  drawMeebas();
+};
+
+// Adds any new meebas to the tank and starts them moving
+var drawMeebas = function() {
+  refreshData();
+
+  var newMeebas = state.meebas
+    .enter()
+    .append('g')
+    .attr('id', function(d){ return d.id.slice(1); })
+    .attr('transform', function(d) {
+      return 'translate(' + d.x + ',' + d.y + ')';
+    });
+
+  newMeebas.each(function() {
+    var current = d3.select(this);
+    current.datum().core.spikes.forEach(function(spike) {
+      current.append('polygon')
+        .attr('fill', spike.color.toRgbString())
+        .attr('points', spike.getPoints());
+    });
+  });
+
+  newMeebas.append('circle')
+    .attr('r', function(d){ return d.r; })
+    .attr('fill', function(d){ return d.core.color.toRgbString(); });
+
+  state.meebas.each(move);
+};
+
+var removeSelection = function(current) {
+  state.bodies.splice(state.bodies.indexOf(current.datum()), 1);
+  current.remove();
+  refreshData();
+};
+
+
+/* * * * * * * * * * * * * * * * * * * *
+ *          MOVING BODIES              *
+ * * * * * * * * * * * * * * * * * * * */
+
+// Moves meeba continuously at the same angle
+var move = function() {
+  var current = d3.select(this);
+  var dest = current.datum().getDest();
+
+  current.transition()
+    .duration(config.dur)
+    .ease('linear')
+    .attr('transform', 'translate(' + dest.x + ',' + dest.y + ')')
+    .each('end', move);
+};
+
 // Bounces meebas off the walls as needed
-var resolveBounce = function() {
-  var d = d3.select(this).datum();
+var resolveBounce = function(d) {
   var prevAngle = d.angle;
   d.bounceWall();
 
   if (d.angle !== prevAngle) {
     d.lastHit = '#wall';
-    d3.select(d.id).each(move);
+    d3.select(this).each(move);
   }
-};
-
-// Runs each meeba's core tasks
-var runTasks = function() {
-  var meeba = d3.select(this).datum().core;
-
-  if (!meeba.tasks) return;
-
-  meeba.tasks.forEach(function(task) {
-    if (task) task.call(meeba);
-  });
 };
 
 // Uses a quadtree to allow pairs of nearby meebas to interact
@@ -92,8 +146,7 @@ var interact = function() {
   var actions = [];
   var met = {};
 
-  state.meebas.each(function() {
-    var d = d3.select(this).datum();
+  state.meebas.each(function(d) {
     met[d.id] = {};
 
     tree.visit(function(quad, x1, y1, x2, y2) {
@@ -121,44 +174,12 @@ var interact = function() {
   actions.forEach(function(action) {
     if (action) action();
   });
-
 };
 
-var spawnMote = function() {
-  if (state.bodies.length < config.maxBodies) {
-    state.bodies.push(new Body( new Mote() ));
-    drawMeebas();
-  }
-  setTimeout(spawnMote, rand(2000/config.moteSpawnRate));
-};
 
-// Adds any new meebas to the tank and starts them moving
-var drawMeebas = function() {
-  refreshData();
-
-  var newMeebas = state.meebas
-    .enter()
-    .append('g')
-    .attr('id', function(d){ return d.id.slice(1); })
-    .attr('transform', function(d) {
-      return 'translate(' + d.x + ',' + d.y + ')';
-    });
-
-  newMeebas.each(function() {
-    var meeba = d3.select(this);
-    meeba.datum().core.spikes.forEach(function(spike) {
-      meeba.append('polygon')
-        .attr('fill', spike.color.toRgbString())
-        .attr('points', spike.getPoints());
-    });
-  });
-
-  newMeebas.append('circle')
-    .attr('r', function(d){ return d.r; })
-    .attr('fill', function(d){ return d.core.color.toRgbString(); });
-
-  state.meebas.each(move);
-};
+/* * * * * * * * * * * * * * * * * * * *
+ *           STAT TRACKING             *
+ * * * * * * * * * * * * * * * * * * * */
 
 // Saves an array of current stats about every meeba
 var sumStats = function() {
@@ -216,7 +237,11 @@ var logStats = function() {
   '\n');
 };
 
-/**  SET UP  **/
+
+/* * * * * * * * * * * * * * * * * * * *
+ *              SET UP                 *
+ * * * * * * * * * * * * * * * * * * * */
+
 state.bodies = d3.range(config.quantity).map(function() {
   return new Body( new Meeba() );
 });
@@ -227,12 +252,15 @@ state.tank = d3.select('body').append('svg')
 
 drawMeebas();
 
-
-/**  RUN  **/
 state.tank.on('click', function() {
   state.bodies.push(new Body(new Meeba(), d3.event.x, d3.event.y));
   drawMeebas();
 });
+
+
+/* * * * * * * * * * * * * * * * * * * *
+ *                RUN                  *
+ * * * * * * * * * * * * * * * * * * * */
 
 d3.timer(function() {
   state.meebas.each(syncDatum);

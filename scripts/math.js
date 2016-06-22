@@ -1,5 +1,19 @@
 // Helper functions for general math calculation
 
+
+// Returns a percentage from 0 to 1, rounds up to 0 or down to 1 as needed
+var getPerc = function(fraction, total) {
+  var perc = fraction/total;
+  if (perc < 0) perc = 0;
+  if (perc > 1) perc = 1;
+  return perc;
+};
+
+
+/* * * * * * * * * * * * * * * * * * * *
+ *             RANDOMNESS              *
+ * * * * * * * * * * * * * * * * * * * */
+
 var rand = function(low, high) {
   if (arguments.length === 1) {
     high = low;
@@ -33,13 +47,10 @@ var mutateVal = function(num) {
   return Math.round(rate * delta + num);
 };
 
-// Returns a percentage between 0 and 1;
-var getPerc = function(fraction, total) {
-  var perc = fraction/total;
-  if (perc < 0) perc = 0;
-  if (perc > 1) perc = 1;
-  return perc;
-};
+
+/* * * * * * * * * * * * * * * * * * * *
+ *         PARSING ATTRIBUTES          *
+ * * * * * * * * * * * * * * * * * * * */
 
 // Takes in a string attribute and returns an array of any values
 var getValues = function(attr) {
@@ -55,6 +66,7 @@ var getValues = function(attr) {
   });
 };
 
+// Parses a transform string into a useful object
 var getPos = function(transform) {
   return transform.split(' ').reduce(function(pos, attr) {
     if (attr.indexOf('rotate') !== -1) {
@@ -71,8 +83,18 @@ var getPos = function(transform) {
   }, {});
 };
 
+
+/* * * * * * * * * * * * * * * * * * * *
+ *             2D SPACE                *
+ * * * * * * * * * * * * * * * * * * * */
+
 var getDist = function(x1, y1, x2, y2) {
   return Math.sqrt( Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) );
+};
+
+// Convert angle from turns into radians
+var getRadians = function(turns) {
+  return turns * Math.PI * 2;
 };
 
 // Normalizes an angle (in turns) to be between 0 and 1
@@ -97,23 +119,6 @@ var getGap = function(angle1, angle2) {
   return Math.abs(diff);
 };
 
-var bounceX = function(angle) {
-  if (angle === 0.5) return 0;
-  if (angle < 0.5) return 0.25 - (angle - 0.25);
-  return 0.75 - (angle - 0.75);
-};
-
-var bounceY = function(angle) {
-  if (angle === 0) return 0;
-  if (angle < 0.25 || angle > 0.75) return 1 - angle;
-  return 0.5 - (angle - 0.5);
-};
-
-// Convert angle from turns into radians
-var getRadians = function(turns) {
-  return turns * Math.PI * 2;
-};
-
 // Break magnitude and angle into x/y vector
 var breakVector = function(angle, magnitude) {
   return {
@@ -136,6 +141,18 @@ mergeVector = function(x, y) {
     angle: angle,
     speed: speed
   };
+};
+
+var bounceX = function(angle) {
+  if (angle === 0.5) return 0;
+  if (angle < 0.5) return 0.25 - (angle - 0.25);
+  return 0.75 - (angle - 0.75);
+};
+
+var bounceY = function(angle) {
+  if (angle === 0) return 0;
+  if (angle < 0.25 || angle > 0.75) return 1 - angle;
+  return 0.5 - (angle - 0.5);
 };
 
 // Calculate a collision between two bodies, using math outlined here:

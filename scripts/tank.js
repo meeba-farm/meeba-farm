@@ -15,7 +15,7 @@ var Body = function(core, x, y, angle, speed) {
   this.speed = speed || rand(config.maxSpeed);
 
   // An array of methods to be run everytime two bodies interact
-  this.queries = [this.getCollision, this.getDrain];
+  this.queries = [this.checkCollision, this.checkDrain];
 
   // Collision detection work-rounds
   this.lastHit = '#none';
@@ -64,7 +64,7 @@ Body.prototype.bounceWall = function() {
 
 // Checks to see if a body should collide with another
 // Returns an action function to create the collision
-Body.prototype.getCollision = function(body) {
+Body.prototype.checkCollision = function(body) {
   if (this.lastHit === body && body.lastHit === this) return;
   if (this.cantHit[body.id] || body.cantHit[this.id]) return;
 
@@ -99,7 +99,7 @@ Body.prototype.getCollision = function(body) {
   }
 };
 
-Body.prototype.getDrain = function(body) {
+Body.prototype.checkDrain = function(body) {
   var thisBody = this;
   var drainers = this.core.spikes.reduce(function(drainers, spike) {
     // First make sure body is not "behind" spike base

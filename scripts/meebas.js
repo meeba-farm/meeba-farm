@@ -1,6 +1,5 @@
 // Classes, methods, and functions relating to meebas
 
-var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
 
 
 /* * * * * * * * * * * * * * * * * * * *
@@ -25,30 +24,6 @@ var Mote = function() {
   this.time = 0;
 };
 
-//Runs basic meeba updates
-Mote.prototype.tick = function() {
-  var now = Date.now();
-  this.time = (now - this.lastTick)/1000;
-  this.lastTick = now;
-  var rgb = this.color.toRgb();
-  if (this.color.toHex() === '000000') {
-    console.log(this);
-    debugger;
-  }
-};
-
-// Runs updates specific to dead meebas
-Mote.prototype.decay = function() {
-  if (this.calories < 0) this.removeTask(this.decay);
-  var fade = getPerc(this.calories, this.deathLine);
-
-  var rgba = this.color.toRgb();
-  rgba.a = fade;
-  this.color = tinycolor( rgba );
-
-  return fade;
-};
-
 Mote.prototype.addTask = function(task) {
   if (this.tasks.indexOf(task) === -1) {
     this.tasks.push(task);
@@ -63,7 +38,26 @@ Mote.prototype.removeTask = function(task) {
   }
 };
 
-// Handles a drain against a meeba, returning the damage done
+//Runs basic meeba updates
+Mote.prototype.tick = function() {
+  var now = Date.now();
+  this.time = (now - this.lastTick)/1000;
+  this.lastTick = now;
+};
+
+// Runs updates specific to dead meebas
+Mote.prototype.decay = function() {
+  if (this.calories < 0) this.removeTask(this.decay);
+  var fade = getPerc(this.calories, this.deathLine);
+
+  var rgba = this.color.toRgb();
+  rgba.a = fade;
+  this.color = tinycolor( rgba );
+
+  return fade;
+};
+
+// Handles a drain against a mote, returning the damage done
 Mote.prototype.handleDrain = function(damage) { 
   if (this.calories - damage < 0) {
     damage = this.calories > 0 ? this.calories - damage : 0;
@@ -80,23 +74,17 @@ Mote.prototype.handleDrain = function(damage) {
  * * * * * * * * * * * * * * * * * * * */
 
 // Subclass of Mote, these meebas have full functionality
-var Meeba = function(traits, calories) { // traits = array of traits, calories = initial calories
-  // TODO: Figure out how damage resistance works
+var Meeba = function(traits, calories) {
   Mote.call(this);
   this.color = tinycolor(config.color);
 
   // The digital genes of a meeba
   this.traits = traits || this.getStartTraits();
   this.buildStats();
-  this.upkeep *= this.size / Math.pow(this.size, config.cost.efficiency);
 
-  // this.isAlive = true;
-  // this.minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
-  // this.curCalories = this.maxCalories;
-  // this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
-  // this.damageCurRound = 0; // damage dealt in current round. Reset each round.
-
+  // Various caloric stats calculated based on size
   this.calories = calories || this.size * config.scale.start;
+  this.upkeep *= this.size / Math.pow(this.size, config.cost.efficiency);
   this.deathLine = this.size * config.scale.death;
   this.spawnLine = this.size * config.scale.spawn;
 
@@ -144,43 +132,6 @@ Meeba.prototype.buildStats = function() {
   });
 };
 
-Meeba.prototype.feed = function(_calories) { // feeds the meeba the number of calories specified in the arguments
-  this.curCalories += _calories;
-};
-  
-  // returns array of all actions to be taken this round
-Meeba.prototype.roundActions = function() { 
-  var ret = [];
-  for (i = 0; i < traits.length; i++) {
-    var traitAction = traits[i].getActionEffect();
-    if (traitAction.type == ActionEnum.NOTHING) {
-      continue;
-    }
-    ret.push(traitAction);
-  }
-  return ret;
-};
-  
-// Creates two child meebas (with possible mutations) then sets calories to 0 and dies.
-Meeba.prototype.reproduce = function() {
-  var childCals = (this.calories - config.cost.spawn)/2;
-
-  this.children.push(new Meeba(this.mutateTraits(), childCals));
-  this.children.push(new Meeba(this.mutateTraits(), childCals));
-
-  // var parent = this;
-  // this.children.forEach(function(child, i) {
-  //   if (!child.traits.length) {
-  //     console.log('Parent:', parent);
-  //     console.log('Child ' + i + ':', child);
-  //     debugger;
-  //   }
-  // });
-
-  this.calories = -Infinity;
-  this.decay();
-};
-
 // Returns a mutated version of the meeba's traits
 Meeba.prototype.mutateTraits = function() {
   var old = this.traits;
@@ -216,7 +167,7 @@ Meeba.prototype.metabolize = function() {
     this.isAlive = false;
     this.removeTask(this.metabolize);
     this.addTask(this.decay);
-    this.body.removeQuery(this.body.getDrain);
+    this.body.removeQuery(this.body.checkDrain);
   }
 
   if (this.calories > this.spawnLine) {
@@ -235,25 +186,15 @@ Meeba.prototype.decay = function() {
   });
 };
 
-Meeba.prototype.getSize = function() { // returns size of meeba.
-  // TODO: THIS
-  // size should be based on initial calorie count
-  return 0;
-};
+// Creates two child meebas (with possible mutations) then sets calories to 0 and dies.
+Meeba.prototype.reproduce = function() {
+  var childCals = (this.calories - config.cost.spawn)/2;
 
-Meeba.prototype.getDeadCalories = function() { // calculates calories of corpse on death. One time calculation.
-  // TODO: THIS
-  return 0;
-};
+  this.children.push(new Meeba(this.mutateTraits(), childCals));
+  this.children.push(new Meeba(this.mutateTraits(), childCals));
 
-Meeba.prototype.getMinCalories = function() { // calculates minimum number of calories a meeba can have without dying
-  // TODO: THIS
-  return 0;
-};
-
-Meeba.prototype.getCriticalHit = function() { // gets critical hit value for meeba. Calculated once.
-  // TODO: THIS
-  return 0;
+  this.calories = -Infinity;
+  this.decay();
 };
 
 
@@ -303,15 +244,6 @@ Trait.prototype.randomize = function() {
   return this;
 };
 
-// returns # of calories consumed passively by possessing this trait
-Trait.prototype.inactiveConsumeCalories = function() {throw abstractMethodError;};
-
-// returns # of calories consumed when this trait's action is activated (0 if no action or free action)
-Trait.prototype.activeConsumeCalories = function() {throw abstractMethodError;};
-
-// returns action object describing effects carried out by this action when activated (empty if none)
-Trait.prototype.actionEffect = function() {throw abstractMethodError;};
-
 
 /* * * * * * * * * * * * * * * * * * * *
  *              SPIKES                 *
@@ -351,64 +283,4 @@ Spike.prototype.drain = function(body) {
   setTimeout(function() {
     if (--spike.drainCount === 0) spike.color = tinycolor( 'black' );
   }, config.dur);
-};
-
-
-/* * * * * * * * * * * * * * * * * * * *
- *          CONDITION NODES            *
- * * * * * * * * * * * * * * * * * * * */
-
-// a condition to be tested on either a local meeba or its surroundings
-var ConditionNode = function() {
-  // TODO: THIS
-  this.conditionMet = function() { // returns true if condition met, false otherwise
-    // TODO: THIS
-  };
-};
-
-var ConditionList = function() {
-  var conditions = [];
-  
-  var addCondition = function(condition) {
-    if (!condition instanceof ConditionNode) {
-      throw "Only conditions may be added to conditionlist.";  
-    }
-    conditions.push(condition);
-  };
-  
-  // tests whether all conditions are met
-  var conditionsMet = function() {
-    var ret = true;
-    for (i = 0; i < conditions.length; i++) {
-      if (conditions[i].conditionMet() == false) {
-        ret = false;
-        break;
-      }
-    }
-    return ret;
-  };
-};
-
-
-/* * * * * * * * * * * * * * * * * * * *
- *              ACTIONS                *
- * * * * * * * * * * * * * * * * * * * */
-
-// the type for actions
-var ActionEnum = {
-  DRAIN : 0, // drain calories from target meeba OR eat from dead meeba
-  ATTACK : 1, // deal damage to target meeba
-  MOVE : 2, // move the meeba along a vector path
-  REPRODUCE : 3,
-  NOTHING : 4
-};
-
-// an action that is to be performed by a meeba
-var Action = function(_actionType) { // TODO: CONSIDER WHETHER THEIS SHOULD BE ABSTRACT
-  var type = _actionType;
-  var actor; // the meeba performing the action
-  var target; // the targetted meeba (same as actor if action is on self)
-  
-  // performs action and sets all states to meebas (hp for damage, calories for eating, etc) as they should be set
-  this.doAction = function() {throw abstractMethodError;}; 
 };
