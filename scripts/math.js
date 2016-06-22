@@ -22,6 +22,11 @@ var getTurnIndex = function(turns) {
   return Math.floor( roundAngle(turns) * config.lutLevels );
 };
 
+var getAcos = function(ratio) {
+  var index = Math.floor(ratio * config.lutLevels/2 + config.lutLevels/2);
+  return lut.acos[index];
+};
+
 
 /* * * * * * * * * * * * * * * * * * * *
  *             RANDOMNESS              *
@@ -102,8 +107,8 @@ var getPos = function(transform) {
  * * * * * * * * * * * * * * * * * * * */
 
 // Compares a line defined by four points to a fixed length without sqrt
-var isCloser = function(x1, y1, x2, y2, length) {
-  return (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2) < length * length;
+var isCloser = function(x1, y1, x2, y2, distance) {
+  return (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2) < distance * distance;
 };
 
 // Normalizes an angle (in turns) to be between 0 and 1
@@ -138,13 +143,11 @@ var breakVector = function(angle, magnitude) {
 
 // Takes an x/y vector and combines it to an angle(in turns) and a magnitude
 mergeVector = function(x, y) {
-  var angle = Math.atan(-y/x) / (2 * Math.PI);
   var speed = Math.sqrt(x * x + y * y);
+  var angle = getAcos(x/speed) / (2 * Math.PI);
 
-  // ATan will always return eastwards angles
-  if (angle < 0) angle += 1;
-  if (x < 0 && y < 0) angle -= 0.5;
-  if (x < 0 && y > 0) angle += 0.5;
+  // ACos will always return northwards angles
+  if (y > 0) angle = 1 - angle; 
 
   return {
     angle: angle,

@@ -68,12 +68,17 @@ var state = {
   averages: []
 };
 
-// Cached lookup tables of expensive to calculate values
+// Cached lookup tables of expensive trig values
 var lut = {
   sin: d3.range(config.lutLevels).map(function(d, i) {
     return Math.sin( 2 * Math.PI * i / config.lutLevels );
   }),
+
   cos: d3.range(config.lutLevels).map(function(d, i) {
     return Math.cos( 2 * Math.PI * i / config.lutLevels );
+  }),
+
+  acos: d3.range(config.lutLevels).map(function(d, i) {
+    return Math.acos( (i-(config.lutLevels/2)) / (config.lutLevels/2) );
   })
 };
