@@ -3,7 +3,7 @@
 var config = {
   w: window.innerWidth - 20,
   h: window.innerHeight - 20,
-  minR: 10,
+  minR: 5,
   spikeW: 0.025,
   quantity: 15,
 
@@ -30,8 +30,8 @@ var config = {
   },
 
   cost: {
-    pixel: 0.005,
-    spike: 24,
+    pixel: 0.01,
+    spike: 36,
     spawn: 100,
     efficiency: 24
   },
@@ -46,12 +46,12 @@ var config = {
   traits: {
     max: {
       level: 50,
-      mote: 5,
+      mote: 8,
       starter: 100
     },
 
     odds: {
-      size: 20,
+      size: 25,
       spike: 1
     }
   },

@@ -7,7 +7,7 @@ var Body = function(core, x, y, angle, speed) {
   this.core.body = this;
   this.id = '#b' + ('00' + state.count++).slice(-3);
 
-  this.r = Math.sqrt(this.core.size/Math.PI);
+  this.r = this.core._r;
   this.x = x || rand(this.r, config.w - this.r);
   this.y = y || rand(this.r, config.h - this.r);
 
@@ -99,39 +99,46 @@ Body.prototype.checkCollision = function(body) {
 };
 
 Body.prototype.checkDrain = function(body) {
-  var thisBody = this;
-  var drainers = this.core.spikes.reduce(function(drainers, spike) {
-    // First make sure body is not "behind" spike base
-    var base = breakVector(spike.angle, thisBody.r);
-    base.x += thisBody.x;
-    base.y += thisBody.y;
-    var baseVect = mergeVector(body.x-base.x, body.y-base.y);
-    var baseGap = getGap(spike.angle, baseVect.angle);
+  var drainers = [];
 
-    if (baseGap > 0.25) {
-      return drainers;
+
+  // Go through spikes running progressively more costly checks to see
+  // if there is a collision, and pushes spike if there is
+  for (var i = 0, len = this.core.spikes.length; i < len; i++) {
+    var spike = this.core.spikes[i];
+
+    // If body is too far from meeba, bail since spikes are sorted by length
+    if (!isCloser(this.x, this.y, body.x, body.y, this.r+body.r+spike.length)) {
+      break;
     }
 
-    // Then, if body is ahead of tip, check to see if they overlap
-    var tip = breakVector(spike.angle, spike.length + thisBody.r);
-    tip.x += thisBody.x;
-    tip.y += thisBody.y;
+    // Does body overlap with tip?
+    var tip = {
+      x: spike.points[0].x + this.x,
+      y: spike.points[0].y + this.y
+    };
+    if (isCloser(body.x, body.y, tip.x, tip.y, body.r)) {
+      drainers.push(spike);
+      continue;
+    }
+
+    // Is body too far from tip?
     var tipVect = mergeVector(body.x-tip.x, body.y-tip.y);
-
-    if (getGap(spike.angle, tipVect.angle) < 0.25) {
-      if ( isCloser(tip.x, tip.y, body.x, body.y, body.r) ) {
-        drainers.push(spike);
-      }
-      return drainers;
+    if (tipVect.speed > spike.length + body.r) {
+      continue;
     }
 
-    // Finally, body is between base and tip, check distance from spike
-    var dist = getSin(baseGap) * baseVect.speed;
-    if (dist < body.r) {
+    // Is body ahead of tip?
+    var tipGap = getGap(roundAngle(spike.angle+0.5), tipVect.angle);
+    if (tipGap > 0.25) {
+      continue;
+    }
+
+    // Is body close enough to line?
+    if (getSin(tipGap) * tipVect.speed < body.r) {
       drainers.push(spike);
     }
-    return drainers;
-  }, []);
+  }
 
   // If any spikes are draining, return a function to call them
   if (drainers.length) return function() {

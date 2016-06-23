@@ -20,6 +20,11 @@ var Meeba = function(traits, calories, family) {
   // Assign a color based on family lineage and traits
   this.assignColor(family);
 
+  // Sort spikes by length for faster collision detection
+  this.spikes.sort(function(a, b) {
+    return b.length - a.length;
+  });
+
   // Various caloric stats based on size
   this.calories = calories || this.size * config.scale.start;
   this.upkeep *= this.size / Math.pow(this.size, config.cost.efficiency);
@@ -153,6 +158,11 @@ Meeba.prototype.buildStats = function() {
     if (build[trait.type]) build[trait.type](trait.level, pos);
     if (trait.upkeep) meeba.upkeep += trait.upkeep;
   });
+
+  this._r = Math.sqrt(this.size/Math.PI);
+  this.spikes.forEach(function(spike) {
+    spike.findPoints();
+  })
 };
 
 // Returns a mutated version of the meeba's traits
@@ -236,25 +246,29 @@ Trait.prototype.exactDuplicate = function() {
  *              SPIKES                 *
  * * * * * * * * * * * * * * * * * * * */
 
-// A simple spike object with length and the angle its positioned at
+// A simple spike object with length and the angle it is positioned at
 var Spike = function(meeba, angle, length) {
   this.meeba = meeba;
-  this.angle = angle === undefined ? rand() : angle;
-  this.length = length === undefined ? rand(config.maxR) : length;
+  this.angle = angle;
+  this.length = length;
   this.color = tinycolor('black');
   this.damage = config.damage.base / Math.pow(this.length < 1 ? 1 : this.length, config.damage.scale);
   this.drainCount = 0;
 };
 
+// Calculate and store the three points of the spike
+Spike.prototype.findPoints = function() {
+  this.points = [];
+  var r = this.meeba._r;
+
+  this.points[0] = breakVector(this.angle, this.length + r);
+  this.points[1] = breakVector(this.angle + config.spikeW, r);
+  this.points[2] = breakVector(this.angle - config.spikeW, r);
+};
+
+// Return a string of points that can be drawn as a polygon
 Spike.prototype.getPoints = function() {
-  var points = [];
-  var r = this.meeba.body.r;
-
-  points[0] = breakVector(this.angle, this.length + r);
-  points[1] = breakVector(this.angle + config.spikeW, r);
-  points[2] = breakVector(this.angle - config.spikeW, r);
-
-  return points.reduce(function(str, point) {
+  return this.points.reduce(function(str, point) {
     return str + point.x + ',' + point.y + ' ';
   }, '').slice(0, -1);
 };
