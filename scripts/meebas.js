@@ -105,7 +105,7 @@ Meeba.prototype.createTraits = function(max) {
   var traits = [];
 
   for (var i = 0; i < rand(max); i++) {
-    traits.push(new Trait().randomize());
+    traits.push(new Trait());
   }
 
   return traits;
@@ -142,7 +142,7 @@ Meeba.prototype.mutateTraits = function() {
     if (index < 0) {
       break;
     } else if (!old[index] && !old[i]) {
-      mutated.push(new Trait().randomize());
+      mutated.push(new Trait());
     } else if (!old[index] && old[i]) {
       mutated.push(old[i].duplicate());
       mutated.push(old[i].duplicate());
@@ -185,16 +185,17 @@ Meeba.prototype.handleDrain = function(damage) {
  * * * * * * * * * * * * * * * * * * * */
 
 var Trait = function(type, level) {
-  this.type = type || 'inactive';
-  this.level = level > 0 ? level : 0;
+  this.type = type || rand(config.traits.odds);
+
+  if (level === undefined) level = rand(config.traits.max.level);
+  this.level = level < 0 ? 0 : level;
 
   var traitCosts = {
-    inactive: 0,
-    size: config.cost.pixel,
-    spike: config.cost.spike / this.level
+    size: this.level * config.cost.pixel,
+    spike: config.cost.spike
   };
 
-  this.upkeep = this.level * traitCosts[this.type];
+  this.upkeep = traitCosts[this.type];
 };
 
 // returns trait of same type but with random duplication errors
@@ -205,25 +206,6 @@ Trait.prototype.duplicate = function() {
 //returns EXACT duplicate of trait with no errors
 Trait.prototype.exactDuplicate = function() {
   return new Trait(this.type, this.level);
-};
-
-// Randomizes a trait (for spawning totally new ones)
-Trait.prototype.randomize = function() {
-  var odds = config.traits.odds;
-  var roll = rand();
-  var total = 0;
-
-  for (var trait in odds) {
-    total += odds[trait];
-    if (roll < total) {
-      this.type = trait;
-      break;
-    }
-  }
-
-  this.level = mutateVal( rand(config.traits.level.min, config.traits.level.max) );
-
-  return this;
 };
 
 

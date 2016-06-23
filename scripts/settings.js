@@ -5,7 +5,7 @@ var config = {
   h: window.innerHeight - 20,
   minR: 10,
   spikeW: 0.025,
-  quantity: 25,
+  quantity: 0,
 
   color: '#34A853',
   moteSpawnRate: 0.4,
@@ -44,16 +44,14 @@ var config = {
 
   traits: {
     max: {
+      level: 50,
       mote: 5,
       starter: 500
     },
-    level: {
-      min: 0,
-      max: 50
-    },
+    
     odds: {
-      size: 0.95,
-      spike: 0.05
+      size: 20,
+      spike: 1
     }
   },
 

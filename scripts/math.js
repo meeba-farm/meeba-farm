@@ -32,18 +32,33 @@ var getAcos = function(ratio) {
  *             RANDOMNESS              *
  * * * * * * * * * * * * * * * * * * * */
 
-var rand = function(low, high) {
-  if (arguments.length === 1) {
-    high = low;
-    low = 0;
+// Convenience random function which can be called a number of ways
+var rand = function(start, stop) {
+  if (start !== null && typeof start === 'object') {
+    return randomKey(start);
   }
 
-  if (arguments.length === 0) {
-    high = 1;
-    low = 0;
+  if (start === undefined) start = 0;
+  if (stop === undefined) stop = 0;
+  if (!arguments.length) stop = 1;
+
+  return Math.random() * (stop - start) + start;
+};
+
+var randomKey = function(object) {
+  var range = 0;
+  for (var key in object) {
+    range += isNaN(Number(object[key])) ? 1 : Number(object[key]);
   }
 
-  return Math.random() * (high - low) + low;
+  var roll = rand(range);
+  for (var key in object) {
+    roll -= isNaN(Number(object[key])) ? 1 : Number(object[key]);
+    if (roll < 0) return key;
+  }
+
+  console.log('Warning! Random key not selected!');
+  return null;
 };
 
 // Returns a number on a bell-curve range to the input
