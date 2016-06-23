@@ -5,7 +5,7 @@ var config = {
   h: window.innerHeight - 20,
   minR: 10,
   spikeW: 0.025,
-  quantity: 0,
+  quantity: 15,
 
   lightness: 40,
   moteSpawnRate: 0.4,
@@ -31,22 +31,23 @@ var config = {
 
   cost: {
     pixel: 0.005,
-    spike: 4,
-    spawn: 50,
-    efficiency: 4
+    spike: 24,
+    spawn: 100,
+    efficiency: 24
   },
 
   mutate: {
     rate: 0.1,
     spread: 0.5,
-    proportion: 10
+    proportion: 10,
+    pressure: 2
   },
 
   traits: {
     max: {
       level: 50,
       mote: 5,
-      starter: 500
+      starter: 100
     },
 
     odds: {

@@ -105,8 +105,9 @@ Meeba.prototype.decay = function() {
 // Builds an array of starter traits for spontaneous meebas
 Meeba.prototype.createTraits = function(max) {
   var traits = [];
+  var len = rand(max);
 
-  for (var i = 0; i < rand(max); i++) {
+  for (var i = 0; i < len; i++) {
     traits.push(new Trait());
   }
 
@@ -158,20 +159,19 @@ Meeba.prototype.buildStats = function() {
 Meeba.prototype.mutateTraits = function() {
   var old = this.traits;
   var mutated = [];
+  var len = mutateVal(old.length);
 
-  for (var i = 0; i < mutateVal(old.length); i++) {
+  for (var i = 0; i < len; i++) {
     var index = mutateVal(i);
 
-    if (index < 0) {
-      break;
-    } else if (!old[index] && !old[i]) {
-      mutated.push(new Trait());
-    } else if (!old[index] && old[i]) {
-      mutated.push(old[i].duplicate());
-      mutated.push(old[i].duplicate());
-    } else {
+    if (old[index]) {
       mutated.push(old[index].duplicate());
-    }
+    } else if (old[i]) {
+      mutated.push(old[i].duplicate());
+      mutated.push(old[i].duplicate());
+    } else if (rand() < 0.5) {
+      mutated.push(new Trait());
+    } 
   }
 
   return mutated;

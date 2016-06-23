@@ -13,3 +13,24 @@ var simGen = function(gens, traits) {
 
   return meeba;
 };
+
+// Takes a value and mutates it a specified number of times
+var simMutations = function(val, times) {
+  for (var i = 0; i < times; i++) {
+    val = mutateVal(val);
+  }
+
+  return val;
+};
+
+var deltaTraits = function(gens, traits) {
+  var zero = 0;
+  var final = 0;
+
+  for (var i = 0; i < 100; i++) {
+    zero += simGen(0, traits).traits.length;
+    final += simGen(gens, traits).traits.length;
+  }
+
+  return final / zero;
+};
