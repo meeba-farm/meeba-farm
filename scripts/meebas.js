@@ -1,88 +1,24 @@
 // Classes, methods, and functions relating to meebas
 
 
-
-/* * * * * * * * * * * * * * * * * * * *
- *               MOTES                 *
- * * * * * * * * * * * * * * * * * * * */
-
-// A basic meeba, which is only good for food, that Meeba extends
-var Mote = function() {
-  // Color saved as a 'tinycolor': https://github.com/bgrins/TinyColor
-  this.color = tinycolor(config.color).greyscale();
-  this.size = Math.PI * Math.pow(config.minR, 2);
-
-  this.spikes = [];
-
-  this.calories = this.size;
-  this.deathLine = this.calories;
-  this.upkeep = 0;
-
-  // An array of methods to be run on each animation frame
-  this.tasks = [this.tick, this.decay];
-  this.lastTick = Date.now();
-  this.time = 0;
-};
-
-Mote.prototype.addTask = function(task) {
-  if (this.tasks.indexOf(task) === -1) {
-    this.tasks.push(task);
-  }
-};
-
-Mote.prototype.removeTask = function(task) {
-  var index = this.tasks.indexOf(task);
-
-  if (index !== -1) {
-    this.tasks.splice(index, 1);
-  }
-};
-
-//Runs basic meeba updates
-Mote.prototype.tick = function() {
-  var now = Date.now();
-  this.time = (now - this.lastTick)/1000;
-  this.lastTick = now;
-};
-
-// Runs updates specific to dead meebas
-Mote.prototype.decay = function() {
-  if (this.calories < 0) this.removeTask(this.decay);
-  var fade = getPerc(this.calories, this.deathLine);
-
-  var rgba = this.color.toRgb();
-  rgba.a = fade;
-  this.color = tinycolor( rgba );
-
-  return fade;
-};
-
-// Handles a drain against a mote, returning the damage done
-Mote.prototype.handleDrain = function(damage) { 
-  if (this.calories - damage < 0) {
-    damage = this.calories > 0 ? this.calories - damage : 0;
-    this.calories = -Infinity;
-  }
-
-  this.calories -= damage;
-  return damage;
-};
-
-
 /* * * * * * * * * * * * * * * * * * * *
  *              MEEBAS                 *
  * * * * * * * * * * * * * * * * * * * */
 
 // Subclass of Mote, these meebas have full functionality
 var Meeba = function(traits, calories) {
-  Mote.call(this);
   this.color = tinycolor(config.color);
 
   // The digital genes of a meeba
   this.traits = traits || this.getStartTraits();
+
+  // Build stats
+  this.size = Math.PI * Math.pow(config.minR, 2);
+  this.spikes = [];
+  this.upkeep = 0;
   this.buildStats();
 
-  // Various caloric stats calculated based on size
+  // Various caloric stats based on size
   this.calories = calories || this.size * config.scale.start;
   this.upkeep *= this.size / Math.pow(this.size, config.cost.efficiency);
   this.deathLine = this.size * config.scale.death;
@@ -95,12 +31,74 @@ var Meeba = function(traits, calories) {
   // Meebas added to this array will be spawned by the environment
   this.children = [];
 
-  this.removeTask(Mote.prototype.decay);
-  this.addTask(this.metabolize);
+  // An array of methods to be run each animation frame
+  this.tasks = [this.tick, this.metabolize];
+  this.lastTick = Date.now();
+  this.time = 0;
 };
 
-Meeba.prototype = Object.create(Mote.prototype);
-Meeba.prototype.constructor = Meeba;
+
+/*****  TASKS  *****/
+
+Meeba.prototype.addTask = function(task) {
+  if (this.tasks.indexOf(task) === -1) {
+    this.tasks.push(task);
+  }
+};
+
+Meeba.prototype.removeTask = function(task) {
+  var index = this.tasks.indexOf(task);
+
+  if (index !== -1) {
+    this.tasks.splice(index, 1);
+  }
+};
+
+//Runs basic meeba updates, especially updating their timestamp
+Meeba.prototype.tick = function() {
+  var now = Date.now();
+  this.time = (now - this.lastTick)/1000;
+  this.lastTick = now;
+};
+
+// Runs updates specific to living meebas
+Meeba.prototype.metabolize = function() { 
+  this.calories -= this.upkeep * this.time;
+  
+  var hsl = this.color.toHsl();
+  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
+  this.color = tinycolor(hsl);
+
+  if (this.calories < this.deathLine) {
+    this.isAlive = false;
+    this.removeTask(this.metabolize);
+    this.addTask(this.decay);
+    this.body.removeQuery(this.body.checkDrain);
+  }
+
+  if (this.calories > this.spawnLine) {
+    this.reproduce();
+  }
+};
+
+// Runs updates specific to dead meebas
+Meeba.prototype.decay = function() {
+  if (this.calories < 0) this.removeTask(this.decay);
+  var fade = getPerc(this.calories, this.deathLine);
+
+  var rgba = this.color.toRgb();
+  rgba.a = fade;
+  this.color = tinycolor( rgba );
+
+  this.spikes.forEach(function(spike) {
+    var rgba = spike.color.toRgb();
+    rgba.a = fade;
+    spike.color = tinycolor( rgba );
+  });
+};
+
+
+/*****  SPAWNING  *****/
 
 Meeba.prototype.getStartTraits = function() {
   var traits = [];
@@ -154,39 +152,11 @@ Meeba.prototype.mutateTraits = function() {
 
   return mutated;
 };
-  
-// Runs updates specific to living meebas
-Meeba.prototype.metabolize = function() { 
-  this.calories -= this.upkeep * this.time;
-  
-  var hsl = this.color.toHsl();
-  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
-  this.color = tinycolor(hsl);
 
-  if (this.calories < this.deathLine) {
-    this.isAlive = false;
-    this.removeTask(this.metabolize);
-    this.addTask(this.decay);
-    this.body.removeQuery(this.body.checkDrain);
-  }
 
-  if (this.calories > this.spawnLine) {
-    this.reproduce();
-  }
-};
+/*****  INTERACTION  *****/
 
-// Runs updates specific to dead meebas
-Meeba.prototype.decay = function() {
-  var fade = Mote.prototype.decay.call(this);
-
-  this.spikes.forEach(function(spike) {
-    var rgba = spike.color.toRgb();
-    rgba.a = fade;
-    spike.color = tinycolor( rgba );
-  });
-};
-
-// Creates two child meebas (with possible mutations) then sets calories to 0 and dies.
+// Spawns two child meebas with possible mutations, then dies
 Meeba.prototype.reproduce = function() {
   var childCals = (this.calories - config.cost.spawn)/2;
 
@@ -195,6 +165,17 @@ Meeba.prototype.reproduce = function() {
 
   this.calories = -Infinity;
   this.decay();
+};
+
+// Handles a drain against a mote, returning the damage done
+Meeba.prototype.handleDrain = function(damage) { 
+  if (this.calories - damage < 0) {
+    damage = this.calories > 0 ? this.calories - damage : 0;
+    this.calories = -Infinity;
+  }
+
+  this.calories -= damage;
+  return damage;
 };
 
 

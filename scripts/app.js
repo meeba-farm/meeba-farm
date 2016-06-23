@@ -54,8 +54,8 @@ var runTasks = function(d) {
 
 var spawnMote = function() {
   if (state.bodies.length < config.maxBodies) {
-    state.bodies.push(new Body( new Mote() ));
-    drawMeebas();
+    // state.bodies.push(new Body( new Mote() ));
+    // drawMeebas();
   }
   setTimeout(spawnMote, rand(2000/config.moteSpawnRate));
 };

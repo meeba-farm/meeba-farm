@@ -106,7 +106,7 @@ var getPos = function(transform) {
  *             2D SPACE                *
  * * * * * * * * * * * * * * * * * * * */
 
-// Compares a line defined by four points to a fixed length without sqrt
+// Compares a line defined by four points to a fixed distance without sqrt
 var isCloser = function(x1, y1, x2, y2, distance) {
   return (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2) < distance * distance;
 };
@@ -146,7 +146,7 @@ mergeVector = function(x, y) {
   var speed = Math.sqrt(x * x + y * y);
   var angle = getAcos(x/speed) / (2 * Math.PI);
 
-  // ACos will always return northwards angles
+  // ACos always gives northwards angles, check if should be southwards
   if (y > 0) angle = 1 - angle; 
 
   return {
