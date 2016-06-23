@@ -6,8 +6,7 @@
  * * * * * * * * * * * * * * * * * * * */
 
 // Creatures capable of eating, dying, and reproducing with mutations
-var Meeba = function(traits, calories) {
-  this.color = tinycolor(config.color);
+var Meeba = function(traits, calories, family) {
 
   // The digital genes of a meeba
   this.traits = Array.isArray(traits) ? traits : this.createTraits(traits);
@@ -17,6 +16,9 @@ var Meeba = function(traits, calories) {
   this.spikes = [];
   this.upkeep = 0;
   this.buildStats();
+
+  // Assign a color based on family lineage and traits
+  this.assignColor(family);
 
   // Various caloric stats based on size
   this.calories = calories || this.size * config.scale.start;
@@ -111,6 +113,27 @@ Meeba.prototype.createTraits = function(max) {
   return traits;
 };
 
+Meeba.prototype.assignColor = function(family) {
+  if (family === undefined) family = Math.floor(rand(0, 256));
+  this.family = family;
+
+  var count = this.traits.reduce(function(count, trait) {
+    count[trait.type]++;
+    count.total++;
+    return count;
+  }, {total: 0, spike: 0, size: 0});
+
+  var rgb = {
+    r: Math.floor( count.spike / count.total * 255 ),
+    g: Math.floor( count.size / count.total * 255 ),
+    b: family
+  };
+
+  var hsl = tinycolor( rgb ).toHsl();
+  hsl.l = config.lightness;
+  this.color = tinycolor(hsl);
+};
+
 // Build core Meeba stats from a trait list
 Meeba.prototype.buildStats = function() {
   var meeba = this;
@@ -161,8 +184,8 @@ Meeba.prototype.mutateTraits = function() {
 Meeba.prototype.reproduce = function() {
   var childCals = (this.calories - config.cost.spawn)/2;
 
-  this.children.push(new Meeba(this.mutateTraits(), childCals));
-  this.children.push(new Meeba(this.mutateTraits(), childCals));
+  this.children.push(new Meeba(this.mutateTraits(), childCals, this.family));
+  this.children.push(new Meeba(this.mutateTraits(), childCals, this.family));
 
   this.calories = -Infinity;
   this.decay();

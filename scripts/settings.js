@@ -7,7 +7,7 @@ var config = {
   spikeW: 0.025,
   quantity: 0,
 
-  color: '#34A853',
+  lightness: 40,
   moteSpawnRate: 0.4,
   maxBodies: 100,
   maxSpeed: 10,
@@ -48,7 +48,7 @@ var config = {
       mote: 5,
       starter: 500
     },
-    
+
     odds: {
       size: 20,
       spike: 1
