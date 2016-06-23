@@ -43,9 +43,9 @@ var config = {
   },
 
   traits: {
-    count: {
-      min: 10,
-      max: 500
+    max: {
+      mote: 5,
+      starter: 500
     },
     level: {
       min: 0,

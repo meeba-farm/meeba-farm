@@ -5,12 +5,12 @@
  *              MEEBAS                 *
  * * * * * * * * * * * * * * * * * * * */
 
-// Subclass of Mote, these meebas have full functionality
+// Creatures capable of eating, dying, and reproducing with mutations
 var Meeba = function(traits, calories) {
   this.color = tinycolor(config.color);
 
   // The digital genes of a meeba
-  this.traits = traits || this.getStartTraits();
+  this.traits = Array.isArray(traits) ? traits : this.createTraits(traits);
 
   // Build stats
   this.size = Math.PI * Math.pow(config.minR, 2);
@@ -100,10 +100,11 @@ Meeba.prototype.decay = function() {
 
 /*****  SPAWNING  *****/
 
-Meeba.prototype.getStartTraits = function() {
+// Builds an array of starter traits for spontaneous meebas
+Meeba.prototype.createTraits = function(max) {
   var traits = [];
 
-  for (var i = 0; i < rand(config.traits.count.min, config.traits.count.max); i++) {
+  for (var i = 0; i < rand(max); i++) {
     traits.push(new Trait().randomize());
   }
 

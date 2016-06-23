@@ -54,8 +54,8 @@ var runTasks = function(d) {
 
 var spawnMote = function() {
   if (state.bodies.length < config.maxBodies) {
-    // state.bodies.push(new Body( new Mote() ));
-    // drawMeebas();
+    state.bodies.push(new Body( new Meeba(config.traits.max.mote) ));
+    drawMeebas();
   }
   setTimeout(spawnMote, rand(2000/config.moteSpawnRate));
 };
@@ -184,8 +184,6 @@ var interact = function() {
 // Saves an array of current stats about every meeba
 var sumStats = function() {
   return state.bodies.reduce(function(stats, body) {
-    if (body.core.constructor !== Meeba) return stats;
-
     stats.count++;
     stats.cal += body.core.calories < 0 ? 0 : body.core.calories;
     stats.traits += body.core.traits.length;
@@ -212,7 +210,7 @@ var logStats = function() {
   state.averages.push(avg);
 
   console.log('\n',
-    '===== ', state.minutes++, 'minutes  =====',
+    '===== ', ++state.minutes, 'minutes  =====',
 
     '\nBODIES:\n',
     'total:', stats.count, ' delta:', (stats.count/state.stats[0].count+'').slice(0, 5), '\n',
@@ -243,7 +241,7 @@ var logStats = function() {
  * * * * * * * * * * * * * * * * * * * */
 
 state.bodies = d3.range(config.quantity).map(function() {
-  return new Body( new Meeba() );
+  return new Body( new Meeba(config.traits.max.starter) );
 });
 
 state.tank = d3.select('body').append('svg')
@@ -253,7 +251,11 @@ state.tank = d3.select('body').append('svg')
 drawMeebas();
 
 state.tank.on('click', function() {
-  state.bodies.push(new Body(new Meeba(), d3.event.x, d3.event.y));
+  state.bodies.push(new Body(
+    new Meeba(config.traits.max.starter), 
+    d3.event.x, 
+    d3.event.y
+  ));
   drawMeebas();
 });
 
@@ -272,7 +274,6 @@ d3.timer(function() {
 spawnMote();
 
 if (config.logStats) {
-  logStats();
   setInterval(function() {
     logStats();
   }, 60000);
