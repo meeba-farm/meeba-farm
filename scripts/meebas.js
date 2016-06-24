@@ -12,13 +12,11 @@ var Meeba = function(traits, calories, family) {
   this.traits = Array.isArray(traits) ? traits : this.createTraits(traits);
 
   // Build stats
+  this.isAlive = true;
   this.size = Math.PI * Math.pow(config.minR, 2);
   this.spikes = [];
   this.upkeep = 0;
   this.buildStats();
-
-  // Assign a color based on family lineage and traits
-  this.assignColor(family);
 
   // Sort spikes by length for faster collision detection
   this.spikes.sort(function(a, b) {
@@ -31,6 +29,9 @@ var Meeba = function(traits, calories, family) {
   this.deathLine = this.size * config.scale.death;
   this.spawnLine = this.size * config.scale.spawn;
 
+  // Assign a color based on family lineage and traits
+  this.setupColor(family);
+
   // Failsafe in case meebas are spawned with out-of-bounds limits
   if (this.deathLine > this.calories) this.deathLine = this.calories - 50;
   if (this.spawnLine < this.calories) this.spawnLine = this.calories + 50;
@@ -39,9 +40,11 @@ var Meeba = function(traits, calories, family) {
   this.children = [];
 
   // An array of methods to be run each animation frame
-  this.tasks = [this.tick, this.metabolize];
+  this.tasks = [this.tick, this.mature];
+
   this.lastTick = Date.now();
   this.time = 0;
+  this.age = 0;
 };
 
 
@@ -64,13 +67,14 @@ Meeba.prototype.removeTask = function(task) {
 //Runs basic meeba updates, especially updating their timestamp
 Meeba.prototype.tick = function() {
   var now = Date.now();
-  this.time = (now - this.lastTick)/1000;
+  this.time = now - this.lastTick;
   this.lastTick = now;
+  this.age += this.time;
 };
 
 // Runs updates specific to living meebas
 Meeba.prototype.metabolize = function() { 
-  this.calories -= this.upkeep * this.time;
+  this.calories -= this.upkeep/1000 * this.time;
   
   var hsl = this.color.toHsl();
   hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
@@ -78,6 +82,7 @@ Meeba.prototype.metabolize = function() {
 
   if (this.calories < this.deathLine) {
     this.isAlive = false;
+    this.removeTask(this.mature);
     this.removeTask(this.metabolize);
     this.addTask(this.decay);
     this.body.removeQuery(this.body.checkDrain);
@@ -88,20 +93,20 @@ Meeba.prototype.metabolize = function() {
   }
 };
 
+// Checks to see if a meeba is old enough to eat
+Meeba.prototype.mature = function() {
+  if (this.age > config.spawn.cooldown) {
+    this.removeTask(this.mature);
+    this.addTask(this.metabolize);
+    this.body.addQuery(this.body.checkDrain);
+  }
+  this.fade( getPerc(this.age, config.spawn.cooldown) );
+};
+
 // Runs updates specific to dead meebas
 Meeba.prototype.decay = function() {
   if (this.calories < 0) this.removeTask(this.decay);
-  var fade = getPerc(this.calories, this.deathLine);
-
-  var rgba = this.color.toRgb();
-  rgba.a = fade;
-  this.color = tinycolor( rgba );
-
-  this.spikes.forEach(function(spike) {
-    var rgba = spike.color.toRgb();
-    rgba.a = fade;
-    spike.color = tinycolor( rgba );
-  });
+  this.fade( getPerc(this.calories, this.deathLine) );
 };
 
 
@@ -119,7 +124,7 @@ Meeba.prototype.createTraits = function(max) {
   return traits;
 };
 
-Meeba.prototype.assignColor = function(family) {
+Meeba.prototype.setupColor = function(family) {
   if (family === undefined) family = Math.floor(rand(0, 256));
   this.family = family;
 
@@ -136,8 +141,10 @@ Meeba.prototype.assignColor = function(family) {
   };
 
   var hsl = tinycolor( rgb ).toHsl();
+  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
   hsl.l = config.lightness;
   this.color = tinycolor(hsl);
+  this.fade(0);
 };
 
 // Build core Meeba stats from a trait list
@@ -162,7 +169,7 @@ Meeba.prototype.buildStats = function() {
   this._r = Math.sqrt(this.size/Math.PI);
   this.spikes.forEach(function(spike) {
     spike.findPoints();
-  })
+  });
 };
 
 // Returns a mutated version of the meeba's traits
@@ -189,6 +196,15 @@ Meeba.prototype.mutateTraits = function() {
 
 
 /*****  INTERACTION  *****/
+
+// Adjust the alpha on all of the meeba's parts
+Meeba.prototype.fade = function(alpha) {
+  this.color.setAlpha(alpha);
+
+  this.spikes.forEach(function(spike) {
+    spike.color.setAlpha(alpha);
+  });
+};
 
 // Spawns two child meebas with possible mutations, then dies
 Meeba.prototype.reproduce = function() {

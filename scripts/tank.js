@@ -15,7 +15,7 @@ var Body = function(core, x, y, angle, speed) {
   this.speed = speed || rand(config.maxSpeed);
 
   // An array of methods to be run everytime two bodies interact
-  this.queries = [this.checkCollision, this.checkDrain];
+  this.queries = [this.checkCollision];
 
   // Collision detection work-rounds
   this.lastHit = '#none';

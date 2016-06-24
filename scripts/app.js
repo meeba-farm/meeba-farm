@@ -53,11 +53,11 @@ var runTasks = function(d) {
  * * * * * * * * * * * * * * * * * * * */
 
 var spawnMote = function() {
-  if (state.bodies.length < config.maxBodies) {
+  if (state.bodies.length < config.spawn.max) {
     state.bodies.push(new Body( new Meeba(config.traits.max.mote) ));
     drawMeebas();
   }
-  setTimeout(spawnMote, rand(2000/config.moteSpawnRate));
+  setTimeout(spawnMote, rand(2000/config.spawn.moteRate));
 };
 
 var spawnChildren = function(body) {
@@ -240,7 +240,7 @@ var logStats = function() {
  *              SET UP                 *
  * * * * * * * * * * * * * * * * * * * */
 
-state.bodies = d3.range(config.quantity).map(function() {
+state.bodies = d3.range(config.spawn.starters).map(function() {
   return new Body( new Meeba(config.traits.max.starter) );
 });
 

@@ -3,19 +3,23 @@
 var config = {
   w: window.innerWidth - 20,
   h: window.innerHeight - 20,
-  minR: 5,
-  spikeW: 0.025,
-  quantity: 15,
 
+  minR: 10,
+  spikeW: 0.025,
   lightness: 40,
-  moteSpawnRate: 0.4,
-  maxBodies: 100,
   maxSpeed: 10,
   dur: 100,
 
   buffer: {
     wall: 40,
     body: 10
+  },
+
+  spawn: {
+    starters: 15,
+    moteRate: 0.4,
+    max: 75,
+    cooldown: 2500
   },
 
   scale: {
@@ -30,10 +34,10 @@ var config = {
   },
 
   cost: {
-    pixel: 0.01,
-    spike: 36,
+    pixel: 0.005,
+    spike: 256,
     spawn: 100,
-    efficiency: 24
+    efficiency: 4
   },
 
   mutate: {
@@ -46,12 +50,12 @@ var config = {
   traits: {
     max: {
       level: 50,
-      mote: 8,
+      mote: 5,
       starter: 100
     },
 
     odds: {
-      size: 25,
+      size: 15,
       spike: 1
     }
   },

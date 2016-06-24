@@ -10,7 +10,6 @@ var abstractMethodError = "ABSTRACT METHOD CALLED WITHOUT IMPLEMENTATION.";
 
 var Meeba = function() { // traits = array of traits, calories = initial calories
   // TODO: Figure out how damage resistance works
-  this.isAlive = true;
   this.minCalories = this.getMinCalories(); // minimum calories, below which meeba dies
   this.curCalories = this.maxCalories;
   this.criticalHit = this.getCriticalHit(); // max caloric damage taken per turn without dying immediately
