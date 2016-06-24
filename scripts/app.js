@@ -1,41 +1,9 @@
-/**  HELPERS  **/
+// Sets up and runs the actual D3 engine
 
-// Moves meeba continuously at the same angle
-var move = function() {
-  var meeba = d3.select(this);
-  var dest = meeba.datum().getDest();
 
-  meeba.transition()
-    .duration(config.dur)
-    .ease('linear')
-    .attr('transform', 'translate(' + dest.x + ',' + dest.y + ')')
-    .each('end', move);
-};
-
-// Reflects environment changes on the datum, and vice versa
-var syncDatum = function() {
-  var meeba = d3.select(this);
-  var d = meeba.datum();
-
-  var pos = getPos( meeba.attr('transform') );
-  d.x = pos.x;
-  d.y = pos.y;
-
-  meeba.select('circle')
-    .attr('fill', d.core.color.toRgbString());
-
-  meeba.selectAll('polygon')
-    .each(function(d, i){
-      d3.select(this)
-        .attr('fill', d.core.spikes[i].color.toRgbString());
-    });
-
-  if (d.core.calories < 0) {
-    state.bodies.splice(state.bodies.indexOf(d), 1);
-    meeba.remove();
-    refreshData();
-  }
-};
+/* * * * * * * * * * * * * * * * * * * *
+ *              UPKEEP                 *
+ * * * * * * * * * * * * * * * * * * * */
 
 // Updates state.meebas with the current data
 var refreshData = function() {
@@ -44,42 +12,132 @@ var refreshData = function() {
     .data(state.bodies);
 };
 
-// Bounces meebas off the walls as needed
-var bounceWall = function() {
-  var d = d3.select(this).datum();
-  var buffer = d.speed / config.dur * config.wallBuffer;
+// Apply environment changes to the datum, and vice versa
+var syncDatum = function(d) {
+  var current = d3.select(this);
 
-  var eastwards = d.angle <= 0.25 || d.angle > 0.75;
-  var northwards = d.angle <= 0.5;
-  var westwards = d.angle > 0.25 && d.angle <= 0.75;
-  var southwards = d.angle > 0.5;
+  var pos = getPos( current.attr('transform') );
+  d.x = pos.x;
+  d.y = pos.y;
 
-  if (eastwards && d.x > config.w - d.r - buffer) {
-    d.lastHit = '#east-wall';
-    d.angle = bounceX(d.angle);
-  } else if (northwards && d.y < d.r + buffer) {
-    d.lastHit = '#north-wall';
-    d.angle = bounceY(d.angle);
-  } else if (westwards && d.x < d.r + buffer) {
-    d.lastHit = '#west-wall';
-    d.angle = bounceX(d.angle);
-  } else if (southwards && d.y > config.h - d.r - buffer) {
-    d.lastHit = '#south-wall';
-    d.angle = bounceY(d.angle);
+  current.select('circle')
+    .attr('fill', d.core.color.toRgbString());
+
+  current.selectAll('polygon')
+    .each(function(d, i){
+      d3.select(this)
+        .attr('fill', d.core.spikes[i].color.toRgbString());
+    });
+
+  if (d.core.children && d.core.children.length) {
+    spawnChildren(d);
   }
 
-  d3.select(d.id).each(move);
+  if (d.core.calories < 0) {
+    removeSelection(current);
+  }
 };
 
-// Runs each meeba's core tasks
-var runTasks = function() {
-  var meeba = d3.select(this).datum().core;
+// Runs each body's core tasks
+var runTasks = function(d) {
+  if (!d.core.tasks) return;
 
-  if (!meeba.tasks) return;
-
-  meeba.tasks.forEach(function(task) {
-    if (task) task.call(meeba);
+  d.core.tasks.forEach(function(task) {
+    if (task) task.call(d.core);
   });
+};
+
+
+/* * * * * * * * * * * * * * * * * * * *
+ *          DRAWING BODIES             *
+ * * * * * * * * * * * * * * * * * * * */
+
+var spawnMote = function() {
+  if (state.bodies.length < config.spawn.max) {
+    state.bodies.push(new Body( new Meeba(config.traits.max.mote) ));
+    drawMeebas();
+  }
+  setTimeout(spawnMote, rand(2000/config.spawn.moteRate));
+};
+
+var spawnChildren = function(body) {
+  var displace = -0.125;
+
+  while(body.core.children.length) {
+    state.bodies.push(new Body(
+      body.core.children.pop(), 
+      body.x + breakVector(body.angle + displace, 2*body.r).x, 
+      body.y + breakVector(body.angle + displace, 2*body.r).y,
+      body.angle + displace,
+      body.speed
+    ));
+    //NOTE: refactor `displace` if more than four children
+    displace += 0.25;
+  }
+
+  drawMeebas();
+};
+
+// Adds any new meebas to the tank and starts them moving
+var drawMeebas = function() {
+  refreshData();
+
+  var newMeebas = state.meebas
+    .enter()
+    .append('g')
+    .attr('id', function(d){ return d.id.slice(1); })
+    .attr('transform', function(d) {
+      return 'translate(' + d.x + ',' + d.y + ')';
+    });
+
+  newMeebas.each(function() {
+    var current = d3.select(this);
+    current.datum().core.spikes.forEach(function(spike) {
+      current.append('polygon')
+        .attr('fill', spike.color.toRgbString())
+        .attr('points', spike.getPoints());
+    });
+  });
+
+  newMeebas.append('circle')
+    .attr('r', function(d){ return d.r; })
+    .attr('fill', function(d){ return d.core.color.toRgbString(); });
+
+  state.meebas.each(move);
+};
+
+var removeSelection = function(current) {
+  state.bodies.splice(state.bodies.indexOf(current.datum()), 1);
+  current.remove();
+  refreshData();
+};
+
+
+/* * * * * * * * * * * * * * * * * * * *
+ *          MOVING BODIES              *
+ * * * * * * * * * * * * * * * * * * * */
+
+// Moves meeba continuously at the same angle
+var move = function() {
+  var current = d3.select(this);
+  var dest = current.datum().getDest();
+
+  current.transition()
+    .duration(config.dur)
+    .ease('linear')
+    .attr('transform', 'translate(' + dest.x + ',' + dest.y + ')')
+    .each('end', move);
+};
+
+// Bounces meebas off the walls as needed
+var resolveBounce = function(d) {
+  var prevAngle = d.angle;
+  d.bounceWall();
+
+  if (d.angle !== prevAngle) {
+    d.lastHit = '#wall';
+    d3.select(this).each(move);
+  }
 };
 
 // Uses a quadtree to allow pairs of nearby meebas to interact
@@ -88,8 +146,7 @@ var interact = function() {
   var actions = [];
   var met = {};
 
-  state.meebas.each(function() {
-    var d = d3.select(this).datum();
+  state.meebas.each(function(d) {
     met[d.id] = {};
 
     tree.visit(function(quad, x1, y1, x2, y2) {
@@ -117,46 +174,74 @@ var interact = function() {
   actions.forEach(function(action) {
     if (action) action();
   });
-
 };
 
-var spawnMote = function() {
-  state.bodies.push(new Body( new Mote() ));
-  drawMeebas();
-  setTimeout(spawnMote, rand(2000/config.moteSpawnRate));
+
+/* * * * * * * * * * * * * * * * * * * *
+ *           STAT TRACKING             *
+ * * * * * * * * * * * * * * * * * * * */
+
+// Saves an array of current stats about every meeba
+var sumStats = function() {
+  return state.bodies.reduce(function(stats, body) {
+    stats.count++;
+    stats.cal += body.core.calories < 0 ? 0 : body.core.calories;
+    stats.traits += body.core.traits.length;
+    stats.size += body.core.size;
+    stats.spikes += body.core.spikes.length;
+    stats.spikeLength += body.core.spikes.reduce(function(total, spike) {
+      return total + spike.length;
+    }, 0);
+    return stats;
+  }, {count:0, cal: 0, traits: 0, size: 0, spikes: 0, spikeLength: 0});
 };
 
-// Adds any new meebas to the tank and starts them moving
-var drawMeebas = function() {
-  refreshData();
+// Gathers and logs stats about the current meebas
+var logStats = function() {
+  var stats = sumStats();
+  var avg = {};
 
-  var newMeebas = state.meebas
-    .enter()
-    .append('g')
-    .attr('id', function(d){ return d.id.slice(1); })
-    .attr('transform', function(d) { 
-      return 'translate(' + d.x + ',' + d.y + ')';
-    });
+  for (var stat in stats) {
+    stats[stat] = Math.floor(stats[stat]);
+    avg[stat] = Math.floor(stats[stat] / stats.count);
+  }
 
-  newMeebas.each(function() {
-    var meeba = d3.select(this);
-    meeba.datum().core.spikes.forEach(function(spike) {
-      meeba.append('polygon')
-        .attr('fill', spike.color.toRgbString())
-        .attr('points', spike.getPoints());
-    });
-  });
+  state.stats.push(stats);
+  state.averages.push(avg);
 
-  newMeebas.append('circle')
-    .attr('r', function(d){ return d.r; })
-    .attr('fill', function(d){ return d.core.color.toRgbString(); });
+  console.log('\n',
+    '===== ', ++state.minutes, 'minutes  =====',
 
-  state.meebas.each(move);
+    '\nBODIES:\n',
+    'total:', stats.count, ' delta:', (stats.count/state.stats[0].count+'').slice(0, 5), '\n',
+
+    '\nCALORIES:\n',
+    'total:', stats.cal, ' delta:', (stats.cal/state.stats[0].cal+'').slice(0, 5), '\n',
+    'average:', avg.cal, ' delta:', (avg.cal/state.averages[0].cal+'').slice(0, 5), '\n',
+
+    '\nTRAITS:\n',
+    'total:', stats.traits, ' delta:', (stats.traits/state.stats[0].traits+'').slice(0, 5), '\n',
+    'average:', avg.traits, ' delta:', (avg.traits/state.averages[0].traits+'').slice(0, 5), '\n',
+
+    '\nSIZE:\n',
+    'total:', stats.size, ' delta:', (stats.size/state.stats[0].size+'').slice(0, 5), '\n',
+    'average:', avg.size, ' delta:', (avg.size/state.averages[0].size+'').slice(0, 5), '\n',
+
+    '\nSPIKES:\n',
+    'count:', stats.spikes, ' delta:', (stats.spikes/state.stats[0].spikes+'').slice(0, 5), '\n',
+    'average:', avg.spikes, ' delta:', (avg.spikes/state.averages[0].spikes+'').slice(0, 5), '\n',
+    'length:', stats.spikeLength, ' delta:', (stats.spikeLength/state.stats[0].spikeLength+'').slice(0, 4), '\n',
+    'average:', avg.spikeLength, ' delta:', (avg.spikeLength/state.averages[0].spikeLength+'').slice(0, 4), '\n',
+  '\n');
 };
 
-/**  SET UP  **/
-state.bodies = d3.range(config.quantity).map(function() {
-  return new Body( new Meeba() );
+
+/* * * * * * * * * * * * * * * * * * * *
+ *              SET UP                 *
+ * * * * * * * * * * * * * * * * * * * */
+
+state.bodies = d3.range(config.spawn.starters).map(function() {
+  return new Body( new Meeba(config.traits.max.starter) );
 });
 
 state.tank = d3.select('body').append('svg')
@@ -165,18 +250,31 @@ state.tank = d3.select('body').append('svg')
 
 drawMeebas();
 
-
-/**  RUN  **/
 state.tank.on('click', function() {
-  state.bodies.push(new Body(new Meeba(), d3.event.x, d3.event.y));
+  state.bodies.push(new Body(
+    new Meeba(config.traits.max.starter), 
+    d3.event.x, 
+    d3.event.y
+  ));
   drawMeebas();
 });
 
+
+/* * * * * * * * * * * * * * * * * * * *
+ *                RUN                  *
+ * * * * * * * * * * * * * * * * * * * */
+
 d3.timer(function() {
   state.meebas.each(syncDatum);
-  state.meebas.each(bounceWall);
+  state.meebas.each(resolveBounce);
   interact();
   state.meebas.each(runTasks);
 });
 
 spawnMote();
+
+if (config.logStats) {
+  setInterval(function() {
+    logStats();
+  }, 60000);
+}

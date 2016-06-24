@@ -5,9 +5,9 @@
 var Body = function(core, x, y, angle, speed) {
   this.core = core;
   this.core.body = this;
-  this.id = '#n' + ('00' + state.count++).slice(-3);
+  this.id = '#b' + ('00' + state.count++).slice(-3);
 
-  this.r = Math.sqrt(this.core.size/Math.PI);
+  this.r = this.core._r;
   this.x = x || rand(this.r, config.w - this.r);
   this.y = y || rand(this.r, config.h - this.r);
 
@@ -15,7 +15,7 @@ var Body = function(core, x, y, angle, speed) {
   this.speed = speed || rand(config.maxSpeed);
 
   // An array of methods to be run everytime two bodies interact
-  this.queries = [this.getCollision, this.getDrain];
+  this.queries = [this.checkCollision];
 
   // Collision detection work-rounds
   this.lastHit = '#none';
@@ -47,17 +47,31 @@ Body.prototype.getDest = function() {
   return vector;
 };
 
+// Checks if a body should bounce off a wall and changes angle accordingly
+Body.prototype.bounceWall = function() {
+  var buffer = this.speed / config.dur * config.buffer.wall + this.r;
+
+  if (getGap(0, this.angle) < 0.25 && this.x > config.w - buffer) {
+    this.angle = bounceX(this.angle);
+  } else if (getGap(0.25, this.angle) < 0.25 && this.y < buffer) {
+    this.angle = bounceY(this.angle);
+  } else if (getGap(0.5, this.angle) < 0.25 && this.x < buffer) {
+    this.angle = bounceX(this.angle);
+  } else if (getGap(0.75, this.angle) < 0.25 && this.y > config.h - buffer) {
+    this.angle = bounceY(this.angle);
+  }
+};
+
 // Checks to see if a body should collide with another
 // Returns an action function to create the collision
-Body.prototype.getCollision = function(body) {
+Body.prototype.checkCollision = function(body) {
   if (this.lastHit === body && body.lastHit === this) return;
   if (this.cantHit[body.id] || body.cantHit[this.id]) return;
 
-  var buffer = (this.speed + body.speed) / config.dur * config.bodyBuffer;
-  var distance = getDist(this.x, this.y, body.x, body.y);
+  var buffer = (this.speed + body.speed) / config.dur * config.buffer.body;
   var widths = this.r + body.r + buffer;
 
-  if (distance < widths) {
+  if ( isCloser(this.x, this.y, body.x, body.y, widths) ) {
     var thisBody = this;
 
     // Two bodies may not collide twice in a row
@@ -84,23 +98,52 @@ Body.prototype.getCollision = function(body) {
   }
 };
 
-Body.prototype.getDrain = function(body) {
-  var thisBody = this;
-  var drains = this.core.spikes.reduce(function(drains, spike) {
-    var tip = breakVector(spike.angle, spike.length + thisBody.r);
-    tip.x += thisBody.x;
-    tip.y += thisBody.y;
+Body.prototype.checkDrain = function(body) {
+  var drainers = [];
 
-    if (getDist(tip.x, tip.y, body.x, body.y) < body.r) {
-      drains.push( spike.drain.bind(spike, body) );
+
+  // Go through spikes running progressively more costly checks to see
+  // if there is a collision, and pushes spike if there is
+  for (var i = 0, len = this.core.spikes.length; i < len; i++) {
+    var spike = this.core.spikes[i];
+
+    // If body is too far from meeba, bail since spikes are sorted by length
+    if (!isCloser(this.x, this.y, body.x, body.y, this.r+body.r+spike.length)) {
+      break;
     }
 
-    return drains;
-  }, []);
+    // Does body overlap with tip?
+    var tip = {
+      x: spike.points[0].x + this.x,
+      y: spike.points[0].y + this.y
+    };
+    if (isCloser(body.x, body.y, tip.x, tip.y, body.r)) {
+      drainers.push(spike);
+      continue;
+    }
 
-  if (drains.length) return function() {
-    drains.forEach(function(drain) {
-      drain();
+    // Is body too far from tip?
+    var tipVect = mergeVector(body.x-tip.x, body.y-tip.y);
+    if (tipVect.speed > spike.length + body.r) {
+      continue;
+    }
+
+    // Is body ahead of tip?
+    var tipGap = getGap(roundAngle(spike.angle+0.5), tipVect.angle);
+    if (tipGap > 0.25) {
+      continue;
+    }
+
+    // Is body close enough to line?
+    if (getSin(tipGap) * tipVect.speed < body.r) {
+      drainers.push(spike);
+    }
+  }
+
+  // If any spikes are draining, return a function to call them
+  if (drainers.length) return function() {
+    drainers.forEach(function(spike) {
+      spike.drain(body);
     });
   };
 };
