@@ -2,9 +2,110 @@
 <html>
   <head>
   <title>Meeba Farm</title>
-    <link rel="stylesheet" type="css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
   </head>
   <body>
+    <div class="config">
+      <div class="heading">
+        <h1>Meeba Farm</h1>
+        <h2>Settings</h2>
+      </div>
+
+      <div class="column">
+        <div class="group">
+          <h3>genome</h3>
+          <div class="setting">
+            <span class="label">mutation rate</span>
+            <input id="gene-rate" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">max strength</span>
+            <input id="gene-strength" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">size odds</span>
+            <input id="gene-odds-size" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">spike odds</span>
+            <input id="gene-odds-spike" type="number" value="0">
+          </div>
+        </div><!-- /group -->
+
+        <div class="group">
+          <h3>size</h3>
+          <div class="setting">
+            <span class="label">cost</span>
+            <input id="size-cost" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">efficiency</span>
+            <input id="size-efficiency" type="number" value="0">
+          </div>
+        </div><!-- /group -->
+      </div><!-- /column -->
+
+      <div class="column">
+        <div class="group">
+          <h3>spawn</h3>
+          <div class="setting">
+            <span class="label">cost</span>
+            <input id="spawn-cost" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">cooldown</span>
+            <input id="spawn-cooldown" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label"># of children</span>
+            <input id="spawn-count" type="number" value="0">
+          </div>
+        </div><!-- /group -->
+
+        <div class="group">
+          <h3>spikes</h3>
+          <div class="setting">
+            <span class="label">cost</span>
+            <input id="spike-cost" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">base damage</span>
+            <input id="spike-damage" type="number" value="0">
+          </div>
+        </div><!-- /group -->
+      </div><!-- /column -->
+
+      <div class="column">
+        <div class="group">
+          <h3>starters</h3>
+          <div class="setting">
+            <span class="label">max genes</span>
+            <input id="starter-genes" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">number</span>
+            <input id="starter-count" type="number" value="0">
+          </div>
+        </div><!-- /group -->
+
+        <div class="group">
+          <h3>motes</h3>
+          <div class="setting">
+            <span class="label">max genes</span>
+            <input id="mote-genes" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">spawn rate</span>
+            <input id="mote-rate" type="number" value="0">
+          </div>
+          <div class="setting">
+            <span class="label">max bodies</span>
+            <input id="mote-max" type="number" value="0">
+          </div>
+        </div><!-- /group -->
+      </div><!-- /column -->
+    </div><!-- /config -->
+
     <script src="lib/d3.js" charset="utf-8"></script>
     <script src="lib/tinycolor.js" charset="utf-8"></script>
     <script src="scripts/settings.js" charset="utf-8"></script>

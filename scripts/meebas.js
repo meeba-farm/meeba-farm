@@ -25,7 +25,7 @@ var Meeba = function(traits, calories, family) {
 
   // Various caloric stats based on size
   this.calories = calories || this.size * config.scale.start;
-  this.upkeep *= this.size / Math.pow(this.size, config.cost.efficiency);
+  this.upkeep *= this.size / Math.pow(this.size, config.size.efficiency);
   this.deathLine = this.size * config.scale.death;
   this.spawnLine = this.size * config.scale.spawn;
 
@@ -208,10 +208,11 @@ Meeba.prototype.fade = function(alpha) {
 
 // Spawns two child meebas with possible mutations, then dies
 Meeba.prototype.reproduce = function() {
-  var childCals = (this.calories - config.cost.spawn)/2;
+  var childCals = (this.calories - config.spawn.cost)/config.spawn.count;
 
-  this.children.push(new Meeba(this.mutateTraits(), childCals, this.family));
-  this.children.push(new Meeba(this.mutateTraits(), childCals, this.family));
+  for (var i = 0; i < config.spawn.count; i++) {
+    this.children.push(new Meeba(this.mutateTraits(), childCals, this.family));
+  }
 
   this.calories = -Infinity;
   this.decay();
@@ -234,14 +235,14 @@ Meeba.prototype.handleDrain = function(damage) {
  * * * * * * * * * * * * * * * * * * * */
 
 var Trait = function(type, level) {
-  this.type = type || rand(config.traits.odds);
+  this.type = type || rand(config.gene.odds);
 
-  if (level === undefined) level = rand(config.traits.max.level);
+  if (level === undefined) level = rand(config.gene.strength);
   this.level = level < 0 ? 0 : level;
 
   var traitCosts = {
-    size: this.level * config.cost.pixel,
-    spike: config.cost.spike
+    size: this.level * config.size.cost,
+    spike: config.spike.cost
   };
 
   this.upkeep = traitCosts[this.type];
@@ -268,7 +269,7 @@ var Spike = function(meeba, angle, length) {
   this.angle = angle;
   this.length = length;
   this.color = tinycolor('black');
-  this.damage = config.damage.base / Math.pow(this.length < 1 ? 1 : this.length, config.damage.scale);
+  this.damage = config.spike.damage / Math.pow(this.length < 1 ? 1 : this.length, config.spike.scale);
   this.drainCount = 0;
 };
 

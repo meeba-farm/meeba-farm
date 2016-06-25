@@ -3,6 +3,8 @@
 var config = {
   w: window.innerWidth - 20,
   h: window.innerHeight - 20,
+  logStats: true,
+  lutLevels: 1024,
 
   minR: 10,
   spikeW: 0.025,
@@ -10,58 +12,55 @@ var config = {
   maxSpeed: 10,
   dur: 100,
 
-  buffer: {
-    wall: 40,
-    body: 10
+  gene: {
+    rate: 0.1,
+    spread: 0.5,
+    portion: 10,
+    strength: 50,
+    odds: {
+      size: 20,
+      spike: 1
+    }
+  },
+
+  starter: {
+    genes: 100,
+    count: 15,
+  },
+
+  mote: {
+    genes: 5,
+    rate: 0.4,
+    max: 75,
+  },
+
+  size: {
+    cost: 0.005,
+    efficiency: 2
+  },
+
+  spike: {
+    cost: 256,
+    damage: 256,
+    scale: 1.025
   },
 
   spawn: {
-    starters: 15,
-    moteRate: 0.4,
-    max: 75,
-    cooldown: 2500
+    cost: 100,
+    cooldown: 2500,
+    count: 2
+  },
+
+  buffer: {
+    wall: 40,
+    body: 10
   },
 
   scale: {
     start: 1.5,
     death: 0.5,
     spawn: 2
-  },
-
-  damage: {
-    base: 250,
-    scale: 1.025
-  },
-
-  cost: {
-    pixel: 0.005,
-    spike: 256,
-    spawn: 100,
-    efficiency: 4
-  },
-
-  mutate: {
-    rate: 0.1,
-    spread: 0.5,
-    proportion: 10,
-    pressure: 2
-  },
-
-  traits: {
-    max: {
-      level: 50,
-      mote: 5,
-      starter: 100
-    },
-
-    odds: {
-      size: 15,
-      spike: 1
-    }
-  },
-
-  logStats: true,
-  lutLevels: 1024
+  }
 };
 
 var state = {

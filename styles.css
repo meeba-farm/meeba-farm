@@ -2,3 +2,37 @@
 svg {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
+
+.config {
+  position: fixed;
+  background-color: rgba(240, 240, 240, 0.9);
+  border: solid 1px #ffffff;
+  border-radius: 5px;
+  overflow: scroll;
+  left: 4vw;
+  top: 4vw;
+  height: 78vh;
+  width: 92vw;
+}
+
+.heading {
+  text-align: center;
+}
+
+.column {
+  display: inline-block;
+  width: 29%;
+  min-width: 256px;
+  margin: 0 2%;
+}
+
+.label {
+  display: inline-block;
+  margin: 0.2em 0;
+  width: 40%;
+}
+
+input {
+  text-align: right;
+  width: 30%;
+}

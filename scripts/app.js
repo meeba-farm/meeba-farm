@@ -53,11 +53,11 @@ var runTasks = function(d) {
  * * * * * * * * * * * * * * * * * * * */
 
 var spawnMote = function() {
-  if (state.bodies.length < config.spawn.max) {
-    state.bodies.push(new Body( new Meeba(config.traits.max.mote) ));
+  if (state.bodies.length < config.mote.max) {
+    state.bodies.push(new Body( new Meeba(config.mote.genes) ));
     drawMeebas();
   }
-  setTimeout(spawnMote, rand(2000/config.spawn.moteRate));
+  setTimeout(spawnMote, rand(2000/config.mote.rate));
 };
 
 var spawnChildren = function(body) {
@@ -240,8 +240,8 @@ var logStats = function() {
  *              SET UP                 *
  * * * * * * * * * * * * * * * * * * * */
 
-state.bodies = d3.range(config.spawn.starters).map(function() {
-  return new Body( new Meeba(config.traits.max.starter) );
+state.bodies = d3.range(config.starter.count).map(function() {
+  return new Body( new Meeba(config.starter.genes) );
 });
 
 state.tank = d3.select('body').append('svg')
@@ -252,7 +252,7 @@ drawMeebas();
 
 state.tank.on('click', function() {
   state.bodies.push(new Body(
-    new Meeba(config.traits.max.starter), 
+    new Meeba(config.starter.genes), 
     d3.event.x, 
     d3.event.y
   ));
