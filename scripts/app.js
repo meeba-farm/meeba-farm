@@ -53,11 +53,11 @@ var runTasks = function(d) {
  * * * * * * * * * * * * * * * * * * * */
 
 var spawnMote = function() {
-  if (state.bodies.length < config.spawn.max) {
-    state.bodies.push(new Body( new Meeba(config.traits.max.mote) ));
+  if (state.bodies.length < config.mote.max) {
+    state.bodies.push(new Body( new Meeba(config.mote.genes) ));
     drawMeebas();
   }
-  setTimeout(spawnMote, rand(2000/config.spawn.moteRate));
+  setTimeout(spawnMote, rand(2000/config.mote.rate));
 };
 
 var spawnChildren = function(body) {
@@ -240,29 +240,108 @@ var logStats = function() {
  *              SET UP                 *
  * * * * * * * * * * * * * * * * * * * */
 
-state.bodies = d3.range(config.spawn.starters).map(function() {
-  return new Body( new Meeba(config.traits.max.starter) );
-});
+var populate = function(){
+  state.bodies = d3.range(config.seed.count).map(function() {
+    return new Body( new Meeba(config.seed.genes) );
+  });
+
+  drawMeebas();
+};
+
+var setInerfaceVals = function() {
+  d3.selectAll('input').each(function() {
+    this.value = setConfig(this.id);
+  });
+
+  d3.selectAll('.range > input').each(function() {
+    d3.select(this.nextElementSibling).text(this.value);
+  });
+};
 
 state.tank = d3.select('body').append('svg')
   .attr('width', config.w)
   .attr('height', config.h);
 
-drawMeebas();
-
 state.tank.on('click', function() {
   state.bodies.push(new Body(
-    new Meeba(config.traits.max.starter), 
+    new Meeba(config.seed.genes), 
     d3.event.x, 
     d3.event.y
   ));
   drawMeebas();
 });
 
+d3.selectAll('input').on('input', function() {
+  setConfig(this.id, this.value);
+  localStorage.setItem('config', JSON.stringify(config));
+});
+
+d3.selectAll('.range > input').on('input', function() {
+  d3.select(this.nextElementSibling).text(this.value);
+});
+
+d3.selectAll('.btn-hover > i').on('mouseenter', function() {
+  d3.select(this).classed('fa-spin', true);
+});
+
+d3.selectAll('.btn-hover > i').on('mouseleave', function() {
+  d3.select(this).classed('fa-spin', false);
+});
+
+d3.select('#reset-meebas').on('click', function() {
+  state.bodies = [];
+  state.meebas.remove();
+  refreshData();
+  populate();
+});
+
+d3.select('#restore-defaults').on('click', function() {
+  localStorage.setItem('config', null);
+  config = defaults;
+  setInerfaceVals();
+});
+
+d3.select('#show-ui').on('click', function() {
+  d3.select('#config').transition()
+    .duration(600)
+    .style('top', '4vh')
+    .style('display', 'block');
+
+  d3.select('#footer').transition()
+    .duration(600)
+    .style('top', '82vh')
+    .style('display', 'block');
+
+  d3.select('#show-ui').transition()
+    .duration(600)
+    .style('right', '-4em')
+    .style('display', 'none');
+});
+
+d3.select('#hide-ui').on('click', function() {
+  d3.select('#config').transition()
+    .duration(600)
+    .style('top', '-78vh')
+    .style('display', 'none');
+
+  d3.select('#footer').transition()
+    .duration(600)
+    .style('top', '104vh')
+    .style('display', 'none');
+
+  d3.select('#show-ui').transition()
+    .duration(600)
+    .style('right', '0.7em')
+    .style('display', 'block');
+});
+
 
 /* * * * * * * * * * * * * * * * * * * *
  *                RUN                  *
  * * * * * * * * * * * * * * * * * * * */
+
+populate();
+setInerfaceVals();
 
 d3.timer(function() {
   state.meebas.each(syncDatum);

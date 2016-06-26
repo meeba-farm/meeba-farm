@@ -66,14 +66,14 @@ var mutateVal = function(num) {
   num = num || 0;
 
   var rate = rand() < 0.5 ? -1 : 1;
-  rate *= Math.abs(num) > config.mutate.proportion ? num / config.mutate.proportion : 1;
+  rate *= Math.abs(num) > config.gene.portion ? num / config.gene.portion : 1;
 
-  var target = config.mutate.rate;
+  var target = config.gene.rate;
   var roll = rand();
   var delta = 0;
 
   while(roll < target) {
-    target *= config.mutate.spread;
+    target *= config.gene.spread;
     delta++;
   }
 
@@ -114,6 +114,20 @@ var getPos = function(transform) {
 
     return pos;
   }, {});
+};
+
+var setConfig = function(ids, value) {
+  var setting = config;
+  ids = Array.isArray(ids) ? ids : ids.split('-');
+
+  for (var i = 0; i < ids.length - 1; i++) {
+    setting = setting[ ids[i] ];
+  }
+
+  if (value !== undefined) {
+    setting[ ids[i] ] = value;
+  }
+  return setting[ ids[i] ];
 };
 
 

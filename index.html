@@ -2,9 +2,130 @@
 <html>
   <head>
   <title>Meeba Farm</title>
-    <link rel="stylesheet" type="css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="lib/fa/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Lato:700,300,100">
   </head>
   <body>
+    <a id="show-ui" class="btn-float"><i class="fa fa-cog fa-2x"></i></a>
+
+    <div id="config" class="interface">
+      <div class="heading">
+        <h1>Meeba Farm</h1>
+        <h2>Settings</h2>
+      </div>
+
+      <div class="column">
+        <div class="group">
+          <h3>genome</h3>
+          <div class="setting" title="Percent of time a gene will mutate">
+            <span class="label">mutation rate</span>
+            <input id="gene-rate" type="number">
+          </div>
+          <div class="setting" title="Maximum strength new genes spawn with (mutated genes have no upper limit)">
+            <span class="label">max strength</span>
+            <input id="gene-strength" type="number">
+          </div>
+          <div class="setting" title="How often new genes build size">
+            <span class="label">size odds</span>
+            <input id="gene-odds-size" type="number">
+          </div>
+          <div class="setting" title="How often new genes create a spike">
+            <span class="label">spike odds</span>
+            <input id="gene-odds-spike" type="number">
+          </div>
+        </div><!-- /group -->
+
+        <div class="group">
+          <h3>size</h3>
+          <div class="setting" title="Caloric cost per pixel per second">
+            <span class="label">cost</span>
+            <input id="size-cost" type="number">
+          </div>
+          <div class="setting" title="Increase in calorie efficiency from size">
+            <span class="label">efficiency</span>
+            <input id="size-efficiency" type="number">
+          </div>
+        </div><!-- /group -->
+      </div><!-- /column -->
+
+      <div class="column">
+        <div class="group">
+          <h3>spawn</h3>
+          <div class="setting" title="Calories lost when spawning">
+            <span class="label">cost</span>
+            <input id="spawn-cost" type="number">
+          </div>
+          <div class="setting" title="Time in milliseconds before new meebas can feed">
+            <span class="label">cooldown</span>
+            <input id="spawn-cooldown" type="number">
+          </div>
+          <div class="setting" title="Number of children created per spawning">
+            <span class="label"># of children</span>
+            <span class="range">
+              <input id="spawn-count" type="range" min="0" max="4">
+              <span class="range-label"></span>
+            </span>
+          </div>
+        </div><!-- /group -->
+
+        <div class="group">
+          <h3>spikes</h3>
+          <div class="setting" title="Caloric cost per spike per second">
+            <span class="label">cost</span>
+            <input id="spike-cost" type="number">
+          </div>
+          <div class="setting" title="The most caloric damage a spike can do (decreaes with length)">
+            <span class="label">base damage</span>
+            <input id="spike-damage" type="number">
+          </div>
+        </div><!-- /group -->
+      </div><!-- /column -->
+
+      <div class="column">
+        <div class="group">
+          <h3>seed meebas</h3>
+          <div class="setting" title="The most genes new seed meebas can have">
+            <span class="label">max genes</span>
+            <input id="seed-genes" type="number">
+          </div>
+          <div class="setting" title="The number of seed meebas that spawn at start">
+            <span class="label">number</span>
+            <input id="seed-count" type="number">
+          </div>
+        </div><!-- /group -->
+
+        <div class="group">
+          <h3>motes</h3>
+          <div class="setting" title="The most genes new motes can have">
+            <span class="label">max genes</span>
+            <input id="mote-genes" type="number">
+          </div>
+          <div class="setting" title="The average number of motes that spawn per second">
+            <span class="label">spawn rate</span>
+            <input id="mote-rate" type="number">
+          </div>
+          <div class="setting" title="The number of bodies at which motes stop spawning">
+            <span class="label">max bodies</span>
+            <input id="mote-max" type="number">
+          </div>
+        </div><!-- /group -->
+      </div><!-- /column -->
+
+      <div class="buttons">
+        <a id="restore-defaults" class="btn">Restore Defaults</a>
+        <a id="reset-meebas" class="btn">Reset Meebas</a>
+        <a id="hide-ui" class="btn primary">Dismiss</a>
+      </div>
+    </div><!-- /config -->
+
+    <div id="footer" class="interface">
+      <div class="heading">
+        Meeba Farm is a project by <a href="https://github.com/delventhalz" target="_blank">Zac Delventhal</a>, made utilizing <a href="https://d3js.org/" target="_blank">D3</a>, <a href="https://bgrins.github.io/TinyColor/" target="_blank">Tinycolor</a>, and <a href="http://fontawesome.io/" target="_blank">Font Awesome</a>. <br>
+        It is open source, and licensed under the <a href="https://github.com/meeba-farm/meeba-farm/blob/master/LICENSE" target="_blank">MIT License</a>. If you enjoy it, consider making your own <a href="https://github.com/meeba-farm/meeba-farm" target="_blank">contributions</a>.
+      </div>
+    </div>
+
     <script src="lib/d3.js" charset="utf-8"></script>
     <script src="lib/tinycolor.js" charset="utf-8"></script>
     <script src="scripts/settings.js" charset="utf-8"></script>
