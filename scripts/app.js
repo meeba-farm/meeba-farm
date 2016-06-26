@@ -272,6 +272,41 @@ d3.selectAll('.range > input').on('input', function() {
   d3.select(this.nextSibling).text(this.value);
 });
 
+d3.selectAll('.btn-hover > i').on('mouseenter', function() {
+  console.log('enter');
+  d3.select(this).classed('fa-spin', true);
+});
+
+d3.selectAll('.btn-hover > i').on('mouseleave', function() {
+  console.log('leave');
+  d3.select(this).classed('fa-spin', false);
+});
+
+d3.select('#show-ui').on('click', function() {
+  d3.select('#show-ui').transition()
+    .delay(0)
+    .duration(600)
+    .style('right', '-4em');
+
+  d3.select('#config').transition()
+    .delay(0)
+    .duration(600)
+    .style('top', '4vh');
+});
+
+d3.select('#hide-ui').on('click', function() {
+  d3.select('#show-ui').transition()
+    .delay(0)
+    .duration(600)
+    .style('right', '0.7em');
+
+  d3.select('#config').transition()
+    .delay(0)
+    .duration(600)
+    .style('top', '-78vh');
+});
+
+
 /* * * * * * * * * * * * * * * * * * * *
  *                RUN                  *
  * * * * * * * * * * * * * * * * * * * */

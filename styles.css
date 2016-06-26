@@ -3,15 +3,15 @@ svg {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
-.config {
+.interface {
   position: fixed;
   background-color: rgba(240, 240, 240, 0.9);
   border: solid 1px #ffffff;
-  border-radius: 5px;
-  overflow: scroll;
+  border-radius: 8px;
+  overflow: auto;
   left: 4vw;
-  top: 4vw;
-  height: 78vh;
+  top: -78vh;
+  max-height: 92vh;
   width: 92vw;
 }
 
@@ -24,6 +24,12 @@ svg {
   width: 29%;
   min-width: 256px;
   margin: 0 2%;
+}
+
+.buttons {
+  text-align: right;
+  margin: 1em;
+  margin-top: 2em;
 }
 
 .label {
@@ -45,4 +51,18 @@ input {
 .range > input {
   width: 85%;
   margin-right: 0.5em;
+}
+
+.btn-hover {
+  position: fixed;
+  color: #999;
+  top: 0.7em;
+  right: 0.7em;
+  cursor: pointer;
+}
+
+button {
+  font-size: 1.5em;
+  border-radius: 3px;
+  cursor: pointer;
 }

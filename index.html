@@ -3,9 +3,12 @@
   <head>
   <title>Meeba Farm</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="lib/fa/css/font-awesome.min.css">
   </head>
   <body>
-    <div class="config">
+    <span id="show-ui" class="btn-hover"><i class="fa fa-cog fa-2x"></i></span>
+
+    <div id="config" class="interface">
       <div class="heading">
         <h1>Meeba Farm</h1>
         <h2>Settings</h2>
@@ -107,6 +110,10 @@
           </div>
         </div><!-- /group -->
       </div><!-- /column -->
+
+      <div class="buttons">
+        <button id="hide-ui">Dismiss</button>
+      </div>
     </div><!-- /config -->
 
     <script src="lib/d3.js" charset="utf-8"></script>
