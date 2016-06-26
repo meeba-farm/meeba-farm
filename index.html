@@ -4,9 +4,10 @@
   <title>Meeba Farm</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="stylesheet" type="text/css" href="lib/fa/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Lato:700,300,100">
   </head>
   <body>
-    <span id="show-ui" class="btn-hover"><i class="fa fa-cog fa-2x"></i></span>
+    <a id="show-ui" class="btn-float"><i class="fa fa-cog fa-2x"></i></a>
 
     <div id="config" class="interface">
       <div class="heading">
@@ -112,9 +113,18 @@
       </div><!-- /column -->
 
       <div class="buttons">
-        <button id="hide-ui">Dismiss</button>
+        <a id="restore-defaults" class="btn">Restore Defaults</a>
+        <a id="reset-meebas" class="btn">Reset Meebas</a>
+        <a id="hide-ui" class="btn primary">Dismiss</a>
       </div>
     </div><!-- /config -->
+
+    <div id="footer" class="interface">
+      <div class="heading">
+        Meeba Farm is a project by <a href="https://github.com/delventhalz" target="_blank">Zac Delventhal</a>, made utilizing <a href="https://d3js.org/" target="_blank">D3</a>, <a href="https://bgrins.github.io/TinyColor/" target="_blank">Tinycolor</a>, and <a href="http://fontawesome.io/" target="_blank">Font Awesome</a>. <br>
+        It is open source, and licensed under the <a href="https://github.com/meeba-farm/meeba-farm/blob/master/LICENSE" target="_blank">MIT License</a>. If you enjoy it, consider making your own <a href="https://github.com/meeba-farm/meeba-farm" target="_blank">contributions</a>.
+      </div>
+    </div>
 
     <script src="lib/d3.js" charset="utf-8"></script>
     <script src="lib/tinycolor.js" charset="utf-8"></script>

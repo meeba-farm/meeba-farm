@@ -3,15 +3,29 @@ svg {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
+body {
+  font: 300 15px Lato, "Trebuchet MS", Helvetica, sans-serif;
+}
+
+#config {
+  top: -78vh;
+  max-height: 74vh;
+}
+
+#footer {
+  top: 104vh;
+  max-height: 14vh;
+  padding: 1em 0;
+}
+
 .interface {
+  display: none;
   position: fixed;
   background-color: rgba(240, 240, 240, 0.9);
   border: solid 1px #ffffff;
   border-radius: 8px;
   overflow: auto;
   left: 4vw;
-  top: -78vh;
-  max-height: 92vh;
   width: 92vw;
 }
 
@@ -29,7 +43,7 @@ svg {
 .buttons {
   text-align: right;
   margin: 1em;
-  margin-top: 2em;
+  margin-top: 3em;
 }
 
 .label {
@@ -49,11 +63,16 @@ input {
 }
 
 .range > input {
-  width: 85%;
+  width: 75%;
   margin-right: 0.5em;
 }
 
-.btn-hover {
+.range-label {
+  font-size: 0.9em;
+  float: right;
+}
+
+.btn-float {
   position: fixed;
   color: #999;
   top: 0.7em;
@@ -61,8 +80,24 @@ input {
   cursor: pointer;
 }
 
-button {
-  font-size: 1.5em;
-  border-radius: 3px;
+.btn {
+  color: #fff;
+  font-size: 1.1em;
+  font-weight: 100;
+  padding: 0.3em 1.2em;
+  text-transform: uppercase;
+  background-color: #888;
+  border: solid 3px #ffffff;
+  border-radius: 8px;
   cursor: pointer;
+}
+
+.btn:active {
+  color: #000;
+  background-color: #ddd;
+  border-color: #000
+}
+
+.btn.primary {
+  background-color: #44619E;
 }

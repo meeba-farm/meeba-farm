@@ -240,19 +240,27 @@ var logStats = function() {
  *              SET UP                 *
  * * * * * * * * * * * * * * * * * * * */
 
-state.bodies = d3.range(config.seed.count).map(function() {
-  return new Body( new Meeba(config.seed.genes) );
-});
+var populate = function(){
+  state.bodies = d3.range(config.seed.count).map(function() {
+    return new Body( new Meeba(config.seed.genes) );
+  });
+
+  drawMeebas();
+};
+
+var setInerfaceVals = function() {
+  d3.selectAll('input').each(function() {
+    this.value = setConfig(this.id);
+  });
+
+  d3.selectAll('.range > input').each(function() {
+    d3.select(this.nextElementSibling).text(this.value);
+  });
+};
 
 state.tank = d3.select('body').append('svg')
   .attr('width', config.w)
   .attr('height', config.h);
-
-drawMeebas();
-
-d3.selectAll('input').each(function() {
-  this.value = setConfig(this.id);
-});
 
 state.tank.on('click', function() {
   state.bodies.push(new Body(
@@ -269,47 +277,71 @@ d3.selectAll('input').on('input', function() {
 });
 
 d3.selectAll('.range > input').on('input', function() {
-  d3.select(this.nextSibling).text(this.value);
+  d3.select(this.nextElementSibling).text(this.value);
 });
 
 d3.selectAll('.btn-hover > i').on('mouseenter', function() {
-  console.log('enter');
   d3.select(this).classed('fa-spin', true);
 });
 
 d3.selectAll('.btn-hover > i').on('mouseleave', function() {
-  console.log('leave');
   d3.select(this).classed('fa-spin', false);
 });
 
-d3.select('#show-ui').on('click', function() {
-  d3.select('#show-ui').transition()
-    .delay(0)
-    .duration(600)
-    .style('right', '-4em');
+d3.select('#reset-meebas').on('click', function() {
+  state.bodies = [];
+  state.meebas.remove();
+  refreshData();
+  populate();
+});
 
+d3.select('#restore-defaults').on('click', function() {
+  localStorage.setItem('config', null);
+  config = defaults;
+  setInerfaceVals();
+});
+
+d3.select('#show-ui').on('click', function() {
   d3.select('#config').transition()
-    .delay(0)
     .duration(600)
-    .style('top', '4vh');
+    .style('top', '4vh')
+    .style('display', 'block');
+
+  d3.select('#footer').transition()
+    .duration(600)
+    .style('top', '82vh')
+    .style('display', 'block');
+
+  d3.select('#show-ui').transition()
+    .duration(600)
+    .style('right', '-4em')
+    .style('display', 'none');
 });
 
 d3.select('#hide-ui').on('click', function() {
-  d3.select('#show-ui').transition()
-    .delay(0)
-    .duration(600)
-    .style('right', '0.7em');
-
   d3.select('#config').transition()
-    .delay(0)
     .duration(600)
-    .style('top', '-78vh');
+    .style('top', '-78vh')
+    .style('display', 'none');
+
+  d3.select('#footer').transition()
+    .duration(600)
+    .style('top', '104vh')
+    .style('display', 'none');
+
+  d3.select('#show-ui').transition()
+    .duration(600)
+    .style('right', '0.7em')
+    .style('display', 'block');
 });
 
 
 /* * * * * * * * * * * * * * * * * * * *
  *                RUN                  *
  * * * * * * * * * * * * * * * * * * * */
+
+populate();
+setInerfaceVals();
 
 d3.timer(function() {
   state.meebas.each(syncDatum);
