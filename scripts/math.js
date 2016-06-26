@@ -116,6 +116,20 @@ var getPos = function(transform) {
   }, {});
 };
 
+var setConfig = function(ids, value) {
+  var setting = config;
+  ids = Array.isArray(ids) ? ids : ids.split('-');
+
+  for (var i = 0; i < ids.length - 1; i++) {
+    setting = setting[ ids[i] ];
+  }
+
+  if (value !== undefined) {
+    setting[ ids[i] ] = value;
+  }
+  return setting[ ids[i] ];
+};
+
 
 /* * * * * * * * * * * * * * * * * * * *
  *             2D SPACE                *

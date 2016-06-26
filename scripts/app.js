@@ -240,8 +240,8 @@ var logStats = function() {
  *              SET UP                 *
  * * * * * * * * * * * * * * * * * * * */
 
-state.bodies = d3.range(config.starter.count).map(function() {
-  return new Body( new Meeba(config.starter.genes) );
+state.bodies = d3.range(config.seed.count).map(function() {
+  return new Body( new Meeba(config.seed.genes) );
 });
 
 state.tank = d3.select('body').append('svg')
@@ -250,15 +250,27 @@ state.tank = d3.select('body').append('svg')
 
 drawMeebas();
 
+d3.selectAll('input').each(function() {
+  this.value = setConfig(this.id);
+});
+
 state.tank.on('click', function() {
   state.bodies.push(new Body(
-    new Meeba(config.starter.genes), 
+    new Meeba(config.seed.genes), 
     d3.event.x, 
     d3.event.y
   ));
   drawMeebas();
 });
 
+d3.selectAll('input').on('input', function() {
+  setConfig(this.id, this.value);
+  localStorage.setItem('config', JSON.stringify(config));
+});
+
+d3.selectAll('.range > input').on('input', function() {
+  d3.select(this.nextSibling).text(this.value);
+});
 
 /* * * * * * * * * * * * * * * * * * * *
  *                RUN                  *

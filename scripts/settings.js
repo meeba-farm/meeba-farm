@@ -1,6 +1,8 @@
 // Config settings, and a global state object
 
-var config = {
+var stored = JSON.parse(localStorage.getItem('config'));
+
+var defaults = {
   w: window.innerWidth - 20,
   h: window.innerHeight - 20,
   logStats: true,
@@ -23,15 +25,15 @@ var config = {
     }
   },
 
-  starter: {
+  seed: {
     genes: 100,
-    count: 15,
+    count: 15
   },
 
   mote: {
     genes: 5,
     rate: 0.4,
-    max: 75,
+    max: 75
   },
 
   size: {
@@ -62,6 +64,8 @@ var config = {
     spawn: 2
   }
 };
+
+var config = stored || defaults;
 
 var state = {
   count: 0,

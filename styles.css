@@ -36,3 +36,13 @@ input {
   text-align: right;
   width: 30%;
 }
+
+.range {
+  display: inline-block;
+  width: 30%;
+}
+
+.range > input {
+  width: 85%;
+  margin-right: 0.5em;
+}

@@ -14,33 +14,33 @@
       <div class="column">
         <div class="group">
           <h3>genome</h3>
-          <div class="setting">
+          <div class="setting" title="Percent of time a gene will mutate">
             <span class="label">mutation rate</span>
-            <input id="gene-rate" type="number" value="0">
+            <input id="gene-rate" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="Maximum strength new genes spawn with (mutated genes have no upper limit)">
             <span class="label">max strength</span>
-            <input id="gene-strength" type="number" value="0">
+            <input id="gene-strength" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="How often new genes build size">
             <span class="label">size odds</span>
-            <input id="gene-odds-size" type="number" value="0">
+            <input id="gene-odds-size" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="How often new genes create a spike">
             <span class="label">spike odds</span>
-            <input id="gene-odds-spike" type="number" value="0">
+            <input id="gene-odds-spike" type="number">
           </div>
         </div><!-- /group -->
 
         <div class="group">
           <h3>size</h3>
-          <div class="setting">
+          <div class="setting" title="Caloric cost per pixel per second">
             <span class="label">cost</span>
-            <input id="size-cost" type="number" value="0">
+            <input id="size-cost" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="Increase in calorie efficiency from size">
             <span class="label">efficiency</span>
-            <input id="size-efficiency" type="number" value="0">
+            <input id="size-efficiency" type="number">
           </div>
         </div><!-- /group -->
       </div><!-- /column -->
@@ -48,59 +48,62 @@
       <div class="column">
         <div class="group">
           <h3>spawn</h3>
-          <div class="setting">
+          <div class="setting" title="Calories lost when spawning">
             <span class="label">cost</span>
-            <input id="spawn-cost" type="number" value="0">
+            <input id="spawn-cost" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="Time in milliseconds before new meebas can feed">
             <span class="label">cooldown</span>
-            <input id="spawn-cooldown" type="number" value="0">
+            <input id="spawn-cooldown" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="Number of children created per spawning">
             <span class="label"># of children</span>
-            <input id="spawn-count" type="number" value="0">
+            <span class="range">
+              <input id="spawn-count" type="range" min="0" max="4">
+              <span class="range-label"></span>
+            </span>
           </div>
         </div><!-- /group -->
 
         <div class="group">
           <h3>spikes</h3>
-          <div class="setting">
+          <div class="setting" title="Caloric cost per spike per second">
             <span class="label">cost</span>
-            <input id="spike-cost" type="number" value="0">
+            <input id="spike-cost" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="The most caloric damage a spike can do (decreaes with length)">
             <span class="label">base damage</span>
-            <input id="spike-damage" type="number" value="0">
+            <input id="spike-damage" type="number">
           </div>
         </div><!-- /group -->
       </div><!-- /column -->
 
       <div class="column">
         <div class="group">
-          <h3>starters</h3>
-          <div class="setting">
+          <h3>seed meebas</h3>
+          <div class="setting" title="The most genes new seed meebas can have">
             <span class="label">max genes</span>
-            <input id="starter-genes" type="number" value="0">
+            <input id="seed-genes" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="The number of seed meebas that spawn at start">
             <span class="label">number</span>
-            <input id="starter-count" type="number" value="0">
+            <input id="seed-count" type="number">
           </div>
         </div><!-- /group -->
 
         <div class="group">
           <h3>motes</h3>
-          <div class="setting">
+          <div class="setting" title="The most genes new motes can have">
             <span class="label">max genes</span>
-            <input id="mote-genes" type="number" value="0">
+            <input id="mote-genes" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="The average number of motes that spawn per second">
             <span class="label">spawn rate</span>
-            <input id="mote-rate" type="number" value="0">
+            <input id="mote-rate" type="number">
           </div>
-          <div class="setting">
+          <div class="setting" title="The number of bodies at which motes stop spawning">
             <span class="label">max bodies</span>
-            <input id="mote-max" type="number" value="0">
+            <input id="mote-max" type="number">
           </div>
         </div><!-- /group -->
       </div><!-- /column -->
