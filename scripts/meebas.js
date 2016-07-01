@@ -13,7 +13,7 @@ var Meeba = function(traits, calories, family) {
 
   // Build stats
   this.isAlive = true;
-  this.size = Math.PI * Math.pow(config.minR, 2);
+  this.size = Math.PI * sqr(config.minR);
   this.spikes = [];
   this.upkeep = 0;
   this.buildStats();

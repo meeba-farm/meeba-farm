@@ -1,5 +1,8 @@
 // Helper functions for general math calculation
 
+var sqr = function(n) {
+  return n * n;
+};
 
 // Returns a percentage from 0 to 1, rounds up to 0 or down to 1 as needed
 var getPerc = function(fraction, total) {
@@ -135,9 +138,9 @@ var setConfig = function(ids, value) {
  *             2D SPACE                *
  * * * * * * * * * * * * * * * * * * * */
 
-// Compares a line defined by four points to a fixed distance without sqrt
+// Compares a line segment defined by four points to a distance without sqrt
 var isCloser = function(x1, y1, x2, y2, distance) {
-  return (x1-x2) * (x1-x2) + (y1-y2) * (y1-y2) < distance * distance;
+  return sqr(x1-x2) + sqr(y1-y2) < sqr(distance);
 };
 
 // Normalizes an angle (in turns) to be between 0 and 1
@@ -172,7 +175,7 @@ var breakVector = function(angle, magnitude) {
 
 // Takes an x/y vector and combines it to an angle(in turns) and a magnitude
 mergeVector = function(x, y) {
-  var speed = Math.sqrt(x * x + y * y);
+  var speed = Math.sqrt( sqr(x) + sqr(y) );
   var angle = getAcos(x/speed) / (2 * Math.PI);
 
   // ACos always gives northwards angles, check if should be southwards
@@ -206,7 +209,7 @@ var collide = function(body1, body2) {
 
   // Calculate unit normal vector and unit tangent vector
   var n = {x: body2.x-body1.x, y: body2.y-body1.y};
-  var mn = Math.sqrt(n.x * n.x + n.y * n.y);
+  var mn = Math.sqrt( sqr(n.x) + sqr(n.y) );
   var un = {x: n.x / mn, y: n.y / mn};
   var ut = {x: -un.y, y: un.x};
 
