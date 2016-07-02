@@ -273,7 +273,7 @@ state.tank.on('click', function() {
 
 d3.selectAll('input').on('input', function() {
   setConfig(this.id, this.value);
-  localStorage.setItem('config', JSON.stringify(config));
+  localStorage.setItem(config.location, JSON.stringify(config));
 });
 
 d3.selectAll('.range > input').on('input', function() {
@@ -296,7 +296,7 @@ d3.select('#reset-meebas').on('click', function() {
 });
 
 d3.select('#restore-defaults').on('click', function() {
-  localStorage.setItem('config', null);
+  localStorage.setItem(config.location, null);
   config = defaults;
   setInerfaceVals();
 });

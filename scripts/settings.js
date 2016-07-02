@@ -1,16 +1,15 @@
 // Config settings, and a global state object
 
-var stored = JSON.parse(localStorage.getItem('config'));
-
 var defaults = {
-  w: window.innerWidth - 20,
-  h: window.innerHeight - 20,
+  location: 'meeba-farm.config',
   logStats: true,
   lutLevels: 1024,
 
   minR: 10,
   spikeW: 0.025,
   lightness: 40,
+  spikeColor: '#000000',
+  activeSpikeColor: '#ff0000',
   maxSpeed: 10,
   dur: 100,
 
@@ -38,11 +37,13 @@ var defaults = {
 
   size: {
     cost: 0.005,
+    costFixed: false,
     efficiency: 2
   },
 
   spike: {
     cost: 256,
+    costFixed: true,
     damage: 256,
     scale: 1.025
   },
@@ -65,7 +66,9 @@ var defaults = {
   }
 };
 
-var config = stored || defaults;
+var config = JSON.parse(localStorage.getItem(defaults.location)) || defaults;
+config.w = window.innerWidth - 20;
+config.h = window.innerHeight - 20;
 
 var state = {
   count: 0,
