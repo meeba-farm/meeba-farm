@@ -8,8 +8,8 @@ var defaults = {
   minR: 10,
   spikeW: 0.025,
   lightness: 40,
-  spikeColor: '#000000',
-  activeSpikeColor: '#ff0000',
+  spikeColor: 'black',
+  activeSpikeColor: 'red',
   maxSpeed: 10,
   dur: 100,
 
@@ -17,15 +17,16 @@ var defaults = {
     rate: 0.1,
     spread: 0.5,
     portion: 10,
-    strength: 50,
+    strength: 35,
+    collapseRate: 0.8,
     odds: {
-      size: 20,
+      size: 25,
       spike: 1
     }
   },
 
   seed: {
-    genes: 100,
+    genes: 75,
     count: 15
   },
 
@@ -36,20 +37,21 @@ var defaults = {
   },
 
   size: {
-    cost: 0.005,
+    cost: 0.00015,
     costFixed: false,
-    efficiency: 2
+    power: 1,
+    scale: 1.5,
+    efficiency: 1.5
   },
 
   spike: {
-    cost: 256,
+    cost: 50,
     costFixed: true,
-    damage: 256,
-    scale: 1.025
+    scale: 2
   },
 
   spawn: {
-    cost: 100,
+    cost: 50,
     cooldown: 2500,
     count: 2
   },

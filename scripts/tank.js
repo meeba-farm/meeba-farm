@@ -136,6 +136,7 @@ Body.prototype.checkDrain = function(body) {
     if (isCloser(body.x, body.y, tip.x, tip.y, body.r)) drainers.push(spike);
   }
 
+  this.core.drainCount += drainers.length;
 
   // If any spikes are draining, return a function to call them
   if (drainers.length) return function() {
