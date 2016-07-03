@@ -4,6 +4,10 @@ var sqr = function(n) {
   return n * n;
 };
 
+var getScale = function(base, factor) {
+  return base / Math.pow(base, factor);
+};
+
 // Returns a percentage from 0 to 1, rounds up to 0 or down to 1 as needed
 var getPerc = function(fraction, total) {
   var perc = fraction/total;

@@ -6,23 +6,27 @@
  * * * * * * * * * * * * * * * * * * * */
 
 // Creatures capable of eating, dying, and reproducing with mutations
-var Meeba = function(genes, calories, family) {
+var Meeba = function(seed, calories, family) {
 
   // The digital genes of a meeba
-  this.genome = Array.isArray(genes) ? genes : this.generateGenome(genes);
+  this.genome = new Genome(seed);
 
   // Build stats
   this.size = Math.PI * sqr(config.minR);
   this.spikes = [];
   this.upkeep = 0;
   this.isAlive = true;
-  this.readGenome();
+  this.genome.read(this);
 
   // Various stats calculated based on size
   this.calories = calories || this.size * config.scale.start;
-  this.upkeep *= this.size / Math.pow(this.size, config.size.efficiency);
+  this.upkeep *= getScale(this.size, config.size.efficiency);
   this.deathLine = this.size * config.scale.death;
   this.spawnLine = this.size * config.scale.spawn;
+
+  this.power = this.size * config.size.power;
+  this.power *= getScale(this.size, config.size.scale);
+  this.drainCount = 0;
 
   // Failsafes in case meebas are spawned with out-of-bounds limits
   if (this.deathLine > this.calories) this.deathLine = this.calories - 50;
@@ -68,18 +72,6 @@ Meeba.prototype.tick = function() {
   this.age += this.time;
 };
 
-// Runs updates specific to living meebas
-Meeba.prototype.metabolize = function() { 
-  this.calories -= this.upkeep/1000 * this.time;
-  
-  var hsl = this.color.toHsl();
-  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
-  this.color = tinycolor(hsl);
-
-  if (this.calories < this.deathLine) this.die();
-  if (this.calories > this.spawnLine) this.reproduce();
-};
-
 // Checks to see if a meeba is old enough to eat
 Meeba.prototype.mature = function() {
   if (this.age > config.spawn.cooldown) {
@@ -90,6 +82,19 @@ Meeba.prototype.mature = function() {
   this.fade( getPerc(this.age, config.spawn.cooldown) );
 };
 
+// Runs updates specific to living meebas
+Meeba.prototype.metabolize = function() { 
+  this.calories -= this.upkeep/1000 * this.time;
+  this.drainCount = 0;
+
+  var hsl = this.color.toHsl();
+  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
+  this.color = tinycolor(hsl);
+
+  if (this.calories < this.deathLine) this.die();
+  if (this.calories > this.spawnLine) this.reproduce();
+};
+
 // Runs updates specific to dead meebas
 Meeba.prototype.decay = function() {
   if (this.calories < 0) this.removeTask(this.decay);
@@ -97,108 +102,14 @@ Meeba.prototype.decay = function() {
 };
 
 
-/*****  SPAWNING  *****/
-
-// Builds an array of starter traits for spontaneous meebas
-Meeba.prototype.generateGenome = function(max) {
-  var genome = [];
-  var len = rand(max);
-
-  for (var i = 0; i < len; i++) {
-    genome.push(new Gene());
-  }
-
-  return genome;
-};
-
-// Build core Meeba stats from a trait list
-Meeba.prototype.readGenome = function() {
-  var meeba = this;
-  var read = {
-    size: function(level) {
-      meeba.size += level;
-    },
-
-    spike: function(level, pos) {
-      pos /= meeba.genome.length;
-      meeba.spikes.push(new Spike(meeba, pos, level));
-    }
-  };
-
-  this.genome.forEach(function(gene, pos) {
-    if (read[gene.type]) read[gene.type](gene.level, pos);
-    if (gene.upkeep) meeba.upkeep += gene.upkeep;
-  });
-
-  this._r = Math.sqrt(this.size/Math.PI);
-  this.spikes.forEach(function(spike) {
-    spike.findPoints();
-  });
-};
-
-Meeba.prototype.setupColor = function(family) {
-  if (family === undefined) family = Math.floor(rand(0, 256));
-  this._family = family;
-
-  var count = this.genome.reduce(function(count, trait) {
-    count[trait.type]++;
-    count.total++;
-    return count;
-  }, {total: 0, spike: 0, size: 0});
-
-  var rgb = {
-    r: Math.floor( count.spike / count.total * 255 ),
-    g: Math.floor( count.size / count.total * 255 ),
-    b: family
-  };
-
-  var hsl = tinycolor( rgb ).toHsl();
-  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
-  hsl.l = config.lightness;
-  this.color = tinycolor(hsl);
-  this.fade(0);
-};
-
-// Returns a mutated version of the meeba's genes
-Meeba.prototype.splitGenome = function() {
-  var old = this.genome;
-  var mutated = [];
-  var len = mutateVal(old.length);
-
-  for (var i = 0; i < len; i++) {
-    var index = mutateVal(i);
-
-    if (old[index]) {
-      mutated.push(old[index].replicate());
-    } else if (old[i]) {
-      mutated.push(old[i].replicate());
-      mutated.push(old[i].replicate());
-    } else if (rand() < 0.5) {
-      mutated.push(new Gene());
-    } 
-  }
-
-  return mutated;
-};
-
-
 /*****  INTERACTION  *****/
-
-// Adjust the alpha on all of the meeba's parts
-Meeba.prototype.fade = function(alpha) {
-  this.color.setAlpha(alpha);
-
-  this.spikes.forEach(function(spike) {
-    spike.color.setAlpha(alpha);
-  });
-};
 
 // Spawns child meebas with possible mutations, then dies
 Meeba.prototype.reproduce = function() {
   var cals = (this.calories - config.spawn.cost) / config.spawn.count;
 
   for (var i = 0; i < config.spawn.count; i++) {
-    this.children.push(new Meeba(this.splitGenome(), cals, this._family));
+    this.children.push(new Meeba(this.genome, cals, this._family));
   }
 
   this.calories = -Infinity;
@@ -226,6 +137,37 @@ Meeba.prototype.sufferDrain = function(damage) {
 };
 
 
+/*****  COLOR  *****/
+
+Meeba.prototype.setupColor = function(family) {
+  if (family === undefined) family = Math.floor(rand(0, 256));
+  this._family = family;
+
+  var inspector = this.genome.inspect();
+
+  var rgb = {
+    r: Math.floor( inspector.norm.spike * 128 ),
+    g: Math.floor( inspector.norm.size * 128 ),
+    b: family
+  };
+
+  var hsl = tinycolor( rgb ).toHsl();
+  hsl.s = getPerc(this.calories-this.deathLine, this.spawnLine-this.deathLine);
+  hsl.l = config.lightness;
+  this.color = tinycolor(hsl);
+  this.fade(0);
+};
+
+// Adjust the alpha on all of the meeba's parts
+Meeba.prototype.fade = function(alpha) {
+  this.color.setAlpha(alpha);
+
+  this.spikes.forEach(function(spike) {
+    spike.color.setAlpha(alpha);
+  });
+};
+
+
 /* * * * * * * * * * * * * * * * * * * *
  *               GENES                 *
  * * * * * * * * * * * * * * * * * * * */
@@ -250,6 +192,125 @@ Gene.prototype.copy = function() {
   return new Gene( this.type, this.level );
 };
 
+// Genes that build parts will collapse into a previous gene of the same type
+// Returns true if a collapse occured, indicating this gene should be removed
+Gene.prototype.collapse = function(last) {
+  var collapsable = {
+    size: false,
+    spike: true
+  };
+
+  if (!last || last.type !== this.type) return false;
+  if (!collapsable[this.type]) return false;
+
+  last.level = (last.level + this.level) * config.collapseRate;
+  this.level = 0;
+  return true;
+};
+
+
+/* * * * * * * * * * * * * * * * * * * *
+ *              GENOME                 *
+ * * * * * * * * * * * * * * * * * * * */
+
+var Genome = function(seed) {
+  if (seed instanceof Genome) {
+    this._strand = seed.split();
+  } else {
+    this.abiogenesis(seed);
+  }
+};
+
+Genome.prototype.abiogenesis = function(max) {
+  var strand = [];
+  this._strand = strand;
+  var len = rand(max);
+
+  for (var i = 0; i < len; i++) {
+    strand.push(new Gene());
+    if (strand[strand.length-1].collapse( strand[strand.length-2] )) {
+      strand.pop();
+    }
+  }
+};
+
+Genome.prototype.split = function() {
+  var strand = this._strand;
+  var mutated = [];
+  var len = mutateVal(this.count());
+
+  for (var i = 0; i < len; i++) {
+    var index = mutateVal(i);
+
+    if (strand[index]) {
+      mutated.push(strand[index].replicate());
+    } else if (strand[i]) {
+      mutated.push(strand[i].replicate());
+      mutated.push(strand[i].replicate());
+    } else if (rand() < 0.5) {
+      mutated.push(new Gene());
+    }
+
+    if (mutated[mutated.length-1].collapse( mutated[mutated.length-2] )) {
+      mutated.pop();
+    }
+  }
+
+  return mutated;
+};
+
+Genome.prototype.read = function(meeba) {
+  var count = this.count();
+  var rna = {
+    size: function(level) {
+      meeba.size += level;
+    },
+
+    spike: function(level, pos) {
+      pos /= count;
+      meeba.spikes.push(new Spike(meeba, pos, level));
+    }
+  };
+
+  this._strand.forEach(function(gene, pos) {
+    if (rna[gene.type]) rna[gene.type](gene.level, pos);
+    if (gene.upkeep) meeba.upkeep += gene.upkeep;
+  });
+
+  // Calculating radius here is necessary to avoid multiple sqrt calls
+  meeba._r = Math.sqrt(meeba.size/Math.PI);
+  meeba.spikes.forEach(function(spike) {
+    spike.findPoints();
+  });
+};
+
+Genome.prototype.count = function() {
+  return this._strand.length;
+}
+
+// A summary of the genome stats, with numbers used for colors
+Genome.prototype.inspect = function() {
+  var i = {count: {total: this.count()}, perc:{}, vary:{}, norm:{}};
+  var totalOdds = 0;
+
+  this._strand.forEach(function(gene) {
+    i.count[gene.type] = ++i.count[gene.type] || 1;
+  });
+
+  for (var type in config.gene.odds) {
+    i.count[type] = i.count[type] || 0;
+    i.perc[type] = i.count[type] / i.count.total;
+    totalOdds += config.gene.odds[type];
+  }
+
+  for (var type in i.perc) {
+    i.vary[type] = i.perc[type] / (config.gene.odds[type] / totalOdds);
+    i.norm[type] = i.vary[type]>1 ? i.vary[type]/totalOdds+1 : i.vary[type];
+  }
+
+  return i;
+}
+
 
 /* * * * * * * * * * * * * * * * * * * *
  *              SPIKES                 *
@@ -262,7 +323,7 @@ var Spike = function(meeba, angle, length) {
   this.length = length;
 
   var len = this.length < 1 ? 1 : this.length;
-  this.damage = config.spike.damage / Math.pow(len, config.spike.scale);
+  this.suction = getScale(len, config.spike.scale);
 
   this.color = tinycolor(config.spikeColor);
   this.drainCount = 0;
@@ -287,7 +348,8 @@ Spike.prototype.getPoints = function() {
 
 // Drains a body the spike is in contact with
 Spike.prototype.drain = function(body) {
-  this.meeba.calories += body.core.sufferDrain(this.damage);
+  var damage = this.meeba.power / this.meeba.drainCount * this.suction;
+  this.meeba.calories += body.core.sufferDrain(damage);
 
   this.color = tinycolor(config.activeSpikeColor);
   this.drainCount++;
