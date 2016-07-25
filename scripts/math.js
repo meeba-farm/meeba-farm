@@ -4,8 +4,14 @@ var sqr = function(n) {
   return n * n;
 };
 
-var getScale = function(base, factor) {
+// Scale number based on an exponential factor
+var expScale = function(base, factor) {
   return base / Math.pow(base, factor);
+};
+
+// Scale per second number based on a number of milliseconds
+var msScale = function(num, ms) {
+  return num * (ms/1000);
 };
 
 // Returns a percentage from 0 to 1, rounds up to 0 or down to 1 as needed

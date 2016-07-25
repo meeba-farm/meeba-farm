@@ -8,11 +8,14 @@
   </head>
   <body>
     <a id="show-ui" class="btn-float"><i class="fa fa-cog fa-2x"></i></a>
+    <a id="hide-ui" class="btn-float hidden"><i class="fa fa-times fa-2x"></i></a>
 
     <div id="config" class="interface">
       <div class="heading">
         <h1>Meeba Farm</h1>
-        <h2>Settings</h2>
+        <div class="description">
+          <i>Meeba Farm</i> is an idea I've been kicking around since I ran into Rednuht's awesome <a href="http://rednuht.org/genetic_cars_2/">Genetic Cars</a>. It got me excited to build my own evolving simulator with actual feeding, breeding, and dying. This is version one. Watch as the meeba's bounce around and drain calories from each other using feeding spikes. Each one has their own unique genome that they will pass on (with some  mutations) once they've eaten enough to reproduce. See which lineage's succeed and which die out, click to add new meebas to the tank, or mess with the settings below and see what changes.
+        </div>
       </div>
 
       <div class="column">
@@ -42,7 +45,7 @@
             <span class="label">cost</span>
             <input id="size-cost" type="number">
           </div>
-          <div class="setting" title="Increase in calorie efficiency from size">
+          <div class="setting" title="Change in caloric efficiency from size, less than 1 is a decrease in efficiency.">
             <span class="label">efficiency</span>
             <input id="size-efficiency" type="number">
           </div>
@@ -56,7 +59,7 @@
             <span class="label">cost</span>
             <input id="spawn-cost" type="number">
           </div>
-          <div class="setting" title="Time in milliseconds before new meebas can feed">
+          <div class="setting" title="Number of seconds before new meebas can feed">
             <span class="label">cooldown</span>
             <input id="spawn-cooldown" type="number">
           </div>
@@ -75,29 +78,33 @@
             <span class="label">cost</span>
             <input id="spike-cost" type="number">
           </div>
-          <div class="setting" title="The most caloric damage a spike can do (decreaes with length)">
-            <span class="label">base damage</span>
-            <input id="spike-damage" type="number">
+          <div class="setting" title="The base draining power per pixel per second (this power is shared by a meeba's spikes, and reduced by length)">
+            <span class="label">power</span>
+            <input id="size-power" type="number">
+          </div>
+          <div class="setting" title="Similar to efficiency, the rate that draining power scales down with size">
+            <span class="label">scale</span>
+            <input id="size-scale" type="number">
           </div>
         </div><!-- /group -->
       </div><!-- /column -->
 
       <div class="column">
         <div class="group">
-          <h3>seed meebas</h3>
-          <div class="setting" title="The most genes new seed meebas can have">
+          <h3>starter meebas</h3>
+          <div class="setting" title="The maximum genes new starter meebas can have">
             <span class="label">max genes</span>
-            <input id="seed-genes" type="number">
+            <input id="starter-genes" type="number">
           </div>
-          <div class="setting" title="The number of seed meebas that spawn at start">
+          <div class="setting" title="The number of starter meebas that spawn initially">
             <span class="label">number</span>
-            <input id="seed-count" type="number">
+            <input id="starter-count" type="number">
           </div>
         </div><!-- /group -->
 
         <div class="group">
           <h3>motes</h3>
-          <div class="setting" title="The most genes new motes can have">
+          <div class="setting" title="The most genes new motes can have (small meebas that spawn out of nothing)">
             <span class="label">max genes</span>
             <input id="mote-genes" type="number">
           </div>
@@ -105,7 +112,7 @@
             <span class="label">spawn rate</span>
             <input id="mote-rate" type="number">
           </div>
-          <div class="setting" title="The number of bodies at which motes stop spawning">
+          <div class="setting" title="The total population at which motes stop spawning, primarily to preserve performance">
             <span class="label">max bodies</span>
             <input id="mote-max" type="number">
           </div>
@@ -115,7 +122,7 @@
       <div class="buttons">
         <a id="restore-defaults" class="btn">Restore Defaults</a>
         <a id="reset-meebas" class="btn">Reset Meebas</a>
-        <a id="hide-ui" class="btn primary">Dismiss</a>
+        <a id="done" class="btn primary">Done</a>
       </div>
     </div><!-- /config -->
 

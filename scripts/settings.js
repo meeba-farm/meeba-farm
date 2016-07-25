@@ -12,47 +12,47 @@ var defaults = {
   activeSpikeColor: 'red',
   maxSpeed: 10,
   dur: 100,
+  animationTime: 600,
 
   gene: {
     rate: 0.1,
     spread: 0.5,
     portion: 10,
     strength: 35,
-    collapseRate: 0.8,
     odds: {
       size: 25,
       spike: 1
     }
   },
 
-  seed: {
+  starter: {
     genes: 75,
-    count: 15
+    count: 20
   },
 
   mote: {
     genes: 5,
-    rate: 0.4,
+    rate: 0.5,
     max: 75
   },
 
   size: {
-    cost: 0.00015,
+    cost: 0.0005,
     costFixed: false,
-    power: 1,
-    scale: 1.5,
-    efficiency: 1.5
+    efficiency: 1.35,
+    power: 1000,
+    scale: 2
   },
 
   spike: {
-    cost: 50,
+    cost: 12,
     costFixed: true,
-    scale: 2
+    scale: 1.15
   },
 
   spawn: {
     cost: 50,
-    cooldown: 2500,
+    cooldown: 1.5,
     count: 2
   },
 
