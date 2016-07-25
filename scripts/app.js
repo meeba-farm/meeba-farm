@@ -65,8 +65,8 @@ var spawnChildren = function(body) {
 
   while(body.core.children.length) {
     state.bodies.push(new Body(
-      body.core.children.pop(), 
-      body.x + breakVector(body.angle + displace, 2*body.r).x, 
+      body.core.children.pop(),
+      body.x + breakVector(body.angle + displace, 2*body.r).x,
       body.y + breakVector(body.angle + displace, 2*body.r).y,
       body.angle + displace,
       body.speed
@@ -241,8 +241,8 @@ var logStats = function() {
  * * * * * * * * * * * * * * * * * * * */
 
 var populate = function(){
-  state.bodies = d3.range(config.seed.count).map(function() {
-    return new Body( new Meeba(config.seed.genes) );
+  state.bodies = d3.range(config.starter.count).map(function() {
+    return new Body( new Meeba(config.starter.genes) );
   });
 
   drawMeebas();
@@ -264,8 +264,8 @@ state.tank = d3.select('body').append('svg')
 
 state.tank.on('click', function() {
   state.bodies.push(new Body(
-    new Meeba(config.seed.genes), 
-    d3.event.x, 
+    new Meeba(config.starter.genes),
+    d3.event.x,
     d3.event.y
   ));
   drawMeebas();
@@ -278,14 +278,6 @@ d3.selectAll('input').on('input', function() {
 
 d3.selectAll('.range > input').on('input', function() {
   d3.select(this.nextElementSibling).text(this.value);
-});
-
-d3.selectAll('.btn-hover > i').on('mouseenter', function() {
-  d3.select(this).classed('fa-spin', true);
-});
-
-d3.selectAll('.btn-hover > i').on('mouseleave', function() {
-  d3.select(this).classed('fa-spin', false);
 });
 
 d3.select('#reset-meebas').on('click', function() {
@@ -303,38 +295,50 @@ d3.select('#restore-defaults').on('click', function() {
 
 d3.select('#show-ui').on('click', function() {
   d3.select('#config').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('top', '4vh')
     .style('display', 'block');
 
   d3.select('#footer').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('top', '82vh')
     .style('display', 'block');
 
   d3.select('#show-ui').transition()
-    .duration(600)
-    .style('right', '-4em')
+    .duration(config.animationTime)
+    .attr('right', '-4em')
     .style('display', 'none');
+
+  d3.select('#hide-ui').transition()
+    .duration(config.animationTime)
+    .attr('right', '0.7em')
+    .style('display', 'block');
 });
 
-d3.select('#hide-ui').on('click', function() {
+var hideUI = function() {
   d3.select('#config').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('top', '-78vh')
     .style('display', 'none');
 
   d3.select('#footer').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('top', '104vh')
     .style('display', 'none');
 
   d3.select('#show-ui').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('right', '0.7em')
     .style('display', 'block');
-});
 
+  d3.select('#hide-ui').transition()
+    .duration(config.animationTime)
+    .attr('right', '-4em')
+    .style('display', 'none');
+};
+
+d3.select('#hide-ui').on('click', hideUI);
+d3.select('#done').on('click', hideUI);
 
 /* * * * * * * * * * * * * * * * * * * *
  *                RUN                  *

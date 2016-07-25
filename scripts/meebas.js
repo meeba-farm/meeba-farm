@@ -15,17 +15,16 @@ var Meeba = function(seed, calories, family) {
   this.size = Math.PI * sqr(config.minR);
   this.spikes = [];
   this.upkeep = 0;
-  this.isAlive = true;
   this.genome.read(this);
 
   // Various stats calculated based on size
   this.calories = calories || this.size * config.scale.start;
-  this.upkeep *= getScale(this.size, config.size.efficiency);
+  this.upkeep *= expScale(this.size, config.size.efficiency);
   this.deathLine = this.size * config.scale.death;
   this.spawnLine = this.size * config.scale.spawn;
 
   this.power = this.size * config.size.power;
-  this.power *= getScale(this.size, config.size.scale);
+  this.power *= expScale(this.size, config.size.scale);
   this.drainCount = 0;
 
   // Failsafes in case meebas are spawned with out-of-bounds limits
@@ -74,17 +73,18 @@ Meeba.prototype.tick = function() {
 
 // Checks to see if a meeba is old enough to eat
 Meeba.prototype.mature = function() {
-  if (this.age > config.spawn.cooldown) {
+  var cooldown = config.spawn.cooldown * 1000;
+  if (this.age > cooldown) {
     this.removeTask(this.mature);
     this.addTask(this.metabolize);
     this.body.addQuery(this.body.checkDrain);
   }
-  this.fade( getPerc(this.age, config.spawn.cooldown) );
+  this.fade( getPerc(this.age, cooldown) );
 };
 
 // Runs updates specific to living meebas
 Meeba.prototype.metabolize = function() { 
-  this.calories -= this.upkeep/1000 * this.time;
+  this.calories -= msScale(this.upkeep, this.time);
   this.drainCount = 0;
 
   var hsl = this.color.toHsl();
@@ -118,7 +118,6 @@ Meeba.prototype.reproduce = function() {
 
 // Processes a meeba's death
 Meeba.prototype.die = function() {
-  this.isAlive = false;
   this.removeTask(this.mature);
   this.removeTask(this.metabolize);
   this.addTask(this.decay);
@@ -192,22 +191,6 @@ Gene.prototype.copy = function() {
   return new Gene( this.type, this.level );
 };
 
-// Genes that build parts will collapse into a previous gene of the same type
-// Returns true if a collapse occured, indicating this gene should be removed
-Gene.prototype.collapse = function(last) {
-  var collapsable = {
-    size: false,
-    spike: true
-  };
-
-  if (!last || last.type !== this.type) return false;
-  if (!collapsable[this.type]) return false;
-
-  last.level = (last.level + this.level) * config.collapseRate;
-  this.level = 0;
-  return true;
-};
-
 
 /* * * * * * * * * * * * * * * * * * * *
  *              GENOME                 *
@@ -215,26 +198,25 @@ Gene.prototype.collapse = function(last) {
 
 var Genome = function(seed) {
   if (seed instanceof Genome) {
-    this._strand = seed.split();
+    this._strand = seed.replicate();
   } else {
-    this.abiogenesis(seed);
+    this.generate(seed);
   }
 };
 
-Genome.prototype.abiogenesis = function(max) {
-  var strand = [];
-  this._strand = strand;
+// Generates a random set of genes for this genome
+Genome.prototype.generate = function(max) {
+  this._strand = [];
   var len = rand(max);
 
   for (var i = 0; i < len; i++) {
-    strand.push(new Gene());
-    if (strand[strand.length-1].collapse( strand[strand.length-2] )) {
-      strand.pop();
-    }
+    this._strand.push(new Gene());
+    this.fuseTail(this._strand, len);
   }
 };
 
-Genome.prototype.split = function() {
+// Returns a copy of this genome with mutations
+Genome.prototype.replicate = function() {
   var strand = this._strand;
   var mutated = [];
   var len = mutateVal(this.count());
@@ -251,14 +233,13 @@ Genome.prototype.split = function() {
       mutated.push(new Gene());
     }
 
-    if (mutated[mutated.length-1].collapse( mutated[mutated.length-2] )) {
-      mutated.pop();
-    }
+    this.fuseTail(mutated, len);
   }
 
   return mutated;
 };
 
+// Reads the genome and modifies the passed in meeba accordingly
 Genome.prototype.read = function(meeba) {
   var count = this.count();
   var rna = {
@@ -284,11 +265,29 @@ Genome.prototype.read = function(meeba) {
   });
 };
 
+// Looks at a strand being built and decides whether to fuse the tail
+Genome.prototype.fuseTail = function(strand, len) {
+  var prev = strand[ strand.length - 2 ];
+  var tail = strand[ strand.length - 1 ];
+
+  var fusable = {
+    size: false,
+    spike: true
+  };
+
+  if (!strand || !len || !prev) return;
+  if (!fusable[ tail.type ]) return;
+  if (prev.type !== tail.type) return;
+
+  prev.level = (prev.level + tail.level) / 2;
+  strand.pop();
+};
+
 Genome.prototype.count = function() {
   return this._strand.length;
-}
+};
 
-// A summary of the genome stats, with numbers used for colors
+// A summary of the genome stats, especially numbers used for colors
 Genome.prototype.inspect = function() {
   var i = {count: {total: this.count()}, perc:{}, vary:{}, norm:{}};
   var totalOdds = 0;
@@ -303,13 +302,13 @@ Genome.prototype.inspect = function() {
     totalOdds += config.gene.odds[type];
   }
 
-  for (var type in i.perc) {
+  for (type in i.perc) {
     i.vary[type] = i.perc[type] / (config.gene.odds[type] / totalOdds);
     i.norm[type] = i.vary[type]>1 ? i.vary[type]/totalOdds+1 : i.vary[type];
   }
 
   return i;
-}
+};
 
 
 /* * * * * * * * * * * * * * * * * * * *
@@ -323,7 +322,7 @@ var Spike = function(meeba, angle, length) {
   this.length = length;
 
   var len = this.length < 1 ? 1 : this.length;
-  this.suction = getScale(len, config.spike.scale);
+  this.suction = expScale(len, config.spike.scale);
 
   this.color = tinycolor(config.spikeColor);
   this.drainCount = 0;
@@ -344,11 +343,12 @@ Spike.prototype.getPoints = function() {
   return this.points.reduce(function(str, point) {
     return str + point.x + ',' + point.y + ' ';
   }, '').slice(0, -1);
-};
+}; 
 
 // Drains a body the spike is in contact with
 Spike.prototype.drain = function(body) {
   var damage = this.meeba.power / this.meeba.drainCount * this.suction;
+  damage = msScale(damage, this.meeba.time);
   this.meeba.calories += body.core.sufferDrain(damage);
 
   this.color = tinycolor(config.activeSpikeColor);
