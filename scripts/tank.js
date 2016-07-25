@@ -98,47 +98,45 @@ Body.prototype.checkCollision = function(body) {
   }
 };
 
+// Checks to see if any spikes pierce a body, and returns those drain actions
+// Math adapted from Joshua's solution to this question:
+// http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 Body.prototype.checkDrain = function(body) {
   var drainers = [];
 
-
-  // Go through spikes running progressively more costly checks to see
-  // if there is a collision, and pushes spike if there is
   for (var i = 0, len = this.core.spikes.length; i < len; i++) {
     var spike = this.core.spikes[i];
+    var fullLen = this.r + spike.length;
 
-    // If body is too far from meeba, bail since spikes are sorted by length
-    if (!isCloser(this.x, this.y, body.x, body.y, this.r+body.r+spike.length)) {
-      break;
-    }
+    // If body is too far, bail completely since spikes are sorted by length
+    if (!isCloser(this.x, this.y, body.x, body.y, fullLen + body.r)) break;
 
-    // Does body overlap with tip?
     var tip = {
       x: spike.points[0].x + this.x,
       y: spike.points[0].y + this.y
     };
-    if (isCloser(body.x, body.y, tip.x, tip.y, body.r)) {
-      drainers.push(spike);
-      continue;
+    var dif = {
+      x: this.x - tip.x,
+      y: this.y - tip.y
+    };
+
+    // Parameter is the dot product over squared length
+    var dot = dif.x * (body.x-tip.x) + dif.y * (body.y-tip.y);
+    var par = dot / sqr(fullLen);
+
+    // If closest point is behind spike, there is no drain
+    if (par > 1) continue;
+
+    // Closest point saved to tip
+    if (par > 0) {
+      tip.x += par * dif.x;
+      tip.y += par * dif.y;
     }
 
-    // Is body too far from tip?
-    var tipVect = mergeVector(body.x-tip.x, body.y-tip.y);
-    if (tipVect.speed > spike.length + body.r) {
-      continue;
-    }
-
-    // Is body ahead of tip?
-    var tipGap = getGap(roundAngle(spike.angle+0.5), tipVect.angle);
-    if (tipGap > 0.25) {
-      continue;
-    }
-
-    // Is body close enough to line?
-    if (getSin(tipGap) * tipVect.speed < body.r) {
-      drainers.push(spike);
-    }
+    if (isCloser(body.x, body.y, tip.x, tip.y, body.r)) drainers.push(spike);
   }
+
+  this.core.drainCount += drainers.length;
 
   // If any spikes are draining, return a function to call them
   if (drainers.length) return function() {

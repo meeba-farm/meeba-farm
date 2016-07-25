@@ -4,7 +4,7 @@ svg {
 }
 
 body {
-  font: 300 15px Lato, "Trebuchet MS", Helvetica, sans-serif;
+  font: 300 16px Lato, "Trebuchet MS", Helvetica, sans-serif;
 }
 
 #config {
@@ -31,6 +31,10 @@ body {
 
 .heading {
   text-align: center;
+}
+
+.description {
+  padding: 0 10%;
 }
 
 .column {
@@ -84,11 +88,10 @@ input {
   color: #fff;
   font-size: 1.1em;
   font-weight: 100;
+  background-color: #aaa;
   padding: 0.3em 1.2em;
-  text-transform: uppercase;
-  background-color: #888;
-  border: solid 3px #ffffff;
-  border-radius: 8px;
+  border: solid 1px #ffffff;
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -99,5 +102,9 @@ input {
 }
 
 .btn.primary {
-  background-color: #44619E;
+  background-color: #34C749;
+}
+
+.hidden {
+  display: none;
 }

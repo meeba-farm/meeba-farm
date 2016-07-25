@@ -65,8 +65,8 @@ var spawnChildren = function(body) {
 
   while(body.core.children.length) {
     state.bodies.push(new Body(
-      body.core.children.pop(), 
-      body.x + breakVector(body.angle + displace, 2*body.r).x, 
+      body.core.children.pop(),
+      body.x + breakVector(body.angle + displace, 2*body.r).x,
       body.y + breakVector(body.angle + displace, 2*body.r).y,
       body.angle + displace,
       body.speed
@@ -186,14 +186,14 @@ var sumStats = function() {
   return state.bodies.reduce(function(stats, body) {
     stats.count++;
     stats.cal += body.core.calories < 0 ? 0 : body.core.calories;
-    stats.traits += body.core.traits.length;
+    stats.genome += body.core.genome.count();
     stats.size += body.core.size;
     stats.spikes += body.core.spikes.length;
     stats.spikeLength += body.core.spikes.reduce(function(total, spike) {
       return total + spike.length;
     }, 0);
     return stats;
-  }, {count:0, cal: 0, traits: 0, size: 0, spikes: 0, spikeLength: 0});
+  }, {count:0, cal: 0, genome: 0, size: 0, spikes: 0, spikeLength: 0});
 };
 
 // Gathers and logs stats about the current meebas
@@ -219,9 +219,9 @@ var logStats = function() {
     'total:', stats.cal, ' delta:', (stats.cal/state.stats[0].cal+'').slice(0, 5), '\n',
     'average:', avg.cal, ' delta:', (avg.cal/state.averages[0].cal+'').slice(0, 5), '\n',
 
-    '\nTRAITS:\n',
-    'total:', stats.traits, ' delta:', (stats.traits/state.stats[0].traits+'').slice(0, 5), '\n',
-    'average:', avg.traits, ' delta:', (avg.traits/state.averages[0].traits+'').slice(0, 5), '\n',
+    '\nGENES:\n',
+    'total:', stats.genome, ' delta:', (stats.genome/state.stats[0].genome+'').slice(0, 5), '\n',
+    'average:', avg.genome, ' delta:', (avg.genome/state.averages[0].genome+'').slice(0, 5), '\n',
 
     '\nSIZE:\n',
     'total:', stats.size, ' delta:', (stats.size/state.stats[0].size+'').slice(0, 5), '\n',
@@ -241,8 +241,8 @@ var logStats = function() {
  * * * * * * * * * * * * * * * * * * * */
 
 var populate = function(){
-  state.bodies = d3.range(config.seed.count).map(function() {
-    return new Body( new Meeba(config.seed.genes) );
+  state.bodies = d3.range(config.starter.count).map(function() {
+    return new Body( new Meeba(config.starter.genes) );
   });
 
   drawMeebas();
@@ -264,8 +264,8 @@ state.tank = d3.select('body').append('svg')
 
 state.tank.on('click', function() {
   state.bodies.push(new Body(
-    new Meeba(config.seed.genes), 
-    d3.event.x, 
+    new Meeba(config.starter.genes),
+    d3.event.x,
     d3.event.y
   ));
   drawMeebas();
@@ -273,19 +273,11 @@ state.tank.on('click', function() {
 
 d3.selectAll('input').on('input', function() {
   setConfig(this.id, this.value);
-  localStorage.setItem('config', JSON.stringify(config));
+  localStorage.setItem(config.location, JSON.stringify(config));
 });
 
 d3.selectAll('.range > input').on('input', function() {
   d3.select(this.nextElementSibling).text(this.value);
-});
-
-d3.selectAll('.btn-hover > i').on('mouseenter', function() {
-  d3.select(this).classed('fa-spin', true);
-});
-
-d3.selectAll('.btn-hover > i').on('mouseleave', function() {
-  d3.select(this).classed('fa-spin', false);
 });
 
 d3.select('#reset-meebas').on('click', function() {
@@ -296,45 +288,57 @@ d3.select('#reset-meebas').on('click', function() {
 });
 
 d3.select('#restore-defaults').on('click', function() {
-  localStorage.setItem('config', null);
+  localStorage.setItem(config.location, null);
   config = defaults;
   setInerfaceVals();
 });
 
 d3.select('#show-ui').on('click', function() {
   d3.select('#config').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('top', '4vh')
     .style('display', 'block');
 
   d3.select('#footer').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('top', '82vh')
     .style('display', 'block');
 
   d3.select('#show-ui').transition()
-    .duration(600)
-    .style('right', '-4em')
+    .duration(config.animationTime)
+    .attr('right', '-4em')
     .style('display', 'none');
+
+  d3.select('#hide-ui').transition()
+    .duration(config.animationTime)
+    .attr('right', '0.7em')
+    .style('display', 'block');
 });
 
-d3.select('#hide-ui').on('click', function() {
+var hideUI = function() {
   d3.select('#config').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('top', '-78vh')
     .style('display', 'none');
 
   d3.select('#footer').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('top', '104vh')
     .style('display', 'none');
 
   d3.select('#show-ui').transition()
-    .duration(600)
+    .duration(config.animationTime)
     .style('right', '0.7em')
     .style('display', 'block');
-});
 
+  d3.select('#hide-ui').transition()
+    .duration(config.animationTime)
+    .attr('right', '-4em')
+    .style('display', 'none');
+};
+
+d3.select('#hide-ui').on('click', hideUI);
+d3.select('#done').on('click', hideUI);
 
 /* * * * * * * * * * * * * * * * * * * *
  *                RUN                  *
