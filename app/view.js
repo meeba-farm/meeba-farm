@@ -1,11 +1,8 @@
 const VIEW_ID = 'view';
-
-const createSvgElement = (tag) => {
-  return document.createElementNS('http://www.w3.org/2000/svg', tag);
-};
+const PI_2 = 2 * Math.PI;
 
 export const createView = ({ width, height }) => {
-  const view = createSvgElement('svg');
+  const view = document.createElement('canvas');
   view.setAttribute('id', VIEW_ID);
   view.setAttribute('width', width);
   view.setAttribute('height', height);
@@ -14,18 +11,16 @@ export const createView = ({ width, height }) => {
   return view;
 };
 
-export const circleDrawer = (view) => ({ id, x, y, radius, fill }) => {
-  const circle = document.getElementById(id) || createSvgElement('circle');
+export const viewClearer = (view, width, height) => () => {
+  const ctx = view.getContext('2d');
+  ctx.clearRect(0, 0, width, height);
+};
 
-  if (!circle.getAttribute('id')) {
-    circle.setAttribute('id', id);
-    view.appendChild(circle);
-  }
+export const circleDrawer = (view) => ({ x, y, radius, fill }) => {
+  const ctx = view.getContext('2d');
 
-  circle.setAttribute('cx', x);
-  circle.setAttribute('cy', y);
-  circle.setAttribute('r', radius);
-  circle.setAttribute('fill', fill);
-
-  return circle;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, PI_2);
+  ctx.fillStyle = fill;
+  ctx.fill();
 };

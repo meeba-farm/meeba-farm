@@ -1,5 +1,5 @@
 import * as settings from './settings.js';
-import { createView, circleDrawer } from './view.js';
+import { createView, viewClearer, circleDrawer } from './view.js';
 import { range } from './utils/arrays.js';
 
 const VELOCITY = 200;
@@ -8,11 +8,11 @@ const view = createView({
   width: settings.tank.width,
   height: settings.tank.height
 });
+const clearView = viewClearer(view, settings.tank.width, settings.tank.height);
 const drawCircle = circleDrawer(view);
 
 const count = Math.floor(settings.tank.height / 3);
 const circles = range(count).map((i) => ({
-  id: `circle-${i}`,
   x: settings.tank.width / 2,
   y: 1 + 3 * i,
   radius: 2,
@@ -28,6 +28,8 @@ setInterval(() => {
   const delay = thisTick - lastTick;
   lastTick = thisTick;
   frame++;
+
+  clearView();
 
   circles
     .map((circle, i) => {
