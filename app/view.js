@@ -14,13 +14,18 @@ export const createView = ({ width, height }) => {
   return view;
 };
 
-export const circleDrawer = (view) => ({ x, y, radius, fill }) => {
-  const circle = createSvgElement('circle');
+export const circleDrawer = (view) => ({ id, x, y, radius, fill }) => {
+  const circle = document.getElementById(id) || createSvgElement('circle');
+
+  if (!circle.getAttribute('id')) {
+    circle.setAttribute('id', id);
+    view.appendChild(circle);
+  }
+
   circle.setAttribute('cx', x);
   circle.setAttribute('cy', y);
   circle.setAttribute('r', radius);
   circle.setAttribute('fill', fill);
 
-  view.appendChild(circle);
   return circle;
 };
