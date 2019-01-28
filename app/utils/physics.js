@@ -1,4 +1,4 @@
-import { PI_2, sqr, cos, sin, acos } from './math.js';
+import { PI_2, sqr, cos, sin, acos, isShorter } from './math.js';
 
 // Break an angle/speed vector into an x/y vector
 export const breakVector = ({ angle, speed }) => ({
@@ -26,6 +26,16 @@ export const bounceX = ({ velocity }) => {
 export const bounceY = ({ velocity }) => {
   const { angle } = velocity;
   velocity.angle = angle === 0 ? 0 : 1 - angle;
+};
+
+// True if the length between the centers is shorter than the sum of the radii
+export const hasCollided = (body1, body2) => {
+  return isShorter({
+    x1: body1.x,
+    x2: body2.x,
+    y1: body1.y,
+    y2: body2.y
+  }, body1.radius + body2.radius);
 };
 
 // Calculate a collision between two bodies, using math outlined here:
