@@ -20,5 +20,6 @@ const render = () => {
   requestAnimationFrame(render);
 };
 
-setInterval(() => simulate(performance.now()));
+console.log('Simulating with seed:', settings.seed);
+setInterval(() => simulate(performance.now()), 8);
 requestAnimationFrame(render);

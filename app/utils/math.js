@@ -1,3 +1,4 @@
+import * as settings from '../settings.js';
 import { range } from './arrays.js';
 
 export const PI_2 = 2 * Math.PI;
@@ -40,3 +41,17 @@ export const getGap = (angle1, angle2) => {
   const gap = Math.abs(roundAngle(angle1) - roundAngle(angle2));
   return gap <= 0.5 ? gap : 1 - gap;
 };
+
+// A simple pseudo-random number generator which takes a base36 seed
+// Based on this github gist by @blixit:
+// gist.github.com/blixt/f17b47c62508be59987b
+const getPrng = (alphaNumSeed) => {
+  let seed = parseInt(alphaNumSeed, 36);
+  return () => {
+    seed = seed * 16807 % 2147483647;
+    return seed / 2147483646;
+  };
+};
+
+export const rand = getPrng(settings.seed);
+export const randInt = (min, max) => min + Math.floor(rand() * (max - min));
