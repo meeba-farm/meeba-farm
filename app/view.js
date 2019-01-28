@@ -1,5 +1,6 @@
+import { PI_2 } from './utils/math.js';
+
 const VIEW_ID = 'view';
-const PI_2 = 2 * Math.PI;
 
 export const createView = ({ width, height }) => {
   const view = document.createElement('canvas');

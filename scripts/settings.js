@@ -3,7 +3,6 @@
 var defaults = {
   location: 'meeba-farm.config',
   logStats: true,
-  lutLevels: 1024,
 
   minR: 10,
   spikeW: 0.025,
@@ -77,19 +76,4 @@ var state = {
   minutes: 0,
   stats: [],
   averages: []
-};
-
-// Cached lookup tables of expensive trig values
-var lut = {
-  sin: d3.range(config.lutLevels).map(function(d, i) {
-    return Math.sin( 2 * Math.PI * i / config.lutLevels );
-  }),
-
-  cos: d3.range(config.lutLevels).map(function(d, i) {
-    return Math.cos( 2 * Math.PI * i / config.lutLevels );
-  }),
-
-  acos: d3.range(config.lutLevels).map(function(d, i) {
-    return Math.acos( (i-(config.lutLevels/2)) / (config.lutLevels/2) );
-  })
 };
