@@ -1,22 +1,19 @@
 import * as settings from './settings.js';
 import { createView, viewClearer, circleDrawer } from './view.js';
-import { spawnBodies, getSimulator } from './simulation.js';
+import { spawnBody, getSimulator } from './simulation.js';
 import { range } from './utils/arrays.js';
 
-const view = createView({
-  width: settings.tank.width,
-  height: settings.tank.height
-});
-const clearView = viewClearer(view, settings.tank.width, settings.tank.height);
+const { width, height } = settings.tank;
+
+const view = createView({ width, height });
+const clearView = viewClearer(view, width, height);
 const drawCircle = circleDrawer(view);
 
-const count = Math.floor(settings.tank.height / 3);
-const circles = spawnBodies(count);
-const simulate = getSimulator(circles)(performance.now());
-
+const bodies = range(settings.simulation.bodies).map(() => spawnBody());
+const simulate = getSimulator(bodies)(performance.now());
 const render = () => {
   clearView();
-  circles.forEach(drawCircle);
+  bodies.forEach(drawCircle);
   requestAnimationFrame(render);
 };
 

@@ -38,30 +38,6 @@ Body.prototype.removeQuery = function(query) {
   }
 };
 
-// Gets a destination x/y for a body
-Body.prototype.getDest = function() {
-  var vector = breakVector(this.angle, this.speed);
-  vector.x += this.x;
-  vector.y += this.y;
-
-  return vector;
-};
-
-// Checks if a body should bounce off a wall and changes angle accordingly
-Body.prototype.bounceWall = function() {
-  var buffer = this.speed / config.dur * config.buffer.wall + this.r;
-
-  if (getGap(0, this.angle) < 0.25 && this.x > config.w - buffer) {
-    this.angle = bounceX(this.angle);
-  } else if (getGap(0.25, this.angle) < 0.25 && this.y < buffer) {
-    this.angle = bounceY(this.angle);
-  } else if (getGap(0.5, this.angle) < 0.25 && this.x < buffer) {
-    this.angle = bounceX(this.angle);
-  } else if (getGap(0.75, this.angle) < 0.25 && this.y > config.h - buffer) {
-    this.angle = bounceY(this.angle);
-  }
-};
-
 // Checks to see if a body should collide with another
 // Returns an action function to create the collision
 Body.prototype.checkCollision = function(body) {
