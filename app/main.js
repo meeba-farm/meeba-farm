@@ -10,7 +10,7 @@ const clearView = viewClearer(view, width, height);
 const drawCircle = circleDrawer(view);
 
 const bodies = range(settings.simulation.bodies).map(() => spawnBody());
-const simulate = getSimulator(bodies)(performance.now());
+const simulate = getSimulator(bodies, performance.now());
 const render = () => {
   clearView();
   bodies.forEach(drawCircle);

@@ -28,16 +28,6 @@ export const bounceY = ({ velocity }) => {
   velocity.angle = angle === 0 ? 0 : 1 - angle;
 };
 
-// True if the length between the centers is shorter than the sum of the radii
-export const hasCollided = (body1, body2) => {
-  return isShorter({
-    x1: body1.x,
-    x2: body2.x,
-    y1: body1.y,
-    y2: body2.y
-  }, body1.radius + body2.radius);
-};
-
 // Calculate a collision between two bodies, using math outlined here:
 // http://vobarian.com/collisions/2dcollisions2.pdf
 export const collide = (body1, body2) => {
