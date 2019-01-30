@@ -4,6 +4,7 @@
   "description": "A life simulator where simple \"meebas\" live, eat, breed, and die",
   "main": "app/main.js",
   "scripts": {
+    "start": "http-server -p 3384",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/meeba-farm/meeba-farm/issues"
   },
-  "homepage": "https://meeba-farm.github.io/"
+  "homepage": "https://meeba-farm.github.io/",
+  "devDependencies": {
+    "http-server": "^0.11.1"
+  }
 }
