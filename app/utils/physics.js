@@ -1,9 +1,9 @@
-import { PI_2, sqr, cos, sin, acos, isShorter } from './math.js';
+import { PI_2, sqr, cos, sin, acos } from './math.js';
 
 // Break an angle/speed vector into an x/y vector
 export const breakVector = ({ angle, speed }) => ({
   x: cos(angle) * speed,
-  y: -sin(angle) * speed
+  y: -sin(angle) * speed,
 });
 
 // Merge an x/y vector into angle(in turns) and speed
@@ -14,7 +14,7 @@ export const mergeVector = ({ x, y }) => {
   // ACos always gives northwards angles, check if should be southwards
   return {
     angle: y > 0 ? 1 - angle : angle,
-    speed
+    speed,
   };
 };
 
@@ -49,22 +49,22 @@ export const collide = (body1, body2) => {
   const vt2 = ut.x * v2.x + ut.y * v2.y;
 
   // Calculate final velocities along the normal (tangent will not change)
-  const vn1_f = (vn1 * (m1 - m2) + 2 * m2 *vn2) / (m1 + m2);
-  const vn2_f = (vn2 * (m2 - m1) + 2 * m1 *vn1) / (m1 + m2);
+  const vn1F = (vn1 * (m1 - m2) + 2 * m2 * vn2) / (m1 + m2);
+  const vn2F = (vn2 * (m2 - m1) + 2 * m1 * vn1) / (m1 + m2);
 
   // Convert scalar velocities back into vectors
-  const vn1_vec = { x: vn1_f * un.x, y: vn1_f * un.y };
-  const vt1_vec = { x: vt1   * ut.x, y: vt1   * ut.y };
-  const vn2_vec = { x: vn2_f * un.x, y: vn2_f * un.y };
-  const vt2_vec = { x: vt2   * ut.x, y: vt2   * ut.y };
+  const vn1Vec = { x: vn1F * un.x, y: vn1F * un.y };
+  const vt1Vec = { x: vt1 * ut.x, y: vt1 * ut.y };
+  const vn2Vec = { x: vn2F * un.x, y: vn2F * un.y };
+  const vt2Vec = { x: vt2 * ut.x, y: vt2 * ut.y };
 
   // Calculate final vectors, by adding normal and tangent vectors
-  const v1_f = { x: vn1_vec.x + vt1_vec.x, y: vn1_vec.y + vt1_vec.y };
-  const v2_f = { x: vn2_vec.x + vt2_vec.x, y: vn2_vec.y + vt2_vec.y };
+  const v1F = { x: vn1Vec.x + vt1Vec.x, y: vn1Vec.y + vt1Vec.y };
+  const v2F = { x: vn2Vec.x + vt2Vec.x, y: vn2Vec.y + vt2Vec.y };
 
   // Convert back to angle (in turns) and magntitude and save to bodies
-  const { speed: speed1, angle: angle1 } = mergeVector(v1_f);
-  const { speed: speed2, angle: angle2 } = mergeVector(v2_f);
+  const { speed: speed1, angle: angle1 } = mergeVector(v1F);
+  const { speed: speed2, angle: angle2 } = mergeVector(v2F);
 
   body1.velocity.speed = speed1;
   body1.velocity.angle = angle1;

@@ -1,0 +1,16 @@
+{
+    "env": {
+        "browser": true
+    },
+    "extends": "airbnb-base",
+    "plugins": [
+        "curry"
+    ],
+    "rules": {
+        "arrow-parens": "off",
+        "curry/arrow-parens": ["error", "as-needed", { "requireForBlockBody": true, "curry": "always" }],
+        "import/extensions": "always",
+        "no-param-reassign": ["error", { "props": false }],
+        "object-curly-newline": ["error",  { "consistent": true }]
+    }
+}

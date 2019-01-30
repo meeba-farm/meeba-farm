@@ -17,6 +17,7 @@ const render = () => {
   requestAnimationFrame(render);
 };
 
+// eslint-disable-next-line no-console
 console.log('Simulating with seed:', settings.seed);
 setInterval(() => simulate(performance.now()), 8);
 requestAnimationFrame(render);

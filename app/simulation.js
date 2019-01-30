@@ -1,17 +1,16 @@
 import * as settings from './settings.js';
-import { range } from './utils/arrays.js';
 import {
   PI_2,
   getGap,
   isShorter,
   rand,
-  randInt
+  randInt,
 } from './utils/math.js';
 import {
   breakVector,
   bounceX,
   bounceY,
-  collide
+  collide,
 } from './utils/physics.js';
 
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
@@ -20,11 +19,6 @@ const COLLISION_BUFFER = 3;
 
 const { minRadius, maxRadius } = settings.meebas;
 const { width, height } = settings.tank;
-
-const randFill = () => {
-  const fullFill = '000000' + randInt(0, COLOR_RANGE).toString(16);
-  return '#' + fullFill.slice(-6);
-}
 
 // Creates a new body to simulate
 // Optionally reuses the ref to an old body to avoid garbage collection
@@ -38,7 +32,7 @@ export const spawnBody = (body = { velocity: {}, meta: {} }) => {
   body.velocity.angle = rand();
   body.velocity.speed = randInt(0, MAX_ENERGY / body.mass);
 
-  body.fill = randFill();
+  body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
   body.meta.nextX = null;
   body.meta.nextY = null;
   body.meta.lastCollisionBody = null;
@@ -79,24 +73,20 @@ const getWallBouncer = (delay) => (body) => {
 };
 
 // True if the length between the centers is shorter than the sum of the radii
-const isOverlapping = (body1, body2) => {
-  return isShorter({
-    x1: body1.x,
-    y1: body1.y,
-    x2: body2.x,
-    y2: body2.y
-  }, body1.radius + body2.radius + COLLISION_BUFFER);
-};
-const willOverlap = (body1, body2) => {
-  return isShorter({
-    x1: body1.meta.nextX,
-    y1: body1.meta.nextY,
-    x2: body2.meta.nextX,
-    y2: body2.meta.nextY
-  }, body1.radius + body2.radius + COLLISION_BUFFER);
-};
+const isOverlapping = (body1, body2) => isShorter({
+  x1: body1.x,
+  y1: body1.y,
+  x2: body2.x,
+  y2: body2.y,
+}, body1.radius + body2.radius + COLLISION_BUFFER);
+const willOverlap = (body1, body2) => isShorter({
+  x1: body1.meta.nextX,
+  y1: body1.meta.nextY,
+  x2: body2.meta.nextX,
+  y2: body2.meta.nextY,
+}, body1.radius + body2.radius + COLLISION_BUFFER);
 
-// This O(n^2) implementation should eventually be replaced by a quadtree
+// This O(n^2) implementation should eventually be replaced by an O(nlogn) quadtree
 const getBodyCollider = (bodies, delay) => (body) => {
   bodies.forEach((other) => {
     const shouldCollide = body !== other
@@ -114,14 +104,15 @@ const getBodyCollider = (bodies, delay) => (body) => {
 
 export const getSimulator = (bodies, lastTick) => (thisTick) => {
   const delay = (thisTick - lastTick) / 1000;
+  // eslint-disable-next-line no-param-reassign
   lastTick = thisTick;
 
   const calcMove = getMoveCalulator(delay);
-  const bounce = getWallBouncer(delay);
-  const collide = getBodyCollider(bodies, delay);
+  const bounceWall = getWallBouncer(delay);
+  const collideBody = getBodyCollider(bodies, delay);
 
   bodies.forEach(calcMove);
-  bodies.forEach(bounce);
-  bodies.forEach(collide);
-  bodies.forEach(moveBody)
+  bodies.forEach(bounceWall);
+  bodies.forEach(collideBody);
+  bodies.forEach(moveBody);
 };
