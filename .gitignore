@@ -1,5 +1,8 @@
 # Dependencies
 node_modules/
 
+# Generated files
+tests/**/*.common.js
+
 # OS X
 .DS_Store
