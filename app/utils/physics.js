@@ -113,7 +113,7 @@ export const collide = (body1, body2) => {
   const v1F = { x: vn1Vec.x + vt1Vec.x, y: vn1Vec.y + vt1Vec.y };
   const v2F = { x: vn2Vec.x + vt2Vec.x, y: vn2Vec.y + vt2Vec.y };
 
-  // Convert back to angle (in turns) and magntitude and save to bodies
+  // Convert back to angle (in turns) and magnitude and save to bodies
   const { speed: speed1, angle: angle1 } = toVelocity(v1F);
   const { speed: speed2, angle: angle2 } = toVelocity(v2F);
 

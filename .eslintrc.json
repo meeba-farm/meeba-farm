@@ -4,7 +4,8 @@
     },
     "extends": "airbnb-base",
     "plugins": [
-        "curry"
+        "curry",
+        "spellcheck"
     ],
     "rules": {
         "arrow-parens": "off",
@@ -12,6 +13,34 @@
         "import/extensions": "always",
         "no-param-reassign": ["error", { "props": false }],
         "object-curly-newline": ["error",  { "consistent": true }],
+        "spellcheck/spell-checker": ["error", {
+            "skipIfMatch": [
+                ".*\\.js",
+                ".*\\.json",
+                "@\\w*",
+                "eslint-.*"
+            ],
+            "skipWords": [
+                "calc",
+                "collider",
+                "ctx",
+                "fn",
+                "len",
+                "lut",
+                "meeba",
+                "meebas",
+                "mn",
+                "num",
+                "prng",
+                "rect",
+                "sqr",
+                "un",
+                "ut",
+                "vec",
+                "vn",
+                "vt"
+            ]
+        }],
         "valid-jsdoc": ["error", {
             "matchDescription": "^(?![\\S\\s])|^[A-Z][\\S\\s]*[^.?!]$",
             "requireParamDescription": false,

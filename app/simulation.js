@@ -70,7 +70,7 @@ export const spawnBody = (body = { velocity: {}, meta: {} }) => {
  * @param {number} delay - time passed since last move in seconds
  * @returns {function(Body): void} - mutates the nextX and nextY of a body
  */
-const getMoveCalulator = (delay) => (body) => {
+const getMoveCalculator = (delay) => (body) => {
   const { x, y } = toVector(body.velocity);
   body.meta.nextX = body.x + x * delay;
   body.meta.nextY = body.y + y * delay;
@@ -110,7 +110,7 @@ const getWallBouncer = (delay) => (body) => {
     return;
   }
 
-  getMoveCalulator(delay)(body);
+  getMoveCalculator(delay)(body);
   body.meta.lastCollisionBody = null;
 };
 
@@ -161,7 +161,7 @@ const getBodyCollider = (bodies, delay) => (body) => {
 
     if (shouldCollide) {
       collide(body, other);
-      getMoveCalulator(delay)(body);
+      getMoveCalculator(delay)(body);
       body.meta.lastCollisionBody = other;
       other.meta.lastCollisionBody = body;
     }
@@ -180,7 +180,7 @@ export const getSimulator = (bodies, lastTick) => (thisTick) => {
   // eslint-disable-next-line no-param-reassign
   lastTick = thisTick;
 
-  const calcMove = getMoveCalulator(delay);
+  const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
   const collideBody = getBodyCollider(bodies, delay);
 
