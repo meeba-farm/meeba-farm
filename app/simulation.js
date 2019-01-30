@@ -7,11 +7,31 @@ import {
   randInt,
 } from './utils/math.js';
 import {
-  breakVector,
+  toVector,
   bounceX,
   bounceY,
   collide,
 } from './utils/physics.js';
+
+/**
+ * @typedef Velocity {import('./utils/physics.js').Velocity}
+ */
+
+/**
+ * A body to be simulated and drawn (an extension of physics Body)
+ *
+ * @typedef Body
+ * @prop {number} x - horizontal location
+ * @prop {number} y - vertical location
+ * @prop {number} mass - measurement of size/mass
+ * @prop {Velocity} velocity - speed and direction of body
+ * @prop {number} radius - radius in pixels
+ * @prop {string} fill - a valid color string
+ * @prop {object} meta - extra properties specific to the simulation
+ *   @prop {number|null} meta.nextX - body's next horizontal location
+ *   @prop {number|null} meta.nextY - body's next vertical location
+ *   @prop {Body|null} meta.lastCollisionBody - last body collided with
+ */
 
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
 const COLOR_RANGE = 256 * 256 * 256;
@@ -20,8 +40,12 @@ const COLLISION_BUFFER = 3;
 const { minRadius, maxRadius } = settings.meebas;
 const { width, height } = settings.tank;
 
-// Creates a new body to simulate
-// Optionally reuses the ref to an old body to avoid garbage collection
+/**
+ * Creates a new body to simulate, optionally reusing an old reference to avoid garbage collection
+ *
+ * @param {Body} [body] - an old body reference to overwrite; mutated!
+ * @returns {Body}
+ */
 export const spawnBody = (body = { velocity: {}, meta: {} }) => {
   body.radius = randInt(minRadius, maxRadius);
   body.mass = Math.floor(PI_2 * body.radius);
@@ -40,12 +64,23 @@ export const spawnBody = (body = { velocity: {}, meta: {} }) => {
   return body;
 };
 
+/**
+ * Gets a function to calculate the next location of a body
+ *
+ * @param {number} delay - time passed since last move in seconds
+ * @returns {function(Body): void} - mutates the nextX and nextY of a body
+ */
 const getMoveCalulator = (delay) => (body) => {
-  const { x, y } = breakVector(body.velocity);
+  const { x, y } = toVector(body.velocity);
   body.meta.nextX = body.x + x * delay;
   body.meta.nextY = body.y + y * delay;
 };
 
+/**
+ * Updates the x/y of a body based on its previously calculated nextX/nextY
+ *
+ * @param {Body} body - mutated!
+ */
 const moveBody = (body) => {
   body.x = body.meta.nextX;
   body.y = body.meta.nextY;
@@ -53,6 +88,13 @@ const moveBody = (body) => {
   body.meta.nextY = null;
 };
 
+/**
+ * Gets a function to determine if a body should bounce off a wall,
+ * and then mutate its velocity appropriately
+ *
+ * @param {number} delay - time passed since last move in seconds
+ * @returns {function(Body): void} - mutates the velocity of the body if needed
+ */
 const getWallBouncer = (delay) => (body) => {
   const { radius, velocity: { angle }, meta: { nextX, nextY } } = body;
 
@@ -72,13 +114,28 @@ const getWallBouncer = (delay) => (body) => {
   body.meta.lastCollisionBody = null;
 };
 
-// True if the length between the centers is shorter than the sum of the radii
+/**
+ * Checks if two bodies currently overlap by comparing the distance between
+ * their centers and the sum of their radii
+ *
+ * @param {Body} body1
+ * @param {Body} body2
+ * @returns {boolean}
+ */
 const isOverlapping = (body1, body2) => isShorter({
   x1: body1.x,
   y1: body1.y,
   x2: body2.x,
   y2: body2.y,
 }, body1.radius + body2.radius + COLLISION_BUFFER);
+
+/**
+ * Checks if two bodies *will* overlap based on their next positions
+ *
+ * @param {Body} body1
+ * @param {Body} body2
+ * @returns {boolean}
+ */
 const willOverlap = (body1, body2) => isShorter({
   x1: body1.meta.nextX,
   y1: body1.meta.nextY,
@@ -86,7 +143,16 @@ const willOverlap = (body1, body2) => isShorter({
   y2: body2.meta.nextY,
 }, body1.radius + body2.radius + COLLISION_BUFFER);
 
-// This O(n^2) implementation should eventually be replaced by an O(nlogn) quadtree
+/**
+ * Gets a function to check if a body should collide with any other bodies and
+ * mutate the velocity of both bodies appropriately
+ *
+ * This O(n^2) implementation should eventually be replaced by an O(nlogn) quadtree
+ *
+ * @param {Body[]} bodies - all bodies in the simulation
+ * @param {number} delay - time passed since last move in seconds
+ * @returns {function(Body): void} - mutates the velocity of the body if needed
+ */
 const getBodyCollider = (bodies, delay) => (body) => {
   bodies.forEach((other) => {
     const shouldCollide = body !== other
@@ -102,6 +168,13 @@ const getBodyCollider = (bodies, delay) => (body) => {
   });
 };
 
+/**
+ * Gets a function to calculate a "frame" of the simulation
+ *
+ * @param {Body[]} bodies - all the bodies to simulate
+ * @param {number} lastTick - the time of the last frame
+ * @returns {function(number): void}
+ */
 export const getSimulator = (bodies, lastTick) => (thisTick) => {
   const delay = (thisTick - lastTick) / 1000;
   // eslint-disable-next-line no-param-reassign

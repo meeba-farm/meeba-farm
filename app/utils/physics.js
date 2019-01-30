@@ -1,13 +1,49 @@
 import { PI_2, sqr, cos, sin, acos } from './math.js';
 
-// Break an angle/speed vector into an x/y vector
-export const breakVector = ({ angle, speed }) => ({
+/**
+ * The speed and directions of a body
+ *
+ * @typedef Velocity
+ * @prop {number} angle - direction of movement in turns
+ * @prop {number} speed - speed in pixels/sec
+ */
+
+/**
+ * Speed and direction defined by a change in x and a change in y
+ *
+ * @typedef Vector
+ * @prop {number} x - change in x
+ * @prop {number} y - change in y
+ */
+
+/**
+ * A physical body in 2D space
+ *
+ * @typedef Body
+ * @prop {number} x - horizontal location
+ * @prop {number} y - vertical location
+ * @prop {number} mass - measurement of size/mass
+ * @prop {Velocity} velocity - speed and direction of body
+ */
+
+/**
+ * Convert an angle/speed velocity into an x/y vector
+ *
+ * @param {Velocity} velocity
+ * @returns {Vector}
+ */
+export const toVector = ({ angle, speed }) => ({
   x: cos(angle) * speed,
   y: -sin(angle) * speed,
 });
 
-// Merge an x/y vector into angle(in turns) and speed
-export const mergeVector = ({ x, y }) => {
+/**
+ * Merge an x/y vector into velocity with angle (in turns) and speed
+ *
+ * @param {Vector} vector
+ * @returns {Velocity}
+ */
+export const toVelocity = ({ x, y }) => {
   const speed = Math.sqrt(sqr(x) + sqr(y));
   const angle = acos(x / speed) / PI_2;
 
@@ -18,23 +54,38 @@ export const mergeVector = ({ x, y }) => {
   };
 };
 
-// Quick functions to elastically collide bodies off a wall
+/**
+ * Elastically collide a body against a horizontal wall
+ *
+ * @param {Body} body - body to collide; mutated!
+ */
 export const bounceX = ({ velocity }) => {
   const { angle } = velocity;
   velocity.angle = angle <= 0.5 ? 0.5 - angle : 1.5 - angle;
 };
+
+/**
+ * Elastically collide a body against a vertical wall
+ *
+ * @param {Body} body - body to collide; mutated!
+ */
 export const bounceY = ({ velocity }) => {
   const { angle } = velocity;
   velocity.angle = angle === 0 ? 0 : 1 - angle;
 };
 
-// Calculate a collision between two bodies, using math outlined here:
-// http://vobarian.com/collisions/2dcollisions2.pdf
+/**
+ * Elastically collide two bodies, based on math outlined here:
+ * http://vobarian.com/collisions/2dcollisions2.pdf
+ *
+ * @param {Body} body1 - first body to collide; mutated!
+ * @param {Body} body2 - second body to collide; mutated!
+ */
 export const collide = (body1, body2) => {
   const m1 = body1.mass;
   const m2 = body2.mass;
-  const v1 = breakVector(body1.velocity);
-  const v2 = breakVector(body2.velocity);
+  const v1 = toVector(body1.velocity);
+  const v2 = toVector(body2.velocity);
 
   // Calculate unit normal vector and unit tangent vector
   const n = { x: body2.x - body1.x, y: body2.y - body1.y };
@@ -63,8 +114,8 @@ export const collide = (body1, body2) => {
   const v2F = { x: vn2Vec.x + vt2Vec.x, y: vn2Vec.y + vt2Vec.y };
 
   // Convert back to angle (in turns) and magntitude and save to bodies
-  const { speed: speed1, angle: angle1 } = mergeVector(v1F);
-  const { speed: speed2, angle: angle2 } = mergeVector(v2F);
+  const { speed: speed1, angle: angle1 } = toVelocity(v1F);
+  const { speed: speed2, angle: angle2 } = toVelocity(v2F);
 
   body1.velocity.speed = speed1;
   body1.velocity.angle = angle1;

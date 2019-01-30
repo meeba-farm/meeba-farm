@@ -11,6 +11,26 @@
         "curry/arrow-parens": ["error", "as-needed", { "requireForBlockBody": true, "curry": "always" }],
         "import/extensions": "always",
         "no-param-reassign": ["error", { "props": false }],
-        "object-curly-newline": ["error",  { "consistent": true }]
+        "object-curly-newline": ["error",  { "consistent": true }],
+        "valid-jsdoc": ["error", {
+            "matchDescription": "^(?![\\S\\s])|^[A-Z][\\S\\s]*[^.?!]$",
+            "requireParamDescription": false,
+            "requireParamType": true,
+            "requireReturn": false,
+            "requireReturnDescription": false,
+            "requireReturnType": true,
+            "prefer": {
+                "arg": "param",
+                "argument": "param",
+                "property": "prop",
+                "return": "returns"
+            },
+            "preferType": {
+                "Boolean": "boolean",
+                "Object": "object",
+                "Number": "number",
+                "String": "string"
+            }
+        }]
     }
 }

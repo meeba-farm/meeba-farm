@@ -5,8 +5,9 @@
   "main": "app/main.js",
   "scripts": {
     "start": "http-server -p 3384",
-    "test": "npm run lint",
-    "lint": "eslint app/"
+    "test": "npm run lint && npm run type-check",
+    "lint": "eslint app/",
+    "type-check": "tsc --allowJs --checkJs --noEmit --strict app/**/*.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-curry": "^0.1.0",
     "eslint-plugin-import": "^2.16.0",
-    "http-server": "^0.11.1"
+    "http-server": "^0.11.1",
+    "typescript": "^3.2.4"
   }
 }
