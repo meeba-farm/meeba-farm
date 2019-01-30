@@ -1,0 +1,19 @@
+{
+  "name": "meeba-farm",
+  "version": "0.2.0",
+  "description": "A life simulator where simple \"meebas\" live, eat, breed, and die",
+  "main": "app/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meeba-farm/meeba-farm.git"
+  },
+  "author": "Zac Delventhal <delventhalz@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/meeba-farm/meeba-farm/issues"
+  },
+  "homepage": "https://meeba-farm.github.io/"
+}
