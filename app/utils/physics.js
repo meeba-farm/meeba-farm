@@ -1,4 +1,4 @@
-import { PI_2, sqr, cos, sin, acos } from './math.js';
+import { sqr, cos, sin, acos } from './math.js';
 
 /**
  * The speed and directions of a body
@@ -45,7 +45,7 @@ export const toVector = ({ angle, speed }) => ({
  */
 export const toVelocity = ({ x, y }) => {
   const speed = Math.sqrt(sqr(x) + sqr(y));
-  const angle = acos(x / speed) / PI_2;
+  const angle = acos(x / speed);
 
   // ACos always gives northwards angles, check if should be southwards
   return {

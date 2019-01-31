@@ -35,7 +35,6 @@ import {
 
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
 const COLOR_RANGE = 256 * 256 * 256;
-const COLLISION_BUFFER = 3;
 
 const { minRadius, maxRadius } = settings.meebas;
 const { width, height } = settings.tank;
@@ -127,7 +126,7 @@ const isOverlapping = (body1, body2) => isShorter({
   y1: body1.y,
   x2: body2.x,
   y2: body2.y,
-}, body1.radius + body2.radius + COLLISION_BUFFER);
+}, body1.radius + body2.radius);
 
 /**
  * Checks if two bodies *will* overlap based on their next positions
@@ -141,7 +140,7 @@ const willOverlap = (body1, body2) => isShorter({
   y1: body1.meta.nextY,
   x2: body2.meta.nextX,
   y2: body2.meta.nextY,
-}, body1.radius + body2.radius + COLLISION_BUFFER);
+}, body1.radius + body2.radius);
 
 /**
  * Gets a function to check if a body should collide with any other bodies and
@@ -157,7 +156,7 @@ const getBodyCollider = (bodies, delay) => (body) => {
   bodies.forEach((other) => {
     const shouldCollide = body !== other
       && body.meta.lastCollisionBody !== other
-      && (isOverlapping(body, other) || willOverlap(body, other));
+      && (willOverlap(body, other) || isOverlapping(body, other));
 
     if (shouldCollide) {
       collide(body, other);

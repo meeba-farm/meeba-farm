@@ -5,10 +5,11 @@ export const PI_2 = 2 * Math.PI;
 
 // Cached lookup tables of expensive trig functions
 const LUT_RES = 1024;
+const HALF_LUT_RES = LUT_RES / 2;
 const LOOKUP_TABLES = {
   SIN: range(LUT_RES).map(i => Math.sin(PI_2 * i / LUT_RES)),
   COS: range(LUT_RES).map(i => Math.cos(PI_2 * i / LUT_RES)),
-  ACOS: range(LUT_RES).map(i => Math.acos((i - (LUT_RES / 2)) / (LUT_RES / 2))),
+  ACOS: range(LUT_RES).map(i => Math.acos((i - HALF_LUT_RES) / HALF_LUT_RES)),
 };
 
 /**
@@ -56,7 +57,7 @@ export const roundAngle = (turns) => {
 const getTrigFn = (lut) => (turns) => lut[Math.floor(roundAngle(turns) * LUT_RES)];
 
 /**
- * Efficiently gets the sin for an angle in turns
+ * Efficiently gets the sine for an angle in turns
  *
  * @param {number} turns
  * @returns {number}
@@ -64,7 +65,7 @@ const getTrigFn = (lut) => (turns) => lut[Math.floor(roundAngle(turns) * LUT_RES
 export const sin = getTrigFn(LOOKUP_TABLES.SIN);
 
 /**
- * Efficiently gets the cosin for an angle in turns
+ * Efficiently gets the cosine for an angle in turns
  *
  * @param {number} turns
  * @returns {number}
@@ -72,12 +73,17 @@ export const sin = getTrigFn(LOOKUP_TABLES.SIN);
 export const cos = getTrigFn(LOOKUP_TABLES.COS);
 
 /**
- * Efficiently gets the acosin for an angle in turns
+ * Efficiently gets the arccosine (inverse cosine) for a trigonometric ratio
  *
- * @param {number} turns
- * @returns {number}
+ * @param {number} ratio - trigonometric ratio between -1 and 1
+ * @returns {number} - angle in turns
  */
-export const acos = getTrigFn(LOOKUP_TABLES.ACOS);
+export const acos = (ratio) => {
+  const index = Math.floor(ratio * HALF_LUT_RES + HALF_LUT_RES);
+
+  // 1 is a valid input, but will produce an out-of-range index on our lookup table
+  return index === LUT_RES ? 0 : LOOKUP_TABLES.ACOS[index] / PI_2;
+};
 
 /**
  * Efficiently checks if a line is shorter than a distance (no sqrt)
