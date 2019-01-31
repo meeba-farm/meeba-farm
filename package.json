@@ -6,7 +6,7 @@
   "scripts": {
     "start": "http-server -p 3384",
     "test": "npm run lint && npm run type-check && npm run unit-tests",
-    "lint": "eslint app/",
+    "lint": "eslint app/ tests/",
     "type-check": "tsc --allowJs --checkJs --noEmit --strict app/**/*.js",
     "unit-tests": "mocha --require tests/modules-to-common.js tests/**/*.test.js"
   },
