@@ -1,12 +1,12 @@
 import * as settings from './settings.js';
-import { createView, viewClearer, getCircleDrawer } from './view.js';
+import { createView, getViewClearer, getCircleDrawer } from './view.js';
 import { spawnBody, getSimulator } from './simulation.js';
 import { range } from './utils/arrays.js';
 
 const { width, height } = settings.tank;
 
 const view = createView(width, height);
-const clearView = viewClearer(view, width, height);
+const clearView = getViewClearer(view, width, height);
 const drawCircle = getCircleDrawer(view);
 
 const bodies = range(settings.simulation.bodies).map(() => spawnBody());

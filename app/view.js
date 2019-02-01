@@ -35,7 +35,7 @@ export const createView = (width, height) => {
  * @param {number} height - its height
  * @returns {function(): void} - clears canvas when called
  */
-export const viewClearer = (view, width, height) => () => {
+export const getViewClearer = (view, width, height) => () => {
   const ctx = view.getContext('2d');
   ctx.clearRect(0, 0, width, height);
 };

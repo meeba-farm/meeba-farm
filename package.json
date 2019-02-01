@@ -8,7 +8,7 @@
     "test": "npm run lint && npm run type-check && npm run unit-tests",
     "lint": "eslint app/ tests/",
     "type-check": "tsc --allowJs --checkJs --noEmit --strict app/**/*.js",
-    "unit-tests": "mocha --require tests/modules-to-common.js tests/main.js tests/**/*.test.js"
+    "unit-tests": "mocha --require tests/modules-to-common.js \"tests/main.js\" \"tests/**/*.test.js\""
   },
   "repository": {
     "type": "git",
