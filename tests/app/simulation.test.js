@@ -10,9 +10,11 @@ settings.tank.height = 100;
 
 const {
   spawnBody,
+  separateBodies,
   getSimulator,
 } = require('./simulation.common.js');
 
+const sqr = n => n * n;
 const getCircleArea = radius => Math.floor(2 * Math.PI * radius);
 
 describe('Simulation methods', () => {
@@ -53,6 +55,39 @@ describe('Simulation methods', () => {
       expect(body.velocity).to.be.an('object');
       expect(body.velocity.angle).to.be.a('number');
       expect(body.velocity.speed).to.be.a('number');
+    });
+  });
+
+  describe('separateBodies', () => {
+    it('should separate overlapping bodies', () => {
+      const body1 = spawnBody();
+      body1.radius = 10;
+      body1.x = 45;
+      body1.y = 50;
+
+      const body2 = spawnBody();
+      body2.radius = 10;
+      body2.x = 55;
+      body2.y = 50;
+
+      separateBodies([body1, body2]);
+
+      const separation = Math.sqrt(sqr(body1.x - body2.x) + sqr(body1.y - body2.y));
+      expect(separation).to.be.greaterThan(20);
+    });
+
+    it('should fail gracefully if no solution is possible', () => {
+      const body1 = spawnBody();
+      body1.radius = 1000;
+      body1.x = 50;
+      body1.y = 50;
+
+      const body2 = spawnBody();
+      body2.radius = 1000;
+      body2.x = 50;
+      body2.y = 50;
+
+      expect(() => separateBodies([body1, body2])).to.not.throw();
     });
   });
 

@@ -35,6 +35,7 @@ import {
 
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
 const COLOR_RANGE = 256 * 256 * 256;
+const MAX_SEPARATION_ATTEMPTS = 10;
 
 const { minRadius, maxRadius } = settings.meebas;
 const { width, height } = settings.tank;
@@ -165,6 +166,32 @@ const getBodyCollider = (bodies, delay) => (body) => {
       other.meta.lastCollisionBody = body;
     }
   });
+};
+
+/**
+ * Takes an array of bodies and teleports them randomly until none overlap
+ *
+ * @param {Body[]} bodies - mutated!
+ */
+
+export const separateBodies = (bodies) => {
+  let attempts = 0;
+  let overlapsFound = true;
+
+  while (attempts < MAX_SEPARATION_ATTEMPTS && overlapsFound) {
+    attempts += 1;
+    overlapsFound = false;
+
+    for (const body of bodies) {
+      for (const other of bodies) {
+        if (body !== other && isOverlapping(body, other)) {
+          overlapsFound = true;
+          body.x = randInt(body.radius, width - body.radius);
+          body.y = randInt(body.radius, height - body.radius);
+        }
+      }
+    }
+  }
 };
 
 /**
