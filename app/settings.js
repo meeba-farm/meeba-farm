@@ -15,4 +15,6 @@ export const simulation = {
 export const meebas = {
   maxRadius: 60,
   minRadius: 10,
+  averageStartingGeneCount: 5,
+  averageStartingGeneSize: 10,
 };

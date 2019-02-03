@@ -7,6 +7,14 @@
 export const range = len => Array(...Array(len)).map((_, i) => i);
 
 /**
+ * Takes an array returns a shallowly flattened copy
+ *
+ * @param {array} arr - the array to flatten
+ * @returns {array}
+ */
+export const flatten = arr => arr.reduce((flat, nested) => flat.concat(nested), []);
+
+/**
  * Creates a new 2D array split into evenly sized chunks
  *
  * @param {array} arr - the length of the new array

@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const {
   range,
+  flatten,
   chunk,
   toBytes,
   toHex,
@@ -20,6 +21,20 @@ describe('Array utils', () => {
 
     it('should create an empty array when given a length of 0', () => {
       expect(range(0)).to.be.an('array').with.a.lengthOf(0);
+    });
+  });
+
+  describe('flatten', () => {
+    it('should shallowly flatten an array', () => {
+      expect(flatten([[1, 2], [3, 4]])).to.deep.equal([1, 2, 3, 4]);
+    });
+
+    it('should not affect an already flat array', () => {
+      expect(flatten([[1, 2, 3]])).to.deep.equal([1, 2, 3]);
+    });
+
+    it('should not deeply flatten a highly nested array', () => {
+      expect(flatten([[[1, 2], 3], 4])).to.deep.equal([[1, 2], 3, 4]);
     });
   });
 
