@@ -1,5 +1,12 @@
 import * as settings from './settings.js';
 import {
+  createGenome,
+  readGenome,
+} from './meebas/genome.js';
+import {
+  toHex,
+} from './utils/arrays.js';
+import {
   PI_2,
   getGap,
   isShorter,
@@ -27,17 +34,17 @@ import {
  * @prop {Velocity} velocity - speed and direction of body
  * @prop {number} radius - radius in pixels
  * @prop {string} fill - a valid color string
+ * @prop {string} dna - a hex-string genome
  * @prop {object} meta - extra properties specific to the simulation
  *   @prop {number|null} meta.nextX - body's next horizontal location
  *   @prop {number|null} meta.nextY - body's next vertical location
  *   @prop {Body|null} meta.lastCollisionBody - last body collided with
  */
 
+const MIN_MASS = Math.floor(PI_2 * settings.meebas.minRadius);
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
 const COLOR_RANGE = 256 * 256 * 256;
 const MAX_SEPARATION_ATTEMPTS = 10;
-
-const { minRadius, maxRadius } = settings.meebas;
 const { width, height } = settings.tank;
 
 /**
@@ -47,8 +54,12 @@ const { width, height } = settings.tank;
  * @returns {Body}
  */
 export const spawnBody = (body = { velocity: {}, meta: {} }) => {
-  body.radius = randInt(minRadius, maxRadius);
-  body.mass = Math.floor(PI_2 * body.radius);
+  const dna = createGenome();
+  body.dna = toHex(dna);
+
+  const { mass } = readGenome(dna);
+  body.mass = MIN_MASS + mass;
+  body.radius = Math.floor(body.mass / PI_2);
 
   body.x = randInt(body.radius, width - body.radius);
   body.y = randInt(body.radius, height - body.radius);

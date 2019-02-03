@@ -27,8 +27,13 @@ describe('Simulation methods', () => {
     it('should create a new body', () => {
       const body = spawnBody();
 
-      expect(body.radius).to.be.a('number');
-      expect(body.mass).to.equal(getCircleArea(body.radius));
+      expect(body.radius).to.be.a('number')
+        .that.is.greaterThan(settings.meebas.minRadius);
+      expect(body.mass).to.be.within(
+        getCircleArea(body.radius),
+        getCircleArea(body.radius + 1),
+      );
+
       expect(body.x).to.be.a('number');
       expect(body.y).to.be.a('number');
       expect(body.fill).to.be.a('string');
@@ -46,8 +51,13 @@ describe('Simulation methods', () => {
       expect(body).to.equal(oldBody);
       expect(body).to.not.deep.equal(oldValues);
 
-      expect(body.radius).to.be.a('number');
-      expect(body.mass).to.equal(getCircleArea(body.radius));
+      expect(body.radius).to.be.a('number')
+        .that.is.greaterThan(settings.meebas.minRadius);
+      expect(body.mass).to.be.within(
+        getCircleArea(body.radius),
+        getCircleArea(body.radius + 1),
+      );
+
       expect(body.x).to.be.a('number');
       expect(body.y).to.be.a('number');
       expect(body.fill).to.be.a('string');
