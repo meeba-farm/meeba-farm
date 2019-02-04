@@ -6,7 +6,7 @@ const {
   readGenome,
 } = require('./genome.common.js');
 
-const CONTROL_BYTES = new Set([0xF0]);
+const CONTROL_BYTES = new Set([0xF0, 0xF1]);
 
 const isValidControlByte = byte => CONTROL_BYTES.has(byte);
 
@@ -33,6 +33,7 @@ describe('View methods', () => {
 
       expect(commands).to.be.an('object');
       expect(commands).to.have.a.property('mass').which.is.a('number');
+      expect(commands).to.have.a.property('spikes').which.is.an('array');
     });
 
     it('should parse instructions for the mass of a meeba', () => {
@@ -65,6 +66,42 @@ describe('View methods', () => {
       expect(mass2).to.equal(0);
       expect(mass3).to.equal(0);
       expect(mass4).to.equal(6);
+    });
+
+    it('should parse instructions for meeba spikes', () => {
+      const { spikes: spikes1 } = readGenome(Uint8Array.from([
+        0b11110001,
+        0b10101010,
+        0b00001111,
+      ]));
+
+      const { spikes: spikes2 } = readGenome(Uint8Array.from([
+        0b11110001,
+        0b00000000,
+        0b00000000,
+      ]));
+
+      const { spikes: spikes3 } = readGenome(Uint8Array.from([
+        0b11110001,
+        0b11110000,
+        0b10101010,
+      ]));
+
+      const { spikes: spikes4 } = readGenome(Uint8Array.from([
+        0b11110000,
+        0b11110001,
+        0b11100111,
+        0b11110001,
+        0b00000111,
+      ]));
+
+      expect(spikes1).to.deep.equal([{ length: 4, angle: 0 }]);
+      expect(spikes2).to.deep.equal([{ length: 0, angle: 0 }]);
+      expect(spikes3).to.deep.equal([{ length: 0, angle: 0 }]);
+      expect(spikes4).to.deep.equal([
+        { length: 3, angle: 0.2 },
+        { length: 1, angle: 0.6 },
+      ]);
     });
   });
 });
