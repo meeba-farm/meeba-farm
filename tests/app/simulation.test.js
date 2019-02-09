@@ -28,7 +28,7 @@ describe('Simulation methods', () => {
       const body = spawnBody();
 
       expect(body.radius).to.be.a('number')
-        .that.is.greaterThan(settings.meebas.minRadius);
+        .that.is.at.least(settings.meebas.minRadius);
       expect(body.mass).to.be.within(
         getCircleArea(body.radius),
         getCircleArea(body.radius + 1),
@@ -52,7 +52,7 @@ describe('Simulation methods', () => {
       expect(body).to.not.deep.equal(oldValues);
 
       expect(body.radius).to.be.a('number')
-        .that.is.greaterThan(settings.meebas.minRadius);
+        .that.is.at.least(settings.meebas.minRadius);
       expect(body.mass).to.be.within(
         getCircleArea(body.radius),
         getCircleArea(body.radius + 1),
@@ -83,7 +83,7 @@ describe('Simulation methods', () => {
       separateBodies([body1, body2]);
 
       const separation = Math.sqrt(sqr(body1.x - body2.x) + sqr(body1.y - body2.y));
-      expect(separation).to.be.greaterThan(20);
+      expect(separation).to.be.at.least(20);
     });
 
     it('should fail gracefully if no solution is possible', () => {

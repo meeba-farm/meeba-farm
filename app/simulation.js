@@ -41,7 +41,7 @@ import {
  *   @prop {Body|null} meta.lastCollisionBody - last body collided with
  */
 
-const MIN_MASS = Math.floor(PI_2 * settings.meebas.minRadius);
+const MIN_MASS = Math.ceil(PI_2 * settings.meebas.minRadius);
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
 const COLOR_RANGE = 256 * 256 * 256;
 const MAX_SEPARATION_ATTEMPTS = 10;
