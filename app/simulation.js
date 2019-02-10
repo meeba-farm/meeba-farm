@@ -4,6 +4,10 @@ import {
   readGenome,
 } from './meebas/genome.js';
 import {
+  spawnSpike,
+  getSpikeMover,
+} from './meebas/spikes.js';
+import {
   toHex,
 } from './utils/arrays.js';
 import {
@@ -21,6 +25,10 @@ import {
 } from './utils/physics.js';
 
 /**
+ * @typedef Spike {import('./meebas/spikes.js').Spike}
+ */
+
+/**
  * @typedef Velocity {import('./utils/physics.js').Velocity}
  */
 
@@ -28,13 +36,14 @@ import {
  * A body to be simulated and drawn (an extension of physics Body)
  *
  * @typedef Body
+ * @prop {string} dna - a hex-string genome
+ * @prop {string} fill - a valid color string
  * @prop {number} x - horizontal location
  * @prop {number} y - vertical location
  * @prop {number} mass - measurement of size/mass
- * @prop {Velocity} velocity - speed and direction of body
  * @prop {number} radius - radius in pixels
- * @prop {string} fill - a valid color string
- * @prop {string} dna - a hex-string genome
+ * @prop {Velocity} velocity - speed and direction of body
+ * @prop {Spike[]} spikes - the spikes of the meeba
  * @prop {object} meta - extra properties specific to the simulation
  *   @prop {number|null} meta.nextX - body's next horizontal location
  *   @prop {number|null} meta.nextY - body's next vertical location
@@ -53,21 +62,25 @@ const { width, height } = settings.tank;
  * @param {Body} [body] - an old body reference to overwrite; mutated!
  * @returns {Body}
  */
-export const spawnBody = (body = { velocity: {}, meta: {} }) => {
+export const spawnBody = (body = { velocity: {}, spikes: [], meta: {} }) => {
   const dna = createGenome();
   body.dna = toHex(dna);
+  body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
 
-  const { mass } = readGenome(dna);
+  const { mass, spikes } = readGenome(dna);
   body.mass = MIN_MASS + mass;
   body.radius = Math.floor(body.mass / PI_2);
 
   body.x = randInt(body.radius, width - body.radius);
   body.y = randInt(body.radius, height - body.radius);
-
   body.velocity.angle = rand();
   body.velocity.speed = randInt(0, MAX_ENERGY / body.mass);
 
-  body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
+  body.spikes.length = 0;
+  for (const { angle, length } of spikes) {
+    body.spikes.push(spawnSpike(body.radius, angle, length));
+  }
+
   body.meta.nextX = null;
   body.meta.nextY = null;
   body.meta.lastCollisionBody = null;
@@ -97,6 +110,9 @@ const moveBody = (body) => {
   body.y = body.meta.nextY;
   body.meta.nextX = null;
   body.meta.nextY = null;
+
+  const moveSpike = getSpikeMover(body.x, body.y);
+  body.spikes.forEach(moveSpike);
 };
 
 /**
