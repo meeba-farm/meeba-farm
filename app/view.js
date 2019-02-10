@@ -8,6 +8,17 @@ import { PI_2 } from './utils/math.js';
  * @prop {string} fill - a valid color string
  */
 
+/**
+ * @typedef Triangle
+ * @prop {number} x1 - horizontal location of first point
+ * @prop {number} y1 - vertical location of first point
+ * @prop {number} x2 - second point
+ * @prop {number} y2 - second point
+ * @prop {number} x3 - third point
+ * @prop {number} y3 - third point
+ * @prop {string} fill - a valid color string
+ */
+
 const VIEW_ID = 'view';
 
 /**
@@ -51,6 +62,25 @@ export const getCircleDrawer = (view) => ({ x, y, radius, fill }) => {
 
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, PI_2);
+  ctx.fillStyle = fill;
+  ctx.fill();
+};
+
+/**
+ * Takes a canvas view and returns a function to draw triangle on it
+ *
+ * @param {HTMLCanvasElement} view - the canvas to draw on; mutated!
+ * @returns {function(Triangle): void} - takes a triangle and draws it on the canvas
+ */
+export const getTriangleDrawer = (view) => ({ x1, y1, x2, y2, x3, y3, fill }) => {
+  const ctx = view.getContext('2d');
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.lineTo(x3, y3);
+  ctx.closePath();
+
   ctx.fillStyle = fill;
   ctx.fill();
 };

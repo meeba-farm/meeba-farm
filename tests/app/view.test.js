@@ -24,4 +24,11 @@ describe('View methods', () => {
       expect(view.getCircleDrawer()).to.be.a('function');
     });
   });
+
+  describe('getTriangleDrawer', () => {
+    it('should exist and return a function', () => {
+      expect(view.getTriangleDrawer).to.exist.and.be.a('function');
+      expect(view.getTriangleDrawer()).to.be.a('function');
+    });
+  });
 });
