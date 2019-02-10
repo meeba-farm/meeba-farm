@@ -11,7 +11,7 @@ import {
   toHex,
 } from './utils/arrays.js';
 import {
-  PI_2,
+  sqr,
   getGap,
   isShorter,
   rand,
@@ -50,7 +50,7 @@ import {
  *   @prop {Body|null} meta.lastCollisionBody - last body collided with
  */
 
-const MIN_MASS = Math.ceil(PI_2 * settings.meebas.minRadius);
+const MIN_MASS = Math.ceil(Math.PI * sqr(settings.meebas.minRadius));
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
 const COLOR_RANGE = 256 * 256 * 256;
 const MAX_SEPARATION_ATTEMPTS = 10;
@@ -70,7 +70,7 @@ export const spawnBody = (body = { velocity: {}, spikes: [], meta: {} }) => {
 
   const { mass, spikes } = readGenome(dna);
   body.mass = MIN_MASS + mass;
-  body.radius = Math.floor(body.mass / PI_2);
+  body.radius = Math.floor(Math.sqrt(body.mass / Math.PI));
 
   body.x = randInt(body.radius, width - body.radius);
   body.y = randInt(body.radius, height - body.radius);

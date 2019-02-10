@@ -8,12 +8,12 @@ export const tank = {
 };
 
 export const simulation = {
-  bodies: 50,
-  energy: 200000,
+  bodies: 75,
+  energy: 2000000,
 };
 
 export const meebas = {
   minRadius: 10,
-  averageStartingGeneCount: 10,
-  averageStartingGeneSize: 5,
+  averageStartingGeneCount: 32,
+  averageStartingGeneSize: 8,
 };

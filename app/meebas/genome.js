@@ -40,7 +40,7 @@ const { averageStartingGeneCount, averageStartingGeneSize } = settings.meebas;
 const MAX_GENES = 2 * averageStartingGeneCount;
 const MAX_BYTES = 2 * averageStartingGeneSize;
 
-const CONTROL_BYTE_FREQUENCY = [0xF0, 0xF0, 0xF0, 0xF0, 0xF1];
+const CONTROL_BYTE_FREQUENCY = [0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF1];
 
 const BITS_PER_MASS_PIXEL = 1;
 const BITS_PER_SPIKE_LENGTH = 2;

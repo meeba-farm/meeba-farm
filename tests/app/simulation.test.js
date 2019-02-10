@@ -15,7 +15,7 @@ const {
 } = require('./simulation.common.js');
 
 const sqr = n => n * n;
-const getCircleArea = radius => Math.floor(2 * Math.PI * radius);
+const getCircleArea = radius => Math.floor(Math.PI * radius * radius);
 
 const expectIsValidNewBody = (body) => {
   expect(body.dna).to.match(/^[0-9A-F]{4,}$/);

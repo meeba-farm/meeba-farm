@@ -27,7 +27,7 @@ import {
  *   @prop {number|null} meta.deactivateTime
  */
 
-const SPIKE_WIDTH = 8;
+const SPIKE_WIDTH = 6;
 const HALF_WIDTH = SPIKE_WIDTH / 2;
 const SPIKES = [];
 
