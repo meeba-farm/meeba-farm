@@ -7,6 +7,7 @@ const {
   roundAngle,
   sin,
   cos,
+  asin,
   acos,
   isShorter,
   getGap,
@@ -88,6 +89,17 @@ describe('Math utils', () => {
 
       expect(cos(-99.9)).to.be.closeTo(0.8090, LUT_TOLERANCE);
       expect(cos(100.8)).to.be.closeTo(0.3090, LUT_TOLERANCE);
+    });
+  });
+
+  describe('asin', () => {
+    it('should return an approximate arccosine as an angle between 0 and 1 turns', () => {
+      expect(asin(1)).to.be.veryCloseTo(0.25);
+      expect(asin(0)).to.be.veryCloseTo(0);
+      expect(asin(-1)).to.be.veryCloseTo(-0.25);
+
+      expect(asin(0.3)).to.be.closeTo(0.0485, LUT_TOLERANCE);
+      expect(asin(-0.75)).to.be.closeTo(-0.1350, LUT_TOLERANCE);
     });
   });
 
