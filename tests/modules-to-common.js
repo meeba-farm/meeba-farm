@@ -43,8 +43,8 @@ module.exports = {
 };
 
 // Run
-listJSPaths(INPUT_DIR).forEach((file) => {
+for (const file of listJSPaths(INPUT_DIR)) {
   const input = fs.readFileSync(file, 'utf-8');
   const outputPath = `${path.resolve(OUTPUT_DIR, file).slice(0, -3)}.common.js`;
   fs.writeFileSync(outputPath, toCommon(input));
-});
+}

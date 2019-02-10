@@ -181,7 +181,7 @@ const willOverlap = (body1, body2) => isShorter({
  * @returns {function(Body): void} - mutates the velocity of the body if needed
  */
 const getBodyCollider = (bodies, delay) => (body) => {
-  bodies.forEach((other) => {
+  for (const other of bodies) {
     const shouldCollide = body !== other
       && body.meta.lastCollisionBody !== other
       && (willOverlap(body, other) || isOverlapping(body, other));
@@ -192,7 +192,7 @@ const getBodyCollider = (bodies, delay) => (body) => {
       body.meta.lastCollisionBody = other;
       other.meta.lastCollisionBody = body;
     }
-  });
+  }
 };
 
 /**
