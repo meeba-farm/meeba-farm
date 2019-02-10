@@ -23,6 +23,8 @@ import {
  *   @prop {number} offset.y2
  *   @prop {number} offset.x3
  *   @prop {number} offset.y3
+ * @prop {object} meta - simulation specific properties
+ *   @prop {number|null} meta.deactivateTime
  */
 
 const SPIKE_WIDTH = 8;
@@ -83,6 +85,10 @@ export const spawnSpike = (radius, angle, length) => {
   spike.offset.y2 = getYOffset(angle - offsetAngle, radius - 1);
   spike.offset.x3 = getXOffset(angle + offsetAngle, radius - 1);
   spike.offset.y3 = getYOffset(angle + offsetAngle, radius - 1);
+
+  /** @type {Spike['meta']} */
+  spike.meta = {};
+  spike.meta.deactivateTime = null;
 
   return spike;
 };

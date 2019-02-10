@@ -43,6 +43,7 @@
                 "collider",
                 "const",
                 "ctx",
+                "deactivator",
                 "dir",
                 "dna",
                 "extname",

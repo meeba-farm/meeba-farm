@@ -54,6 +54,7 @@ const MIN_MASS = Math.ceil(PI_2 * settings.meebas.minRadius);
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
 const COLOR_RANGE = 256 * 256 * 256;
 const MAX_SEPARATION_ATTEMPTS = 10;
+const SPIKE_HIGHLIGHT_TIME = 167;
 const { width, height } = settings.tank;
 
 /**
@@ -171,6 +172,20 @@ const willOverlap = (body1, body2) => isShorter({
 }, body1.radius + body2.radius);
 
 /**
+ * Checks if a spike's tip is within a body's circumference
+ *
+ * @param {Spike} spike
+ * @param {Body} body
+ * @returns {boolean}
+ */
+const isSpikeOverlapping = (spike, body) => isShorter({
+  x1: body.x,
+  y1: body.y,
+  x2: spike.x1,
+  y2: spike.y1,
+}, body.radius);
+
+/**
  * Gets a function to check if a body should collide with any other bodies and
  * mutate the velocity of both bodies appropriately
  *
@@ -196,11 +211,48 @@ const getBodyCollider = (bodies, delay) => (body) => {
 };
 
 /**
+ * Gets a function to check if a body's spikes overlap with any other bodies
+ *
+ * This O(n^2) implementation should eventually be replaced by an O(nlogn) quadtree
+ *
+ * @param {Body[]} bodies - all bodies in the simulation
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): void} - mutates any activated spikes
+ */
+const getSpikeActivator = (bodies, tick) => (body) => {
+  for (const other of bodies) {
+    if (body !== other) {
+      for (const spike of body.spikes) {
+        if (isSpikeOverlapping(spike, other)) {
+          spike.fill = 'red';
+          spike.meta.deactivateTime = tick + SPIKE_HIGHLIGHT_TIME;
+        }
+      }
+    }
+  }
+};
+
+/**
+ * Gets a function which deactivates a body's spikes if their activation time as expired
+ *
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): void} - mutates any deactivating spikes
+ */
+const getSpikeDeactivator = (tick) => (body) => {
+  for (const spike of body.spikes) {
+    const { deactivateTime } = spike.meta;
+    if (deactivateTime !== null && deactivateTime < tick) {
+      spike.fill = 'black';
+      spike.meta.deactivateTime = null;
+    }
+  }
+};
+
+/**
  * Takes an array of bodies and teleports them randomly until none overlap
  *
  * @param {Body[]} bodies - mutated!
  */
-
 export const separateBodies = (bodies) => {
   let attempts = 0;
   let overlapsFound = true;
@@ -233,10 +285,14 @@ export const getSimulator = (bodies, lastTick) => (thisTick) => {
   // eslint-disable-next-line no-param-reassign
   lastTick = thisTick;
 
+  const activateSpikes = getSpikeActivator(bodies, thisTick);
+  const deactivateSpikes = getSpikeDeactivator(thisTick);
   const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
   const collideBody = getBodyCollider(bodies, delay);
 
+  bodies.forEach(activateSpikes);
+  bodies.forEach(deactivateSpikes);
   bodies.forEach(calcMove);
   bodies.forEach(bounceWall);
   bodies.forEach(collideBody);
