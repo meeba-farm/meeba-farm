@@ -8,6 +8,10 @@ import {
   getSpikeMover,
 } from './meebas/spikes.js';
 import {
+  initVitals,
+  drainCalories,
+} from './meebas/vitals.js';
+import {
   toHex,
 } from './utils/arrays.js';
 import {
@@ -29,6 +33,10 @@ import {
  */
 
 /**
+ * @typedef Vitals {import('./meebas/vitals.js').Vitals}
+ */
+
+/**
  * @typedef Velocity {import('./utils/physics.js').Velocity}
  */
 
@@ -36,6 +44,7 @@ import {
  * A body to be simulated and drawn (an extension of physics Body)
  *
  * @typedef Body
+ * @prop {boolean} isActive - whether the body should be simulated or not
  * @prop {string} dna - a hex-string genome
  * @prop {string} fill - a valid color string
  * @prop {number} x - horizontal location
@@ -43,6 +52,7 @@ import {
  * @prop {number} mass - measurement of size/mass
  * @prop {number} radius - radius in pixels
  * @prop {Velocity} velocity - speed and direction of body
+ * @prop {Vitals} vitals - life-cycle properties of the body
  * @prop {Spike[]} spikes - the spikes of the meeba
  * @prop {object} meta - extra properties specific to the simulation
  *   @prop {number|null} meta.nextX - body's next horizontal location
@@ -63,7 +73,9 @@ const { width, height } = settings.tank;
  * @param {Body} [body] - an old body reference to overwrite; mutated!
  * @returns {Body}
  */
-export const spawnBody = (body = { velocity: {}, spikes: [], meta: {} }) => {
+export const spawnBody = (body = { velocity: {}, vitals: {}, spikes: [], meta: {} }) => {
+  body.isActive = true;
+
   const dna = createGenome();
   body.dna = toHex(dna);
   body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
@@ -76,6 +88,8 @@ export const spawnBody = (body = { velocity: {}, spikes: [], meta: {} }) => {
   body.y = randInt(body.radius, height - body.radius);
   body.velocity.angle = rand();
   body.velocity.speed = randInt(0, MAX_ENERGY / body.mass);
+
+  initVitals(body.vitals, body.mass);
 
   body.spikes.length = 0;
   for (const { angle, length } of spikes) {
@@ -216,16 +230,20 @@ const getBodyCollider = (bodies, delay) => (body) => {
  * This O(n^2) implementation should eventually be replaced by an O(nlogn) quadtree
  *
  * @param {Body[]} bodies - all bodies in the simulation
+ * @param {number} delay - the time since the last tick
  * @param {number} tick - the current timestamp
  * @returns {function(Body): void} - mutates any activated spikes
  */
-const getSpikeActivator = (bodies, tick) => (body) => {
+const getSpikeActivator = (bodies, delay, tick) => (body) => {
   for (const other of bodies) {
-    if (body !== other) {
+    if (!body.vitals.isDead && body !== other) {
       for (const spike of body.spikes) {
         if (isSpikeOverlapping(spike, other)) {
           spike.fill = 'red';
           spike.meta.deactivateTime = tick + SPIKE_HIGHLIGHT_TIME;
+
+          const drainAmount = drainCalories(other.vitals, spike.drain * delay);
+          body.vitals.calories += drainAmount;
         }
       }
     }
@@ -245,6 +263,16 @@ const getSpikeDeactivator = (tick) => (body) => {
       spike.fill = 'black';
       spike.meta.deactivateTime = null;
     }
+  }
+};
+
+const checkVitals = (body) => {
+  // Until more complex color handling is implemented, just turn dead meebas black
+  if (body.vitals.isDead) {
+    body.fill = 'black';
+  }
+  if (body.vitals.calories <= 0) {
+    body.isActive = false;
   }
 };
 
@@ -284,17 +312,19 @@ export const getSimulator = (bodies, lastTick) => (thisTick) => {
   const delay = (thisTick - lastTick) / 1000;
   // eslint-disable-next-line no-param-reassign
   lastTick = thisTick;
+  const activeBodies = bodies.filter(body => body.isActive);
 
-  const activateSpikes = getSpikeActivator(bodies, thisTick);
+  const activateSpikes = getSpikeActivator(activeBodies, delay, thisTick);
   const deactivateSpikes = getSpikeDeactivator(thisTick);
   const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
-  const collideBody = getBodyCollider(bodies, delay);
+  const collideBody = getBodyCollider(activeBodies, delay);
 
-  bodies.forEach(activateSpikes);
-  bodies.forEach(deactivateSpikes);
-  bodies.forEach(calcMove);
-  bodies.forEach(bounceWall);
-  bodies.forEach(collideBody);
-  bodies.forEach(moveBody);
+  activeBodies.forEach(activateSpikes);
+  activeBodies.forEach(deactivateSpikes);
+  activeBodies.forEach(calcMove);
+  activeBodies.forEach(bounceWall);
+  activeBodies.forEach(collideBody);
+  activeBodies.forEach(moveBody);
+  activeBodies.forEach(checkVitals);
 };

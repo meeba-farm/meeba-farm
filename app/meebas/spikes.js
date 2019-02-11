@@ -10,6 +10,7 @@ import {
  * @typedef Spike
  * @prop {string} fill - this color of the spike
  * @prop {number} length - the length of the spike
+ * @prop {number} drain - how many calories drained per second
  * @prop {number} x1 - x coordinate of spike's tip
  * @prop {number} y1 - y coordinate of spike's tip
  * @prop {number} x2 - second point
@@ -29,6 +30,7 @@ import {
 
 const SPIKE_WIDTH = 6;
 const HALF_WIDTH = SPIKE_WIDTH / 2;
+const SPIKE_DRAIN = 320;
 const SPIKES = [];
 
 /**
@@ -65,6 +67,7 @@ export const spawnSpike = (radius, angle, length) => {
   SPIKES.push(spike);
 
   spike.fill = 'black';
+  spike.drain = SPIKE_DRAIN;
   spike.length = length;
 
   // Absolute location will be set later by the simulation

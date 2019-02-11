@@ -27,8 +27,9 @@ separateBodies(bodies);
 const simulate = getSimulator(bodies, performance.now());
 const render = () => {
   clearView();
-  bodies.forEach(body => body.spikes.forEach(drawTriangle));
-  bodies.forEach(drawCircle);
+  const activeBodies = bodies.filter(body => body.isActive);
+  activeBodies.forEach(body => body.spikes.forEach(drawTriangle));
+  activeBodies.forEach(drawCircle);
   requestAnimationFrame(render);
 };
 
