@@ -21,7 +21,7 @@ const clearView = getViewClearer(view, width, height);
 const drawCircle = getCircleDrawer(view);
 const drawTriangle = getTriangleDrawer(view);
 
-const bodies = range(settings.simulation.bodies).map(() => spawnBody());
+const bodies = range(settings.simulation.bodies).map(spawnBody);
 separateBodies(bodies);
 
 const simulate = getSimulator(bodies, performance.now());

@@ -8,6 +8,7 @@ import {
  * A spike/triangle attached to a body/circle
  *
  * @typedef Spike
+ * @prop {boolean} isActive - whether this spike is being simulated or not
  * @prop {string} fill - this color of the spike
  * @prop {number} length - the length of the spike
  * @prop {number} drain - how many calories drained per second
@@ -31,6 +32,8 @@ import {
 const SPIKE_WIDTH = 6;
 const HALF_WIDTH = SPIKE_WIDTH / 2;
 const SPIKE_DRAIN = 320;
+
+/** @type {Spike[]} */
 const SPIKES = [];
 
 /**
@@ -61,11 +64,16 @@ const getYOffset = (angle, distance) => Math.floor(-sin(angle) * distance);
  * @returns {Spike}
  */
 export const spawnSpike = (radius, angle, length) => {
-  // Store references so they can be reused later and avoid garbage collection
-  /** @type {Spike} */
-  const spike = {};
-  SPIKES.push(spike);
+  const refIndex = SPIKES.findIndex(({ isActive }) => !isActive);
+  /** @type any - workaround for TypeScript hating the following mutation */
+  const spike = refIndex !== -1
+    ? SPIKES[refIndex]
+    : { offset: {}, meta: {} };
+  if (refIndex === -1) {
+    SPIKES.push(spike);
+  }
 
+  spike.isActive = true;
   spike.fill = 'black';
   spike.drain = SPIKE_DRAIN;
   spike.length = length;
@@ -78,8 +86,6 @@ export const spawnSpike = (radius, angle, length) => {
   spike.x3 = 0;
   spike.y3 = 0;
 
-  /** @type {Spike['offset']} */
-  spike.offset = {};
   const offsetAngle = asin(HALF_WIDTH / radius);
 
   spike.offset.x1 = getXOffset(angle, length + radius);
@@ -89,8 +95,6 @@ export const spawnSpike = (radius, angle, length) => {
   spike.offset.x3 = getXOffset(angle + offsetAngle, radius - 1);
   spike.offset.y3 = getYOffset(angle + offsetAngle, radius - 1);
 
-  /** @type {Spike['meta']} */
-  spike.meta = {};
   spike.meta.deactivateTime = null;
 
   return spike;

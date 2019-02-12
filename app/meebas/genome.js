@@ -134,3 +134,21 @@ export const readGenome = (genome) => {
 
   return commands;
 };
+
+/**
+ * Creates a mutated copy of an existing genome
+ *
+ * @param {Uint8Array} genome
+ * @returns {Uint8Array}
+ */
+export const replicateGenome = (genome) => {
+  const newGenome = [];
+
+  // Perfect replication for now
+  // Use a for-with-semicolons to "mutate" i
+  for (let i = 0; i < genome.length; i += 1) {
+    newGenome.push(genome[i]);
+  }
+
+  return Uint8Array.from(newGenome);
+};

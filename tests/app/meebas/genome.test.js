@@ -4,6 +4,7 @@ const { expect } = require('chai');
 const {
   createGenome,
   readGenome,
+  replicateGenome,
 } = require('./genome.common.js');
 
 const CONTROL_BYTES = new Set([0xF0, 0xF1]);
@@ -102,6 +103,16 @@ describe('View methods', () => {
         { length: 3, angle: 0.2 },
         { length: 1, angle: 0.6 },
       ]);
+    });
+  });
+
+  describe('replicateGenome', () => {
+    it('should return a new genome', () => {
+      const oldGenome = createGenome();
+      const newGenome = replicateGenome(oldGenome);
+
+      expect(newGenome).to.be.an.instanceOf(Uint8Array);
+      expect(newGenome).to.not.equal(oldGenome);
     });
   });
 });

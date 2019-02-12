@@ -17,26 +17,6 @@ const {
 const sqr = n => n * n;
 const getCircleArea = radius => Math.floor(Math.PI * radius * radius);
 
-const expectIsValidNewBody = (body) => {
-  expect(body.dna).to.match(/^[0-9A-F]{4,}$/);
-  expect(body.fill).to.be.a('string');
-
-  expect(body.radius).to.be.at.least(settings.meebas.minRadius);
-  expect(body.mass).to.be.within(getCircleArea(body.radius), getCircleArea(body.radius + 1));
-
-  expect(body.x).to.be.within(body.radius, settings.tank.width - body.radius);
-  expect(body.y).to.be.within(body.radius, settings.tank.height - body.radius);
-
-  expect(body.velocity).to.be.an('object');
-  expect(body.velocity.angle).to.be.within(0, 1);
-  expect(body.velocity.speed).to.be.a('number');
-
-  expect(body.spikes).to.be.an('array');
-  expect(body.meta.nextX).to.equal(null);
-  expect(body.meta.nextY).to.equal(null);
-  expect(body.meta.lastCollisionBody).to.equal(null);
-};
-
 describe('Simulation methods', () => {
   after(() => {
     settings.tank.width = oldWidth;
@@ -46,18 +26,24 @@ describe('Simulation methods', () => {
   describe('spawnBody', () => {
     it('should create a new body', () => {
       const body = spawnBody();
-      expectIsValidNewBody(body);
-    });
 
-    it('should overwrite an existing body', () => {
-      const oldBody = spawnBody();
-      const oldValues = JSON.parse(JSON.stringify(oldBody));
-      const body = spawnBody(oldBody);
+      expect(body.dna).to.match(/^[0-9A-F]{4,}$/);
+      expect(body.fill).to.be.a('string');
 
-      expect(body).to.equal(oldBody);
-      expect(body).to.not.deep.equal(oldValues);
+      expect(body.radius).to.be.at.least(settings.meebas.minRadius);
+      expect(body.mass).to.be.within(getCircleArea(body.radius), getCircleArea(body.radius + 1));
 
-      expectIsValidNewBody(body);
+      expect(body.x).to.be.within(body.radius, settings.tank.width - body.radius);
+      expect(body.y).to.be.within(body.radius, settings.tank.height - body.radius);
+
+      expect(body.velocity).to.be.an('object');
+      expect(body.velocity.angle).to.be.within(0, 1);
+      expect(body.velocity.speed).to.be.a('number');
+
+      expect(body.spikes).to.be.an('array');
+      expect(body.meta.nextX).to.equal(null);
+      expect(body.meta.nextY).to.equal(null);
+      expect(body.meta.lastCollisionBody).to.equal(null);
     });
   });
 

@@ -17,11 +17,12 @@ const CALORIES_START = (CALORIES_DEATH + CALORIES_SPAWN) / 2;
  *
  * @param {Vitals} vitals - the object to init; mutated!
  * @param {number} mass - the mass of the meeba
+ * @param {number} [calories] - optional starting calorie value
  */
-export const initVitals = (vitals, mass) => {
-  vitals.calories = mass * CALORIES_START;
-  vitals.diesAt = mass * CALORIES_DEATH;
-  vitals.spawnsAt = mass * CALORIES_SPAWN;
+export const initVitals = (vitals, mass, calories) => {
+  vitals.calories = calories !== undefined ? calories : Math.floor(mass * CALORIES_START);
+  vitals.diesAt = Math.floor(mass * CALORIES_DEATH);
+  vitals.spawnsAt = Math.floor(mass * CALORIES_SPAWN);
 
   vitals.isDead = vitals.calories < vitals.diesAt;
 };

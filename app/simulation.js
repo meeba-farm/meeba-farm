@@ -2,6 +2,7 @@ import * as settings from './settings.js';
 import {
   createGenome,
   readGenome,
+  replicateGenome,
 } from './meebas/genome.js';
 import {
   spawnSpike,
@@ -12,6 +13,7 @@ import {
   drainCalories,
 } from './meebas/vitals.js';
 import {
+  toBytes,
   toHex,
 } from './utils/arrays.js';
 import {
@@ -68,39 +70,95 @@ const SPIKE_HIGHLIGHT_TIME = 167;
 const { width, height } = settings.tank;
 
 /**
- * Creates a new body to simulate, optionally reusing an old reference to avoid garbage collection
+ * Initialize dna-based values on a body
  *
- * @param {Body} [body] - an old body reference to overwrite; mutated!
- * @returns {Body}
+ * @param {Body} body - body to initialize; mutated!
+ * @param {Uint8Array} dna - dna to init with
+ * @param {number} [calories] - optional starting calories
  */
-export const spawnBody = (body = { velocity: {}, vitals: {}, spikes: [], meta: {} }) => {
-  body.isActive = true;
-
-  const dna = createGenome();
+const initBody = (body, dna, calories) => {
   body.dna = toHex(dna);
-  body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
 
   const { mass, spikes } = readGenome(dna);
   body.mass = MIN_MASS + mass;
   body.radius = Math.floor(Math.sqrt(body.mass / Math.PI));
 
-  body.x = randInt(body.radius, width - body.radius);
-  body.y = randInt(body.radius, height - body.radius);
-  body.velocity.angle = rand();
-  body.velocity.speed = randInt(0, MAX_ENERGY / body.mass);
+  initVitals(body.vitals, body.mass, calories);
 
-  initVitals(body.vitals, body.mass);
-
-  body.spikes.length = 0;
   for (const { angle, length } of spikes) {
     body.spikes.push(spawnSpike(body.radius, angle, length));
   }
+};
 
+/**
+ * Creates a new random Body
+ *
+ * @returns {Body}
+ */
+export const spawnBody = () => {
+  const body = {
+    isActive: true,
+    fill: `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`,
+    velocity: {
+      angle: rand(),
+    },
+    vitals: {},
+    spikes: [],
+    meta: {
+      nextX: null,
+      nextY: null,
+      lastCollisionBody: null,
+    },
+  };
+
+  initBody(body, createGenome());
+
+  body.x = randInt(body.radius, width - body.radius);
+  body.y = randInt(body.radius, height - body.radius);
+  body.velocity.speed = randInt(0, MAX_ENERGY / body.mass);
+
+  return body;
+};
+
+/**
+ * Generates a "new" body based on an existing parent, reuses an old body reference
+ *
+ * @param {Body} parent - the parent to base the new body off of
+ * @param {Body} body - the reference to overwrite; mutated!
+ * @param {number} angle - the angle to launch the new body at
+ */
+const replicateParent = (parent, body, angle) => {
+  body.isActive = true;
+  body.fill = parent.fill;
   body.meta.nextX = null;
   body.meta.nextY = null;
   body.meta.lastCollisionBody = null;
 
-  return body;
+  initBody(
+    body,
+    replicateGenome(toBytes(parent.dna)),
+    Math.floor(parent.vitals.calories / 2),
+  );
+
+  const { x, y } = toVector({ angle, speed: 2 * body.radius });
+  body.x = x + parent.x;
+  body.y = y + parent.y;
+  body.velocity.angle = angle;
+  body.velocity.speed = parent.velocity.speed;
+};
+
+/**
+ * Removes a body and all of its spikes from the simulation, making these
+ * references available for reuse;
+ *
+ * @param {Body} body - body to drop spikes from; mutated!
+ */
+const deactivateBody = (body) => {
+  body.isActive = false;
+  for (const spike of body.spikes) {
+    spike.isActive = false;
+  }
+  body.spikes.length = 0;
 };
 
 /**
@@ -242,7 +300,7 @@ const getSpikeActivator = (bodies, delay, tick) => (body) => {
           spike.fill = 'red';
           spike.meta.deactivateTime = tick + SPIKE_HIGHLIGHT_TIME;
 
-          const drainAmount = drainCalories(other.vitals, spike.drain * delay);
+          const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
           body.vitals.calories += drainAmount;
         }
       }
@@ -266,13 +324,32 @@ const getSpikeDeactivator = (tick) => (body) => {
   }
 };
 
-const checkVitals = (body) => {
+/**
+ * Checks life-cycle status of each body, killing, deacativating, or spawning as needed
+ *
+ * @param {Body[]} bodies - full array of bodies (including inactive)
+ * @returns {function(Body): void} - mutates any deactivating spikes
+ */
+const getVitalChecker = (bodies) => (body) => {
   // Until more complex color handling is implemented, just turn dead meebas black
   if (body.vitals.isDead) {
     body.fill = 'black';
   }
+
   if (body.vitals.calories <= 0) {
-    body.isActive = false;
+    deactivateBody(body);
+  }
+
+  if (body.vitals.calories >= body.vitals.spawnsAt) {
+    let child = bodies.find(({ isActive }) => !isActive);
+    if (child === undefined) {
+      child = { velocity: {}, vitals: {}, spikes: [], meta: {} };
+      bodies.push(child);
+    }
+
+    deactivateBody(body);
+    replicateParent(body, child, body.velocity.angle + 0.125);
+    replicateParent(body, body, body.velocity.angle - 0.125);
   }
 };
 
@@ -319,6 +396,7 @@ export const getSimulator = (bodies, lastTick) => (thisTick) => {
   const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
   const collideBody = getBodyCollider(activeBodies, delay);
+  const checkVitals = getVitalChecker(bodies);
 
   activeBodies.forEach(activateSpikes);
   activeBodies.forEach(deactivateSpikes);
