@@ -24,6 +24,9 @@ const drawTriangle = getTriangleDrawer(view);
 const bodies = range(settings.simulation.bodies).map(spawnBody);
 separateBodies(bodies);
 
+// Add bodies to window for debugging purposes
+window.bodies = bodies;
+
 const simulate = getSimulator(bodies, performance.now());
 const render = () => {
   clearView();

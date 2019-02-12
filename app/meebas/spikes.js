@@ -36,6 +36,9 @@ const SPIKE_DRAIN = 320;
 /** @type {Spike[]} */
 const SPIKES = [];
 
+// Add spikes to window for debugging purposes
+window.spikes = SPIKES;
+
 /**
  * Get's a point's X coordinates relative to the center of a meeba
  *
