@@ -22,6 +22,20 @@ import { PI_2 } from './utils/math.js';
 const VIEW_ID = 'view';
 
 /**
+ * Guarantees a 2d context is not null by throwing if not found
+ *
+ * @param {HTMLCanvasElement} view - the canvas to get a context for
+ * @returns {CanvasRenderingContext2D}
+ */
+const get2dContext = (view) => {
+  const ctx = view.getContext('2d');
+  if (!ctx) {
+    throw new Error(`Unable to get 2d context for view: ${view}`);
+  }
+  return ctx;
+};
+
+/**
  * Creates a canvas of specified dimensions and appends it to the DOM
  *
  * @param {number} width - width in pixels
@@ -31,10 +45,15 @@ const VIEW_ID = 'view';
 export const createView = (width, height) => {
   const view = document.createElement('canvas');
   view.setAttribute('id', VIEW_ID);
-  view.setAttribute('width', width);
-  view.setAttribute('height', height);
+  view.width = width;
+  view.height = height;
 
-  document.getElementById('app').appendChild(view);
+  const app = document.getElementById('app');
+  if (!app) {
+    throw new Error('Unable to find #app element!');
+  }
+  app.appendChild(view);
+
   return view;
 };
 
@@ -47,7 +66,7 @@ export const createView = (width, height) => {
  * @returns {function(): void} - clears canvas when called
  */
 export const getViewClearer = (view, width, height) => () => {
-  const ctx = view.getContext('2d');
+  const ctx = get2dContext(view);
   ctx.clearRect(0, 0, width, height);
 };
 
@@ -58,7 +77,7 @@ export const getViewClearer = (view, width, height) => () => {
  * @returns {function(Circle): void} - takes a circle and draws it on the canvas
  */
 export const getCircleDrawer = (view) => ({ x, y, radius, fill }) => {
-  const ctx = view.getContext('2d');
+  const ctx = get2dContext(view);
 
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, PI_2);
@@ -73,7 +92,7 @@ export const getCircleDrawer = (view) => ({ x, y, radius, fill }) => {
  * @returns {function(Triangle): void} - takes a triangle and draws it on the canvas
  */
 export const getTriangleDrawer = (view) => ({ x1, y1, x2, y2, x3, y3, fill }) => {
-  const ctx = view.getContext('2d');
+  const ctx = get2dContext(view);
 
   ctx.beginPath();
   ctx.moveTo(x1, y1);

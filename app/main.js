@@ -6,7 +6,7 @@ import {
   getTriangleDrawer,
 } from './view.js';
 import {
-  spawnBody,
+  getRandomBody,
   separateBodies,
   getSimulator,
 } from './simulation.js';
@@ -21,11 +21,13 @@ const clearView = getViewClearer(view, width, height);
 const drawCircle = getCircleDrawer(view);
 const drawTriangle = getTriangleDrawer(view);
 
-const bodies = range(settings.simulation.bodies).map(spawnBody);
+const bodies = range(settings.simulation.bodies).map(getRandomBody);
 separateBodies(bodies);
 
-// Add bodies to window for debugging purposes
-window.bodies = bodies;
+// Add bodies to window for debugging purposes (hack window type to allow this)
+/** @type {Object<string, any>} */
+const anyWindow = window;
+anyWindow.bodies = bodies;
 
 const simulate = getSimulator(bodies, performance.now());
 const render = () => {

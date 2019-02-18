@@ -36,8 +36,10 @@ const SPIKE_DRAIN = 320;
 /** @type {Spike[]} */
 const SPIKES = [];
 
-// Add spikes to window for debugging purposes
-window.spikes = SPIKES;
+// Add spikes to window for debugging purposes (hack window type to allow this)
+/** @type {Object<string, any>} */
+const anyWindow = window;
+anyWindow.spikes = SPIKES;
 
 /**
  * Get's a point's X coordinates relative to the center of a meeba
@@ -68,26 +70,39 @@ const getYOffset = (angle, distance) => Math.floor(-sin(angle) * distance);
  */
 export const spawnSpike = (radius, angle, length) => {
   const refIndex = SPIKES.findIndex(({ isActive }) => !isActive);
-  /** @type any - workaround for TypeScript hating the following mutation */
   const spike = refIndex !== -1
     ? SPIKES[refIndex]
-    : { offset: {}, meta: {} };
+    : {
+      isActive: false,
+      fill: '',
+      length: 0,
+      drain: SPIKE_DRAIN,
+      x1: 0,
+      y1: 0,
+      x2: 0,
+      y2: 0,
+      x3: 0,
+      y3: 0,
+      offset: {
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: 0,
+        x3: 0,
+        y3: 0,
+      },
+      meta: {
+        deactivateTime: null,
+      },
+    };
   if (refIndex === -1) {
     SPIKES.push(spike);
   }
 
   spike.isActive = true;
   spike.fill = 'black';
-  spike.drain = SPIKE_DRAIN;
   spike.length = length;
-
-  // Absolute location will be set later by the simulation
-  spike.x1 = 0;
-  spike.y1 = 0;
-  spike.x2 = 0;
-  spike.y2 = 0;
-  spike.x3 = 0;
-  spike.y3 = 0;
+  spike.meta.deactivateTime = null;
 
   const offsetAngle = asin(HALF_WIDTH / radius);
 
@@ -97,8 +112,6 @@ export const spawnSpike = (radius, angle, length) => {
   spike.offset.y2 = getYOffset(angle - offsetAngle, radius - 1);
   spike.offset.x3 = getXOffset(angle + offsetAngle, radius - 1);
   spike.offset.y3 = getYOffset(angle + offsetAngle, radius - 1);
-
-  spike.meta.deactivateTime = null;
 
   return spike;
 };

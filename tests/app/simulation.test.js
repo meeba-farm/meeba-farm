@@ -9,7 +9,7 @@ settings.tank.width = 100;
 settings.tank.height = 100;
 
 const {
-  spawnBody,
+  getRandomBody,
   separateBodies,
   getSimulator,
 } = require('./simulation.common.js');
@@ -23,9 +23,9 @@ describe('Simulation methods', () => {
     settings.tank.height = oldHeight;
   });
 
-  describe('spawnBody', () => {
+  describe('getRandomBody', () => {
     it('should create a new body', () => {
-      const body = spawnBody();
+      const body = getRandomBody();
 
       expect(body.dna).to.match(/^[0-9A-F]{4,}$/);
       expect(body.fill).to.be.a('string');
@@ -41,20 +41,20 @@ describe('Simulation methods', () => {
       expect(body.velocity.speed).to.be.a('number');
 
       expect(body.spikes).to.be.an('array');
-      expect(body.meta.nextX).to.equal(null);
-      expect(body.meta.nextY).to.equal(null);
+      expect(body.meta.nextX).to.be.a('number');
+      expect(body.meta.nextY).to.be.a('number');
       expect(body.meta.lastCollisionBody).to.equal(null);
     });
   });
 
   describe('separateBodies', () => {
     it('should separate overlapping bodies', () => {
-      const body1 = spawnBody();
+      const body1 = getRandomBody();
       body1.radius = 10;
       body1.x = 45;
       body1.y = 50;
 
-      const body2 = spawnBody();
+      const body2 = getRandomBody();
       body2.radius = 10;
       body2.x = 55;
       body2.y = 50;
@@ -66,12 +66,12 @@ describe('Simulation methods', () => {
     });
 
     it('should fail gracefully if no solution is possible', () => {
-      const body1 = spawnBody();
+      const body1 = getRandomBody();
       body1.radius = 1000;
       body1.x = 50;
       body1.y = 50;
 
-      const body2 = spawnBody();
+      const body2 = getRandomBody();
       body2.radius = 1000;
       body2.x = 50;
       body2.y = 50;
@@ -86,7 +86,7 @@ describe('Simulation methods', () => {
     });
 
     it('should simulate movement over time', () => {
-      const body = spawnBody();
+      const body = getRandomBody();
       body.radius = 10;
       body.mass = getCircleArea(10);
       body.x = 50;
@@ -107,7 +107,7 @@ describe('Simulation methods', () => {
     });
 
     it('should simulate wall bounces', () => {
-      const body = spawnBody();
+      const body = getRandomBody();
       body.radius = 10;
       body.mass = getCircleArea(10);
       body.x = 15;
@@ -123,7 +123,7 @@ describe('Simulation methods', () => {
     });
 
     it('should simulate body collisions', () => {
-      const body1 = spawnBody();
+      const body1 = getRandomBody();
       body1.radius = 10;
       body1.mass = getCircleArea(10);
       body1.x = 35;
@@ -131,7 +131,7 @@ describe('Simulation methods', () => {
       body1.velocity.angle = 0;
       body1.velocity.speed = 10;
 
-      const body2 = spawnBody();
+      const body2 = getRandomBody();
       body2.radius = 10;
       body2.mass = getCircleArea(10);
       body2.x = 65;

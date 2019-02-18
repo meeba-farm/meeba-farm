@@ -31,15 +31,15 @@ import {
 } from './utils/physics.js';
 
 /**
- * @typedef Spike {import('./meebas/spikes.js').Spike}
+ * @typedef {import('./meebas/spikes.js').Spike} Spike
  */
 
 /**
- * @typedef Vitals {import('./meebas/vitals.js').Vitals}
+ * @typedef {import('./meebas/vitals.js').Vitals} Vitals
  */
 
 /**
- * @typedef Velocity {import('./utils/physics.js').Velocity}
+ * @typedef {import('./utils/physics.js').Velocity} Velocity
  */
 
 /**
@@ -57,8 +57,8 @@ import {
  * @prop {Vitals} vitals - life-cycle properties of the body
  * @prop {Spike[]} spikes - the spikes of the meeba
  * @prop {object} meta - extra properties specific to the simulation
- *   @prop {number|null} meta.nextX - body's next horizontal location
- *   @prop {number|null} meta.nextY - body's next vertical location
+ *   @prop {number} meta.nextX - body's next horizontal location
+ *   @prop {number} meta.nextY - body's next vertical location
  *   @prop {Body|null} meta.lastCollisionBody - last body collided with
  */
 
@@ -70,24 +70,55 @@ const SPIKE_HIGHLIGHT_TIME = 167;
 const { width, height } = settings.tank;
 
 /**
- * Initialize dna-based values on a body
+ * Creates a blank body to further initialize in other functions,
+ * optionally reusing an existing body reference
  *
- * @param {Body} body - body to initialize; mutated!
  * @param {Uint8Array} dna - dna to init with
- * @param {number} [calories] - optional starting calories
+ * @param {Body|null} [bodyRef] - a body to initialize; mutated!
+ * @returns {Body}
  */
-const initBody = (body, dna, calories) => {
+const initBody = (dna, bodyRef = null) => {
+  const body = bodyRef !== null
+    ? bodyRef
+    : {
+      isActive: false,
+      dna: '',
+      fill: 'black',
+      x: 0,
+      y: 0,
+      mass: 0,
+      radius: 0,
+      velocity: {
+        angle: 0,
+        speed: 0,
+      },
+      vitals: {
+        calories: 0,
+        diesAt: 0,
+        spawnsAt: 0,
+        isDead: false,
+      },
+      spikes: [],
+      meta: {
+        nextX: 0,
+        nextY: 0,
+        lastCollisionBody: null,
+      },
+    };
+
+  body.isActive = true;
   body.dna = toHex(dna);
+  body.meta.lastCollisionBody = null;
 
   const { mass, spikes } = readGenome(dna);
   body.mass = MIN_MASS + mass;
   body.radius = Math.floor(Math.sqrt(body.mass / Math.PI));
 
-  initVitals(body.vitals, body.mass, calories);
-
   for (const { angle, length } of spikes) {
     body.spikes.push(spawnSpike(body.radius, angle, length));
   }
+
+  return body;
 };
 
 /**
@@ -95,56 +126,48 @@ const initBody = (body, dna, calories) => {
  *
  * @returns {Body}
  */
-export const spawnBody = () => {
-  const body = {
-    isActive: true,
-    fill: `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`,
-    velocity: {
-      angle: rand(),
-    },
-    vitals: {},
-    spikes: [],
-    meta: {
-      nextX: null,
-      nextY: null,
-      lastCollisionBody: null,
-    },
-  };
+export const getRandomBody = () => {
+  const body = initBody(createGenome());
+  initVitals(body.vitals, body.mass);
 
-  initBody(body, createGenome());
+  body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
 
   body.x = randInt(body.radius, width - body.radius);
   body.y = randInt(body.radius, height - body.radius);
+  body.velocity.angle = rand();
   body.velocity.speed = randInt(0, MAX_ENERGY / body.mass);
 
   return body;
 };
 
 /**
- * Generates a "new" body based on an existing parent, reuses an old body reference
+ * Generates a "new" body based on an existing parent, optionally reusing
+ * an old body reference (pass null to generate a new body)
  *
  * @param {Body} parent - the parent to base the new body off of
- * @param {Body} body - the reference to overwrite; mutated!
+ * @param {Body|null} [bodyRef] - the reference to overwrite; mutated!
  * @param {number} angle - the angle to launch the new body at
+ * @returns {Body}
  */
-const replicateParent = (parent, body, angle) => {
-  body.isActive = true;
-  body.fill = parent.fill;
-  body.meta.nextX = null;
-  body.meta.nextY = null;
-  body.meta.lastCollisionBody = null;
+const replicateParent = (parent, bodyRef = null, angle) => {
+  const dna = replicateGenome(toBytes(parent.dna));
+  const body = initBody(dna, bodyRef);
+  initVitals(body.vitals, body.mass, Math.floor(parent.vitals.calories / 2));
 
-  initBody(
-    body,
-    replicateGenome(toBytes(parent.dna)),
-    Math.floor(parent.vitals.calories / 2),
-  );
+  body.fill = parent.fill;
 
   const { x, y } = toVector({ angle, speed: 2 * body.radius });
   body.x = x + parent.x;
   body.y = y + parent.y;
   body.velocity.angle = angle;
   body.velocity.speed = parent.velocity.speed;
+
+  const moveSpike = getSpikeMover(body.x, body.y);
+  for (const spike of body.spikes) {
+    moveSpike(spike);
+  }
+
+  return body;
 };
 
 /**
@@ -181,8 +204,6 @@ const getMoveCalculator = (delay) => (body) => {
 const moveBody = (body) => {
   body.x = body.meta.nextX;
   body.y = body.meta.nextY;
-  body.meta.nextX = null;
-  body.meta.nextY = null;
 
   const moveSpike = getSpikeMover(body.x, body.y);
   body.spikes.forEach(moveSpike);
@@ -341,15 +362,15 @@ const getVitalChecker = (bodies) => (body) => {
   }
 
   if (body.vitals.calories >= body.vitals.spawnsAt) {
-    let child = bodies.find(({ isActive }) => !isActive);
-    if (child === undefined) {
-      child = { velocity: {}, vitals: {}, spikes: [], meta: {} };
-      bodies.push(child);
-    }
+    const childRef = bodies.find(({ isActive }) => !isActive);
 
     deactivateBody(body);
-    replicateParent(body, child, body.velocity.angle + 0.125);
+    const child = replicateParent(body, childRef, body.velocity.angle + 0.125);
     replicateParent(body, body, body.velocity.angle - 0.125);
+
+    if (childRef === undefined) {
+      bodies.push(child);
+    }
   }
 };
 
