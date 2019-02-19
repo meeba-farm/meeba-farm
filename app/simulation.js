@@ -117,6 +117,8 @@ const initBody = (dna, bodyRef = null) => {
   for (const { angle, length } of spikes) {
     body.spikes.push(spawnSpike(body.radius, angle, length));
   }
+  // Sort spikes by length to speed up collision detection
+  body.spikes.sort((a, b) => b.length - a.length);
 
   return body;
 };
@@ -236,6 +238,31 @@ const getWallBouncer = (delay) => (body) => {
 };
 
 /**
+ * Checks if two bodies can possibly interact by checking they are not the same object, and then
+ * comparing their distance to the sum of their radii plus the primary's longest spike
+ *
+ * @param {Body} body - the primary body
+ * @param {Body} other
+ * @returns {boolean}
+ */
+const canInteract = (body, other) => {
+  if (body === other) {
+    return false;
+  }
+
+  const spikeLength = body.spikes.length > 0
+    ? body.spikes[0].length
+    : 0;
+
+  return isShorter({
+    x1: body.x,
+    y1: body.y,
+    x2: other.x,
+    y2: other.y,
+  }, body.radius + other.radius + spikeLength);
+};
+
+/**
  * Checks if two bodies currently overlap by comparing the distance between
  * their centers and the sum of their radii
  *
@@ -279,52 +306,68 @@ const isSpikeOverlapping = (spike, body) => isShorter({
 }, body.radius);
 
 /**
- * Gets a function to check if a body should collide with any other bodies and
- * mutate the velocity of both bodies appropriately
+ * Gets a function to check if two bodies should collide, and mutates
+ * their position and velocity as needed
  *
- * This O(n^2) implementation should eventually be replaced by an O(nlogn) quadtree
- *
- * @param {Body[]} bodies - all bodies in the simulation
  * @param {number} delay - time passed since last move in seconds
- * @returns {function(Body): void} - mutates the velocity of the body if needed
+ * @returns {function(Body, Body): void} - mutates the bodies as needed
  */
-const getBodyCollider = (bodies, delay) => (body) => {
-  for (const other of bodies) {
-    const shouldCollide = body !== other
-      && body.meta.lastCollisionBody !== other
-      && (willOverlap(body, other) || isOverlapping(body, other));
+const getBodyCollider = (delay) => (body1, body2) => {
+  const justCollided = body1.meta.lastCollisionBody === body2
+    && body2.meta.lastCollisionBody === body1;
+  const shouldCollide = !justCollided
+    && (willOverlap(body1, body2) || isOverlapping(body1, body2));
 
-    if (shouldCollide) {
-      collide(body, other);
-      getMoveCalculator(delay)(body);
-      body.meta.lastCollisionBody = other;
-      other.meta.lastCollisionBody = body;
+  if (shouldCollide) {
+    collide(body1, body2);
+    getMoveCalculator(delay)(body1);
+    getMoveCalculator(delay)(body2);
+    body1.meta.lastCollisionBody = body2;
+    body2.meta.lastCollisionBody = body1;
+  }
+};
+
+/**
+ * Gets a function to check if a body's spikes overlaps with another body and
+ * drains calories as needed
+ *
+ * @param {number} delay - the time since the last tick
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body, Body): void} - mutates bodies and spikes as needed
+ */
+const getSpikeActivator = (delay, tick) => (body, other) => {
+  if (!body.vitals.isDead) {
+    for (const spike of body.spikes) {
+      if (isSpikeOverlapping(spike, other)) {
+        spike.fill = 'red';
+        spike.meta.deactivateTime = tick + SPIKE_HIGHLIGHT_TIME;
+
+        const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
+        body.vitals.calories += drainAmount;
+      }
     }
   }
 };
 
 /**
- * Gets a function to check if a body's spikes overlap with any other bodies
+ * Gets a function to run all body-to-body interactions, including physics
+ * collisions and spike drain
  *
  * This O(n^2) implementation should eventually be replaced by an O(nlogn) quadtree
  *
  * @param {Body[]} bodies - all bodies in the simulation
  * @param {number} delay - the time since the last tick
  * @param {number} tick - the current timestamp
- * @returns {function(Body): void} - mutates any activated spikes
+ * @returns {function(Body): void} - mutates bodies as needed
  */
-const getSpikeActivator = (bodies, delay, tick) => (body) => {
-  for (const other of bodies) {
-    if (!body.vitals.isDead && body !== other) {
-      for (const spike of body.spikes) {
-        if (isSpikeOverlapping(spike, other)) {
-          spike.fill = 'red';
-          spike.meta.deactivateTime = tick + SPIKE_HIGHLIGHT_TIME;
+const getBodyInteractor = (bodies, delay, tick) => (body) => {
+  const collideBodies = getBodyCollider(delay);
+  const activateSpikes = getSpikeActivator(delay, tick);
 
-          const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
-          body.vitals.calories += drainAmount;
-        }
-      }
+  for (const other of bodies) {
+    if (canInteract(body, other)) {
+      collideBodies(body, other);
+      activateSpikes(body, other);
     }
   }
 };
@@ -412,18 +455,16 @@ export const getSimulator = (bodies, lastTick) => (thisTick) => {
   lastTick = thisTick;
   const activeBodies = bodies.filter(body => body.isActive);
 
-  const activateSpikes = getSpikeActivator(activeBodies, delay, thisTick);
-  const deactivateSpikes = getSpikeDeactivator(thisTick);
   const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
-  const collideBody = getBodyCollider(activeBodies, delay);
+  const interactBodies = getBodyInteractor(bodies, delay, thisTick);
+  const deactivateSpikes = getSpikeDeactivator(thisTick);
   const checkVitals = getVitalChecker(bodies);
 
-  activeBodies.forEach(activateSpikes);
-  activeBodies.forEach(deactivateSpikes);
   activeBodies.forEach(calcMove);
   activeBodies.forEach(bounceWall);
-  activeBodies.forEach(collideBody);
+  activeBodies.forEach(interactBodies);
+  activeBodies.forEach(deactivateSpikes);
   activeBodies.forEach(moveBody);
   activeBodies.forEach(checkVitals);
 };
