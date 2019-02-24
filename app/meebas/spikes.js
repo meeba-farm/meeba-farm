@@ -8,7 +8,6 @@ import {
  * A spike/triangle attached to a body/circle
  *
  * @typedef Spike
- * @prop {boolean} isActive - whether this spike is being simulated or not
  * @prop {string} fill - this color of the spike
  * @prop {number} length - the length of the spike
  * @prop {number} drain - how many calories drained per second
@@ -32,14 +31,6 @@ import {
 const SPIKE_WIDTH = 6;
 const HALF_WIDTH = SPIKE_WIDTH / 2;
 const SPIKE_DRAIN = 320;
-
-/** @type {Spike[]} */
-const SPIKES = [];
-
-// Add spikes to window for debugging purposes (hack window type to allow this)
-/** @type {Object<string, any>} */
-const anyWindow = window;
-anyWindow.spikes = SPIKES;
 
 /**
  * Get's a point's X coordinates relative to the center of a meeba
@@ -69,51 +60,31 @@ const getYOffset = (angle, distance) => Math.floor(-sin(angle) * distance);
  * @returns {Spike}
  */
 export const spawnSpike = (radius, angle, length) => {
-  const refIndex = SPIKES.findIndex(({ isActive }) => !isActive);
-  const spike = refIndex !== -1
-    ? SPIKES[refIndex]
-    : {
-      isActive: false,
-      fill: '',
-      length: 0,
-      drain: SPIKE_DRAIN,
-      x1: 0,
-      y1: 0,
-      x2: 0,
-      y2: 0,
-      x3: 0,
-      y3: 0,
-      offset: {
-        x1: 0,
-        y1: 0,
-        x2: 0,
-        y2: 0,
-        x3: 0,
-        y3: 0,
-      },
-      meta: {
-        deactivateTime: null,
-      },
-    };
-  if (refIndex === -1) {
-    SPIKES.push(spike);
-  }
-
-  spike.isActive = true;
-  spike.fill = 'black';
-  spike.length = length;
-  spike.meta.deactivateTime = null;
-
   const offsetAngle = asin(HALF_WIDTH / radius);
 
-  spike.offset.x1 = getXOffset(angle, length + radius);
-  spike.offset.y1 = getYOffset(angle, length + radius);
-  spike.offset.x2 = getXOffset(angle - offsetAngle, radius - 1);
-  spike.offset.y2 = getYOffset(angle - offsetAngle, radius - 1);
-  spike.offset.x3 = getXOffset(angle + offsetAngle, radius - 1);
-  spike.offset.y3 = getYOffset(angle + offsetAngle, radius - 1);
-
-  return spike;
+  return {
+    fill: 'black',
+    length,
+    drain: SPIKE_DRAIN,
+    // Absolute coordinates will be set the first time the spike moves
+    x1: 0,
+    y1: 0,
+    x2: 0,
+    y2: 0,
+    x3: 0,
+    y3: 0,
+    offset: {
+      x1: getXOffset(angle, length + radius),
+      y1: getYOffset(angle, length + radius),
+      x2: getXOffset(angle - offsetAngle, radius - 1),
+      y2: getYOffset(angle - offsetAngle, radius - 1),
+      x3: getXOffset(angle + offsetAngle, radius - 1),
+      y3: getYOffset(angle + offsetAngle, radius - 1),
+    },
+    meta: {
+      deactivateTime: null,
+    },
+  };
 };
 
 /**

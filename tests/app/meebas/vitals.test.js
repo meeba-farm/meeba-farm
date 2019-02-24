@@ -3,33 +3,40 @@
 const { expect } = require('chai');
 const {
   initVitals,
+  setCalories,
   drainCalories,
 } = require('./vitals.common.js');
 
-const expectIsValidNewVitals = (vitals) => {
+const expectIsValidVitals = (vitals) => {
   expect(vitals).to.be.an('object');
   expect(vitals.calories).to.be.a('number');
   expect(vitals.diesAt).to.be.a('number');
   expect(vitals.spawnsAt).to.be.a('number');
-  expect(vitals.isDead).to.equal(false);
+  expect(vitals.isDead).to.equal(vitals.calories < vitals.diesAt);
 };
 
 describe('Spike methods', () => {
   describe('initVitals', () => {
     it('should init a vitals object with starting values', () => {
-      const vitals = {};
-      initVitals(vitals, 100);
-      expectIsValidNewVitals(vitals);
+      expectIsValidVitals(initVitals(100));
+    });
+  });
+
+  describe('setCalories', () => {
+    it('should return a new vitals object with a specific calorie level', () => {
+      const original = initVitals(100);
+      const vitals = setCalories(original, 50);
+
+      expectIsValidVitals(vitals);
+      expect(vitals.calories).to.equal(50);
     });
 
-    it('should reuse an existing reference with new values', () => {
-      const vitals = {};
-      initVitals(vitals, 100);
-      const oldValues = JSON.parse(JSON.stringify(vitals));
-      initVitals(vitals, 200);
+    it('should update isDead as needed', () => {
+      const original = initVitals(100);
+      original.isDead = 50;
+      const vitals = setCalories(original, 49);
 
-      expect(vitals).to.not.deep.equal(oldValues);
-      expectIsValidNewVitals(vitals);
+      expect(vitals.isDead).to.equal(true);
     });
   });
 

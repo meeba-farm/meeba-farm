@@ -33,40 +33,40 @@ describe('View methods', () => {
       const commands = readGenome(new Uint8Array());
 
       expect(commands).to.be.an('object');
-      expect(commands).to.have.a.property('mass').which.is.a('number');
+      expect(commands).to.have.a.property('size').which.is.a('number');
       expect(commands).to.have.a.property('spikes').which.is.an('array');
     });
 
-    it('should parse instructions for the mass of a meeba', () => {
-      const { mass: mass1 } = readGenome(Uint8Array.from([
+    it('should parse instructions for the size of a meeba', () => {
+      const { size: size1 } = readGenome(Uint8Array.from([
         0b11110000,
         0b10101010,
         0b00001111,
       ]));
 
-      const { mass: mass2 } = readGenome(Uint8Array.from([
+      const { size: size2 } = readGenome(Uint8Array.from([
         0b11110000,
         0b00000000,
         0b00000000,
       ]));
 
-      const { mass: mass3 } = readGenome(Uint8Array.from([
+      const { size: size3 } = readGenome(Uint8Array.from([
         0b11110000,
         0b11110001,
         0b10101010,
       ]));
 
-      const { mass: mass4 } = readGenome(Uint8Array.from([
+      const { size: size4 } = readGenome(Uint8Array.from([
         0b11110000,
         0b11100000,
         0b11110000,
         0b00000111,
       ]));
 
-      expect(mass1).to.equal(8);
-      expect(mass2).to.equal(0);
-      expect(mass3).to.equal(0);
-      expect(mass4).to.equal(6);
+      expect(size1).to.equal(8);
+      expect(size2).to.equal(0);
+      expect(size3).to.equal(0);
+      expect(size4).to.equal(6);
     });
 
     it('should parse instructions for meeba spikes', () => {

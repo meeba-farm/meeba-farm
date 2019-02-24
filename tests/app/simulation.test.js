@@ -11,7 +11,7 @@ settings.tank.height = 100;
 const {
   getRandomBody,
   separateBodies,
-  getSimulator,
+  simulateFrame,
 } = require('./simulation.common.js');
 
 const sqr = n => n * n;
@@ -80,11 +80,7 @@ describe('Simulation methods', () => {
     });
   });
 
-  describe('getSimulator', () => {
-    it('should return a function', () => {
-      expect(getSimulator()).to.be.a('function');
-    });
-
+  describe('simulateFrame', () => {
     it('should simulate movement over time', () => {
       const body = getRandomBody();
       body.radius = 10;
@@ -94,16 +90,14 @@ describe('Simulation methods', () => {
       body.velocity.angle = 0;
       body.velocity.speed = 10;
 
-      const simulate = getSimulator([body], 0);
+      let bodies = simulateFrame([body], 0, 1000);
+      expect(bodies[0].x).to.equal(60);
+      expect(bodies[0].y).to.equal(50);
 
-      simulate(1000);
-      expect(body.x).to.equal(60);
-      expect(body.y).to.equal(50);
-
-      simulate(2000);
-      simulate(3000);
-      expect(body.x).to.equal(80);
-      expect(body.y).to.equal(50);
+      bodies = simulateFrame(bodies, 1000, 2000);
+      bodies = simulateFrame(bodies, 2000, 3000);
+      expect(bodies[0].x).to.equal(80);
+      expect(bodies[0].y).to.equal(50);
     });
 
     it('should simulate wall bounces', () => {
@@ -115,11 +109,10 @@ describe('Simulation methods', () => {
       body.velocity.angle = 0.5;
       body.velocity.speed = 10;
 
-      const simulate = getSimulator([body], 0);
-      simulate(1000);
+      const bodies = simulateFrame([body], 0, 1000);
 
-      expect(body.velocity.angle).to.equal(0);
-      expect(body.velocity.speed).to.equal(10);
+      expect(bodies[0].velocity.angle).to.equal(0);
+      expect(bodies[0].velocity.speed).to.equal(10);
     });
 
     it('should simulate body collisions', () => {
@@ -139,14 +132,13 @@ describe('Simulation methods', () => {
       body2.velocity.angle = 0.5;
       body2.velocity.speed = 10;
 
-      const simulate = getSimulator([body1, body2], 0);
-      simulate(1000);
+      const bodies = simulateFrame([body1, body2], 0, 1000);
 
-      expect(body1.velocity.angle).to.equal(0.5);
-      expect(body1.velocity.speed).to.equal(10);
+      expect(bodies[0].velocity.angle).to.equal(0.5);
+      expect(bodies[0].velocity.speed).to.equal(10);
 
-      expect(body2.velocity.angle).to.equal(0);
-      expect(body2.velocity.speed).to.equal(10);
+      expect(bodies[1].velocity.angle).to.equal(0);
+      expect(bodies[1].velocity.speed).to.equal(10);
     });
   });
 });

@@ -13,19 +13,33 @@ const CALORIES_SPAWN = 2;
 const CALORIES_START = (CALORIES_DEATH + CALORIES_SPAWN) / 2;
 
 /**
- * Sets the parameters of a vitals object to initial values
+ * Creates a new vitals object based on a mass and optionally an explicit
+ * starting calorie level
  *
- * @param {Vitals} vitals - the object to init; mutated!
  * @param {number} mass - the mass of the meeba
- * @param {number} [calories] - optional starting calorie value
+ * @returns {Vitals}
  */
-export const initVitals = (vitals, mass, calories) => {
-  vitals.calories = calories !== undefined ? calories : Math.floor(mass * CALORIES_START);
-  vitals.diesAt = Math.floor(mass * CALORIES_DEATH);
-  vitals.spawnsAt = Math.floor(mass * CALORIES_SPAWN);
+export const initVitals = (mass) => {
+  const calories = Math.floor(mass * CALORIES_START);
+  const diesAt = Math.floor(mass * CALORIES_DEATH);
+  const spawnsAt = Math.floor(mass * CALORIES_SPAWN);
+  const isDead = calories < diesAt;
 
-  vitals.isDead = vitals.calories < vitals.diesAt;
+  return { calories, diesAt, spawnsAt, isDead };
 };
+
+/**
+ * Explicitly set the calories on a meeba's vitals, setting isDead as needed
+ *
+ * @param {Vitals} vitals - the vitals to update
+ * @param {number} calories - the new calorie level
+ * @returns {Vitals}
+ */
+export const setCalories = (vitals, calories) => ({
+  ...vitals,
+  calories,
+  isDead: calories < vitals.diesAt,
+});
 
 /**
  * Removes calories from the meeba, setting isDead as needed. Returns the

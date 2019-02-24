@@ -6,7 +6,7 @@ import { randInt } from '../utils/math.js';
  * Instructions for building a meeba
  *
  * @typedef Commands
- * @prop {number} mass - the mass/area of the meeba
+ * @prop {number} size - the size/area of the meeba
  * @prop {SpikeCommand[]} spikes - the spikes to attach to the meeba
  */
 
@@ -42,7 +42,7 @@ const MAX_BYTES = 2 * averageStartingGeneSize;
 
 const CONTROL_BYTE_FREQUENCY = [0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF1];
 
-const BITS_PER_MASS_PIXEL = 1;
+const BITS_PER_SIZE_PIXEL = 1;
 const BITS_PER_SPIKE_LENGTH = 2;
 
 /**
@@ -81,10 +81,21 @@ const countBits = byte => byte
   .filter(bit => bit === '1')
   .length;
 
+/**
+ * Split a full genome into an array of genes each with a leading control byte
+ *
+ * @param {Uint8Array} genome - full genome
+ * @returns {Uint8Array[]} - array of sub-genes
+ */
+const toGenes = genome => genome
+  .map((byte, i) => (byte >= 0xF0 ? i : null))
+  .filter(index => index !== null)
+  .map((index, i, indexes) => genome.slice(i, indexes[i + 1]));
+
 // eslint-disable-next-line valid-jsdoc
 /** @type {GeneReader} */
 const getSizeReader = (commands) => (byte) => {
-  commands.mass += countBits(byte) * BITS_PER_MASS_PIXEL;
+  commands.size += countBits(byte) * BITS_PER_SIZE_PIXEL;
 };
 
 // eslint-disable-next-line valid-jsdoc
@@ -117,7 +128,7 @@ const GENE_READERS = {
 export const readGenome = (genome) => {
   /** @type {Commands} */
   const commands = {
-    mass: 0,
+    size: 0,
     spikes: [],
   };
   let read = noopReader;
