@@ -203,6 +203,9 @@ const getWallBouncer = (delay) => (body) => {
  * Checks if two bodies can possibly interact by checking they are not the same object, and then
  * comparing their distance to the sum of their radii plus the primary's longest spike
  *
+ * Note that this checks based on the bodies' next location. This could lead to some
+ * odd behavior if bodies are currently overlapping, but their next location is not
+ *
  * @param {Body} body - the primary body
  * @param {Body} other
  * @returns {boolean}
@@ -217,10 +220,10 @@ const canInteract = (body, other) => {
     : 0;
 
   return isShorter({
-    x1: body.x,
-    y1: body.y,
-    x2: other.x,
-    y2: other.y,
+    x1: body.meta.nextX,
+    y1: body.meta.nextY,
+    x2: other.meta.nextX,
+    y2: other.meta.nextY,
   }, body.radius + other.radius + spikeLength);
 };
 
