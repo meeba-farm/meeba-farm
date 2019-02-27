@@ -25,6 +25,28 @@ export const chunk = (arr, size) => range(Math.ceil(arr.length / 2))
   .map(i => arr.slice(i * size, (i + 1) * size));
 
 /**
+ * Groups the items in an array into sub-arrays by function output
+ *
+ * @param {array} arr - the array to group
+ * @param {function} groupingFn - outputs how each item should be grouped
+ * @returns {Object<string, array>}
+ */
+export const groupBy = (arr, groupingFn) => {
+  /** @type {Object<string, array>} */
+  const grouped = {};
+
+  for (const item of arr) {
+    const index = groupingFn(item);
+    if (!grouped[index]) {
+      grouped[index] = [];
+    }
+    grouped[index].push(item);
+  }
+
+  return grouped;
+};
+
+/**
  * Converts a hexadecimal string to a Uint8Array
  *
  * @param {string} hex - the hex string

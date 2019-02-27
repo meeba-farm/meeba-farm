@@ -37,11 +37,13 @@
             ],
             "skipWords": [
                 "arccosine",
+                "baz",
                 "bdd",
                 "calc",
                 "chai",
                 "collider",
                 "const",
+                "corge",
                 "ctx",
                 "deactivator",
                 "dir",
@@ -59,12 +61,16 @@
                 "mn",
                 "num",
                 "prng",
+                "qux",
+                "quux",
+                "quuz",
                 "readdir",
                 "rect",
                 "sqr",
                 "typeof",
                 "uint",
                 "un",
+                "ungrouped",
                 "ut",
                 "utf-8",
                 "utils",
@@ -88,7 +94,6 @@
             },
             "preferType": {
                 "Boolean": "boolean",
-                "Object": "object",
                 "Number": "number",
                 "String": "string"
             }

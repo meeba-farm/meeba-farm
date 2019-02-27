@@ -5,6 +5,7 @@ const {
   range,
   flatten,
   chunk,
+  groupBy,
   toBytes,
   toHex,
 } = require('./arrays.common.js');
@@ -45,6 +46,32 @@ describe('Array utils', () => {
 
     it('should include any extra elements in the final chunk', () => {
       expect(chunk([1, 2, 3, 4], 3)).to.deep.equal([[1, 2, 3], [4]]);
+    });
+  });
+
+  describe('groupBy', () => {
+    it('should group array items into sub-arrays by function output', () => {
+      const grouped = groupBy([3.3, 2.1, 3.9, 1], Math.floor);
+
+      expect(grouped).to.deep.equal({
+        1: [1],
+        2: [2.1],
+        3: [3.3, 3.9],
+      });
+    });
+
+    it('should group actual objects not copies', () => {
+      const ungrouped = [
+        { foo: 'qux', bar: 'baz' },
+        { foo: 'quux', bar: 'quuz' },
+        { foo: 'qux', bar: 'corge' },
+      ];
+
+      const grouped = groupBy(ungrouped, obj => obj.foo);
+
+      expect(grouped.qux[0]).to.equal(ungrouped[0]);
+      expect(grouped.quux[0]).to.equal(ungrouped[1]);
+      expect(grouped.qux[1]).to.equal(ungrouped[2]);
     });
   });
 
