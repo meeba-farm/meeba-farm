@@ -17,7 +17,7 @@ export const flatten = arr => arr.reduce((flat, nested) => flat.concat(nested), 
 /**
  * Creates a new 2D array split into evenly sized chunks
  *
- * @param {array} arr - the length of the new array
+ * @param {array} arr - the array to chunk
  * @param {number} size - the size of each chunk
  * @returns {array[]}
  */
