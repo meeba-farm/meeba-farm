@@ -114,16 +114,13 @@ const initBody = (dna) => {
 export const getRandomBody = () => {
   const body = initBody(createGenome());
 
-  return {
-    ...body,
-    fill: `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`,
-    x: randInt(body.radius, width - body.radius),
-    y: randInt(body.radius, height - body.radius),
-    velocity: {
-      angle: rand(),
-      speed: randInt(0, MAX_ENERGY / body.mass),
-    },
-  };
+  body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
+  body.x = randInt(body.radius, width - body.radius);
+  body.y = randInt(body.radius, height - body.radius);
+  body.velocity.angle = rand();
+  body.velocity.speed = randInt(0, MAX_ENERGY / body.mass);
+
+  return body;
 };
 
 /**
@@ -136,23 +133,19 @@ export const getRandomBody = () => {
 const replicateParent = (parent, angle) => {
   const dna = replicateGenome(toBytes(parent.dna));
   const body = initBody(dna);
+  body.fill = parent.fill;
+
+  setCalories(body.vitals, Math.floor(parent.vitals.calories / 2));
 
   const relativeLocation = toVector({ angle, speed: 2 * body.radius });
-  const x = parent.x + relativeLocation.x;
-  const y = parent.y + relativeLocation.y;
-  body.spikes.forEach(getSpikeMover(x, y));
+  body.x = parent.x + relativeLocation.x;
+  body.y = parent.y + relativeLocation.y;
+  body.velocity.angle = angle;
+  body.velocity.speed = parent.velocity.speed;
 
-  return {
-    ...body,
-    fill: parent.fill,
-    x,
-    y,
-    velocity: {
-      angle,
-      speed: parent.velocity.speed,
-    },
-    vitals: setCalories(body.vitals, Math.floor(parent.vitals.calories / 2)),
-  };
+  body.spikes.forEach(getSpikeMover(body.x, body.y));
+
+  return body;
 };
 
 /**

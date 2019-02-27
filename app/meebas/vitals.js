@@ -31,15 +31,13 @@ export const initVitals = (mass) => {
 /**
  * Explicitly set the calories on a meeba's vitals, setting isDead as needed
  *
- * @param {Vitals} vitals - the vitals to update
+ * @param {Vitals} vitals - the vitals to update; mutated!
  * @param {number} calories - the new calorie level
- * @returns {Vitals}
  */
-export const setCalories = (vitals, calories) => ({
-  ...vitals,
-  calories,
-  isDead: calories < vitals.diesAt,
-});
+export const setCalories = (vitals, calories) => {
+  vitals.calories = calories;
+  vitals.isDead = calories < vitals.diesAt;
+};
 
 /**
  * Removes calories from the meeba, setting isDead as needed. Returns the
