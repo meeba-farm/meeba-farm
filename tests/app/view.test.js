@@ -11,24 +11,12 @@ describe('View methods', () => {
     });
   });
 
-  describe('getViewClearer', () => {
+  describe('getFrameRenderer', () => {
     it('should exist and return a function', () => {
-      expect(view.getViewClearer).to.exist.and.be.a('function');
-      expect(view.getViewClearer()).to.be.a('function');
-    });
-  });
+      const canvas = { getContext: () => 'foo' };
 
-  describe('getCircleDrawer', () => {
-    it('should exist and return a function', () => {
-      expect(view.getCircleDrawer).to.exist.and.be.a('function');
-      expect(view.getCircleDrawer()).to.be.a('function');
-    });
-  });
-
-  describe('getTriangleDrawer', () => {
-    it('should exist and return a function', () => {
-      expect(view.getTriangleDrawer).to.exist.and.be.a('function');
-      expect(view.getTriangleDrawer()).to.be.a('function');
+      expect(view.getFrameRenderer).to.exist.and.be.a('function');
+      expect(view.getFrameRenderer(canvas)).to.be.a('function');
     });
   });
 });

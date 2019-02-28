@@ -1,4 +1,12 @@
+import {
+  flatten,
+  groupBy,
+} from './utils/arrays.js';
 import { PI_2 } from './utils/math.js';
+
+/**
+ * @typedef {import('./simulation.js').Body} Body
+ */
 
 /**
  * @typedef Circle
@@ -19,21 +27,12 @@ import { PI_2 } from './utils/math.js';
  * @prop {string} fill - a valid color string
  */
 
-const VIEW_ID = 'view';
-
 /**
- * Guarantees a 2d context is not null by throwing if not found
- *
- * @param {HTMLCanvasElement} view - the canvas to get a context for
- * @returns {CanvasRenderingContext2D}
+ * @typedef Drawable
+ * @prop {string} fill - a color to fill the drawable
  */
-const get2dContext = (view) => {
-  const ctx = view.getContext('2d');
-  if (!ctx) {
-    throw new Error(`Unable to get 2d context for view: ${view}`);
-  }
-  return ctx;
-};
+
+const VIEW_ID = 'view';
 
 /**
  * Creates a canvas of specified dimensions and appends it to the DOM
@@ -58,48 +57,76 @@ export const createView = (width, height) => {
 };
 
 /**
- * Returns a function which clears an entire canvas, must specify width/height
+ * Gets a function to draw the outline of a circle
  *
- * @param {HTMLCanvasElement} view - the canvas to clear; mutated!
- * @param {number} width - its width
- * @param {number} height - its height
- * @returns {function(): void} - clears canvas when called
+ * @param {CanvasRenderingContext2D} ctx - 2d canvas context to draw with; mutated!
+ * @returns {function(Circle): void} - takes a circle and outlines its path
  */
-export const getViewClearer = (view, width, height) => () => {
-  const ctx = get2dContext(view);
-  ctx.clearRect(0, 0, width, height);
-};
-
-/**
- * Takes a canvas view and returns a function to draw circles on it
- *
- * @param {HTMLCanvasElement} view - the canvas to draw on; mutated!
- * @returns {function(Circle): void} - takes a circle and draws it on the canvas
- */
-export const getCircleDrawer = (view) => ({ x, y, radius, fill }) => {
-  const ctx = get2dContext(view);
-
-  ctx.beginPath();
+const getCircleOutliner = (ctx) => ({ x, y, radius }) => {
+  ctx.moveTo(x + radius, y);
   ctx.arc(x, y, radius, 0, PI_2);
-  ctx.fillStyle = fill;
-  ctx.fill();
 };
 
 /**
- * Takes a canvas view and returns a function to draw triangle on it
+ * Gets a function to draw the outline of a triangle
  *
- * @param {HTMLCanvasElement} view - the canvas to draw on; mutated!
- * @returns {function(Triangle): void} - takes a triangle and draws it on the canvas
+ * @param {CanvasRenderingContext2D} ctx - 2d canvas context to draw with; mutated!
+ * @returns {function(Triangle): void} - takes a triangle and outlines its path
  */
-export const getTriangleDrawer = (view) => ({ x1, y1, x2, y2, x3, y3, fill }) => {
-  const ctx = get2dContext(view);
-
-  ctx.beginPath();
+const getTriangleOutliner = (ctx) => ({ x1, y1, x2, y2, x3, y3 }) => {
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.lineTo(x3, y3);
-  ctx.closePath();
+  ctx.lineTo(x1, y1);
+};
 
-  ctx.fillStyle = fill;
-  ctx.fill();
+/**
+ * Get a drawable's fill
+ *
+ * @param {Drawable} drawable
+ * @returns {string}
+ */
+const getFill = drawable => drawable.fill;
+
+/**
+ * Gets a function to outline and fill drawable objects, will iterate through
+ * the drawables by fill color, outlining them all before filling once
+ *
+ * @param {CanvasRenderingContext2D} ctx - 2d canvas context to draw with; mutated!
+ * @returns {function(any[], function(any): void): void} - (no way to spec this without generics)
+ */
+const getOutlineFiller = (ctx) => (drawables, outlineFn) => {
+  const byFill = groupBy(drawables, getFill);
+
+  for (const [fill, fillDrawables] of Object.entries(byFill)) {
+    ctx.beginPath();
+
+    for (const drawable of fillDrawables) {
+      outlineFn(drawable);
+    }
+
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+};
+
+/**
+ * Takes a canvas element and returns a function which takes
+ * an array of bodies and renders them
+ *
+ * @param {HTMLCanvasElement} view - the canvas to draw on; mutated!
+ * @returns {function(Body[]): void} - renders bodies
+ */
+export const getFrameRenderer = (view) => (bodies) => {
+  const ctx = view.getContext('2d');
+  if (!ctx) {
+    throw new Error(`Unable to get 2d context for view: ${view}`);
+  }
+
+  const spikes = flatten(bodies.map(body => body.spikes));
+  const fillOutlines = getOutlineFiller(ctx);
+  ctx.clearRect(0, 0, view.width, view.height);
+
+  fillOutlines(spikes, getTriangleOutliner(ctx));
+  fillOutlines(bodies, getCircleOutliner(ctx));
 };

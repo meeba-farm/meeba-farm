@@ -1,9 +1,7 @@
 import * as settings from './settings.js';
 import {
   createView,
-  getViewClearer,
-  getCircleDrawer,
-  getTriangleDrawer,
+  getFrameRenderer,
 } from './view.js';
 import {
   getRandomBody,
@@ -17,9 +15,7 @@ import {
 const { width, height } = settings.tank;
 
 const view = createView(width, height);
-const clearView = getViewClearer(view, width, height);
-const drawCircle = getCircleDrawer(view);
-const drawTriangle = getTriangleDrawer(view);
+const renderFrame = getFrameRenderer(view);
 
 let bodies = range(settings.simulation.bodies).map(getRandomBody);
 separateBodies(bodies);
@@ -37,9 +33,7 @@ const simulate = (lastTick) => {
   setTimeout(() => simulate(thisTick), 8);
 };
 const render = () => {
-  clearView();
-  bodies.forEach(body => body.spikes.forEach(drawTriangle));
-  bodies.forEach(drawCircle);
+  renderFrame(bodies);
   requestAnimationFrame(render);
 };
 
