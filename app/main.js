@@ -4,10 +4,12 @@ import {
   getFrameRenderer,
 } from './view.js';
 import {
-  getRandomBody,
   separateBodies,
   simulateFrame,
 } from './simulation.js';
+import {
+  getRandomBody,
+} from './meebas/bodies.js';
 import {
   range,
 } from './utils/arrays.js';
