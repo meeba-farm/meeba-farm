@@ -11,6 +11,7 @@ import {
 import {
   getGap,
   isShorter,
+  isCloser,
   randInt,
 } from './utils/math.js';
 import {
@@ -149,18 +150,31 @@ const willOverlap = (body1, body2) => isShorter({
 }, body1.radius + body2.radius);
 
 /**
- * Checks if a spike's tip is within a body's circumference
+ * Gets a function which will check if a spike is overlapping another body
  *
- * @param {Spike} spike
  * @param {Body} body
- * @returns {boolean}
+ * @param {Body} other
+ * @returns {function(Spike): boolean}
  */
-const isSpikeOverlapping = (spike, body) => isShorter({
-  x1: body.x,
-  y1: body.y,
-  x2: spike.x1,
-  y2: spike.y1,
-}, body.radius);
+const getSpikeOverlapChecker = (body, other) => (spike) => {
+  // If spike is shorter than other's diameter, use faster check
+  if (spike.length < 2 * other.radius) {
+    return isShorter({
+      x1: other.x,
+      y1: other.y,
+      x2: spike.x1,
+      y2: spike.y1,
+    }, other.radius);
+  }
+
+  return isCloser(other, {
+    x1: body.x,
+    y1: body.y,
+    x2: spike.x1,
+    y2: spike.y1,
+  }, other.radius);
+};
+
 
 /**
  * Gets a function to check if two bodies should collide, and mutates
@@ -194,8 +208,9 @@ const getBodyCollider = (delay) => (body1, body2) => {
  */
 const getSpikeActivator = (delay, tick) => (body, other) => {
   if (!body.vitals.isDead) {
+    const isSpikeOverlapping = getSpikeOverlapChecker(body, other);
     for (const spike of body.spikes) {
-      if (isSpikeOverlapping(spike, other)) {
+      if (isSpikeOverlapping(spike)) {
         spike.fill = 'red';
         spike.meta.deactivateTime = tick + SPIKE_HIGHLIGHT_TIME;
 
