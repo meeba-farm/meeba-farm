@@ -1,6 +1,6 @@
 import * as settings from '../settings.js';
 import { range, flatten } from '../utils/arrays.js';
-import { randInt } from '../utils/math.js';
+import { rand, randInt } from '../utils/math.js';
 
 /**
  * Instructions for building a meeba
@@ -35,6 +35,8 @@ const CONTROL_BYTE_FREQUENCY = [0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 
 
 const BITS_PER_SIZE_PIXEL = 1;
 const BITS_PER_SPIKE_LENGTH = 2;
+
+const MUTATE_BIT_CHANCE = 0.0005;
 
 /**
  * Returns a gene with a control byte followed a random number of
@@ -127,19 +129,24 @@ export const readGenome = (genome) => {
 };
 
 /**
+ * Mutates a byte by applying possible single-point mutations to its bits
+ *
+ * @param {number} byte
+ * @returns {number}
+ */
+const mutateBits = (byte) => {
+  const xorMask = parseInt(range(8)
+    .map(() => (rand() < MUTATE_BIT_CHANCE ? '1' : '0'))
+    .join(''), 2);
+
+  // eslint-disable-next-line no-bitwise
+  return byte ^ xorMask;
+};
+
+/**
  * Creates a mutated copy of an existing genome
  *
  * @param {Uint8Array} genome
  * @returns {Uint8Array}
  */
-export const replicateGenome = (genome) => {
-  const newGenome = [];
-
-  // Perfect replication for now
-  // Use a for-with-semicolons to "mutate" i
-  for (let i = 0; i < genome.length; i += 1) {
-    newGenome.push(genome[i]);
-  }
-
-  return Uint8Array.from(newGenome);
-};
+export const replicateGenome = genome => genome.map(mutateBits);
