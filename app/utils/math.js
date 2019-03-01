@@ -32,6 +32,17 @@ const LOOKUP_TABLES = {
 export const sqr = n => n * n;
 
 /**
+ * Returns the sum of the products of two sets of numbers
+ *
+ * @param {number[]} set1
+ * @param {number[]} set2
+ * @returns {number}
+ */
+export const dotProduct = (set1, set2) => set1
+  .map((n1, i) => n1 * set2[i])
+  .reduce((sum, n) => sum + n);
+
+/**
  * Normalize an angle in turns, rounding it to be between 0 and 1
  *
  * 1 turn = 360°, 2π, one full rotation; 1.5 turns = 180°, 1π, 0.5 turns

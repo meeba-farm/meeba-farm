@@ -4,6 +4,7 @@ const { expect } = require('chai');
 const {
   PI_2,
   sqr,
+  dotProduct,
   roundAngle,
   sin,
   cos,
@@ -22,6 +23,14 @@ describe('Math utils', () => {
   describe('PI_2', () => {
     it('should be equal to 2π', () => {
       expect(PI_2).to.equal(2 * Math.PI);
+    });
+  });
+
+  describe('dotProduct', () => {
+    it('should return the dot product of two sets of numbers', () => {
+      expect(dotProduct([2, 3], [4, 5])).to.equal(23);
+      expect(dotProduct([4, 2, 0], [7, 1, 3])).to.equal(30);
+      expect(dotProduct([-1, 0], [5, 2])).to.equal(-5);
     });
   });
 
