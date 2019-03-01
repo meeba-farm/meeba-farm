@@ -37,6 +37,8 @@ const BITS_PER_SIZE_PIXEL = 1;
 const BITS_PER_SPIKE_LENGTH = 2;
 
 const MUTATE_BIT_CHANCE = 0.0005;
+const DROP_BYTE_CHANCE = 0.008;
+const REPEAT_BYTE_CHANCE = 0.008;
 
 /**
  * Returns a gene with a control byte followed a random number of
@@ -144,9 +146,36 @@ const mutateBits = (byte) => {
 };
 
 /**
+ * Repeats random items in an array or Uint8array
+ *
+ * @param {array|Uint8Array} arr
+ * @param {number} chance - chance from 0 to 1 an item is repeated
+ * @returns {array}
+ */
+const repeatItems = (arr, chance) => {
+  const repeated = [];
+
+  for (let i = 0; i < arr.length; i += 1) {
+    repeated.push(arr[i]);
+    if (rand() < chance) {
+      i -= 1;
+    }
+  }
+
+  return repeated;
+};
+
+/**
  * Creates a mutated copy of an existing genome
  *
  * @param {Uint8Array} genome
  * @returns {Uint8Array}
  */
-export const replicateGenome = genome => genome.map(mutateBits);
+export const replicateGenome = (genome) => {
+  const bitMutations = genome.map(mutateBits);
+
+  const byteMutations = repeatItems(bitMutations, REPEAT_BYTE_CHANCE)
+    .filter(() => rand() >= DROP_BYTE_CHANCE);
+
+  return Uint8Array.from(byteMutations);
+};
