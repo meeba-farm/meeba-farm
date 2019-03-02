@@ -22,3 +22,11 @@ export const pipe = operand => ({
   into: (fn, ...args) => pipe(fn(operand, ...args)),
   done: () => operand,
 });
+
+/**
+ * Creates a new version of a function which uses the first parameter in place of `this`
+ *
+ * @param {function} fn
+ * @returns {function(...any): any}
+ */
+export const thisFirst = fn => fn.call.bind(fn);

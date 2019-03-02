@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const {
   pipe,
+  thisFirst,
 } = require('./functions.common.js');
 
 describe('Function utils', () => {
@@ -31,6 +32,16 @@ describe('Function utils', () => {
         .done();
 
       expect(piped).to.deep.equal([12, 13, 14]);
+    });
+  });
+
+  describe('thisFirst', () => {
+    it('should return a new function that takes this as the first argument', () => {
+      const firstAdd = thisFirst(function thisAdd(y) {
+        return this.x + y;
+      });
+
+      expect(firstAdd({ x: 2 }, 3)).to.equal(5);
     });
   });
 });

@@ -1,3 +1,9 @@
+import { thisFirst } from './functions.js';
+
+export const map = thisFirst(Array.prototype.map);
+export const filter = thisFirst(Array.prototype.filter);
+export const reduce = thisFirst(Array.prototype.reduce);
+
 /**
  * Returns a new array with the numbers, i.e. [0, 1, ...len]
  *

@@ -2,6 +2,9 @@
 
 const { expect } = require('chai');
 const {
+  map,
+  filter,
+  reduce,
   range,
   flatten,
   chunk,
@@ -13,6 +16,24 @@ const {
 } = require('./arrays.common.js');
 
 describe('Array utils', () => {
+  describe('map', () => {
+    it('should map over values in an array', () => {
+      expect(map([1, 2, 3], n => n + 1)).to.deep.equal([2, 3, 4]);
+    });
+  });
+
+  describe('filter', () => {
+    it('should filter values in an array', () => {
+      expect(filter([1, 2, 3], n => n % 2 === 0)).to.deep.equal([2]);
+    });
+  });
+
+  describe('reduce', () => {
+    it('should build an accumulator from values in an array', () => {
+      expect(reduce([1, 2, 3], (sum, n) => sum + n)).to.equal(6);
+    });
+  });
+
   describe('range', () => {
     it('should create an array with a given length', () => {
       expect(range(3)).to.be.an('array').with.a.lengthOf(3);
