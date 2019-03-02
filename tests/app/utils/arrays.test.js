@@ -5,6 +5,7 @@ const {
   range,
   flatten,
   chunk,
+  findIndexes,
   groupBy,
   toBytes,
   toHex,
@@ -46,6 +47,20 @@ describe('Array utils', () => {
 
     it('should include any extra elements in the final chunk', () => {
       expect(chunk([1, 2, 3, 4], 3)).to.deep.equal([[1, 2, 3], [4]]);
+    });
+  });
+
+  describe('findIndexes', () => {
+    it('should find an index that matches a predicate', () => {
+      const indexes = findIndexes(['foo', 'bar', 'baz'], item => item === 'bar');
+
+      expect(indexes).to.deep.equal([1]);
+    });
+
+    it('should find an index that matches a predicate', () => {
+      const indexes = findIndexes([3, 1, 4, 1, 5, 9, 2], n => n > 3);
+
+      expect(indexes).to.deep.equal([2, 4, 5]);
     });
   });
 

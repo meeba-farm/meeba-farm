@@ -24,6 +24,18 @@ export const flatten = arr => arr.reduce((flat, nested) => flat.concat(nested), 
 export const chunk = (arr, size) => range(Math.ceil(arr.length / 2))
   .map(i => arr.slice(i * size, (i + 1) * size));
 
+
+/**
+ * Finds the indexes of all items which match a predicate
+ *
+ * @param {array} arr - the array to search through
+ * @param {function(any): boolean} predicate
+ * @returns {number[]}
+ */
+export const findIndexes = (arr, predicate) => arr
+  .map((item, i) => (predicate(item) ? i : -1))
+  .filter(index => index !== -1);
+
 /**
  * Groups the items in an array into sub-arrays by function output
  *
