@@ -58,6 +58,26 @@ export const groupBy = (arr, groupingFn) => {
   return grouped;
 };
 
+
+/**
+ * Concatenates any number of Uint8Arrays into a larger Uint8Array
+ *
+ * @param {...Uint8Array} byteArrays
+ * @returns {Uint8Array}
+ */
+export const concatBytes = (...byteArrays) => {
+  const length = byteArrays.reduce((sum, subArray) => sum + subArray.length, 0);
+  const concatted = new Uint8Array(length);
+  let offset = 0;
+
+  for (const subArray of byteArrays) {
+    concatted.set(subArray, offset);
+    offset += subArray.length;
+  }
+
+  return concatted;
+};
+
 /**
  * Converts a hexadecimal string to a Uint8Array
  *

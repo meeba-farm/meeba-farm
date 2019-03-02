@@ -7,6 +7,7 @@ const {
   chunk,
   findIndexes,
   groupBy,
+  concatBytes,
   toBytes,
   toHex,
 } = require('./arrays.common.js');
@@ -87,6 +88,25 @@ describe('Array utils', () => {
       expect(grouped.qux[0]).to.equal(ungrouped[0]);
       expect(grouped.quux[0]).to.equal(ungrouped[1]);
       expect(grouped.qux[1]).to.equal(ungrouped[2]);
+    });
+  });
+
+  describe('concatBytes', () => {
+    it('should combine multiple Uint8Arrays', () => {
+      const concatted = concatBytes(Uint8Array.of(1, 2), Uint8Array.of(3, 4, 5));
+
+      expect(concatted).to.deep.equal(Uint8Array.of(1, 2, 3, 4, 5));
+    });
+
+    it('should work with empty Uint8Arrays', () => {
+      const concatted = concatBytes(new Uint8Array(), Uint8Array.of(255, 128), new Uint8Array());
+
+      expect(concatted).to.deep.equal(Uint8Array.of(255, 128));
+    });
+
+    it('should work with one or zero Uint8Arrays', () => {
+      expect(concatBytes(Uint8Array.of(1))).to.deep.equal(Uint8Array.of(1));
+      expect(concatBytes()).to.deep.equal(new Uint8Array());
     });
   });
 
