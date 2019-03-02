@@ -1,10 +1,15 @@
 import * as settings from '../settings.js';
 import {
+  map,
+  filter,
   range,
   findIndexes,
   flatten,
   concatBytes,
 } from '../utils/arrays.js';
+import {
+  pipe,
+} from '../utils/functions.js';
 import {
   rand,
   randInt,
@@ -181,22 +186,34 @@ const repeatItems = (arr, chance) => {
 };
 
 /**
+ * Splits a genome into sub-arrays by control byte
+ *
+ * @param {Uint8Array} genome
+ * @returns {Uint8Array[]}
+ */
+const splitGenome = genome => findControlIndexes(genome)
+  .map((index, i, indexes) => genome.slice(index, indexes[i + 1]));
+
+/**
+ * Joins an array of gene bytes into one Uint8Array
+ *
+ * @param {Uint8Array[]} geneArray
+ * @returns {Uint8Array}
+ */
+const joinGeneArray = geneArray => concatBytes(...geneArray);
+
+/**
  * Creates a mutated copy of an existing genome
  *
  * @param {Uint8Array} genome
  * @returns {Uint8Array}
  */
-export const replicateGenome = (genome) => {
-  const bitMutations = genome.map(mutateBits);
-
-  const byteMutations = repeatItems(bitMutations, REPEAT_BYTE_CHANCE)
-    .filter(() => rand() >= DROP_BYTE_CHANCE);
-
-  const ofGenes = findControlIndexes(byteMutations)
-    .map((index, i, indexes) => byteMutations.slice(index, indexes[i + 1]));
-
-  const geneMutations = repeatItems(ofGenes, REPEAT_GENE_CHANCE)
-    .filter(() => rand() >= DROP_GENE_CHANCE);
-
-  return concatBytes(...geneMutations);
-};
+export const replicateGenome = genome => pipe(genome)
+  .into(map, mutateBits)
+  .into(repeatItems, REPEAT_BYTE_CHANCE)
+  .into(filter, () => rand() >= DROP_BYTE_CHANCE)
+  .into(splitGenome)
+  .into(repeatItems, REPEAT_GENE_CHANCE)
+  .into(filter, () => rand() >= DROP_GENE_CHANCE)
+  .into(joinGeneArray)
+  .done();
