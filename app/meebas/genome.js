@@ -1,6 +1,14 @@
 import * as settings from '../settings.js';
-import { range, flatten } from '../utils/arrays.js';
-import { rand, randInt } from '../utils/math.js';
+import {
+  range,
+  findIndexes,
+  flatten,
+  concatBytes,
+} from '../utils/arrays.js';
+import {
+  rand,
+  randInt,
+} from '../utils/math.js';
 
 /**
  * Instructions for building a meeba
@@ -39,6 +47,8 @@ const BITS_PER_SPIKE_LENGTH = 2;
 const MUTATE_BIT_CHANCE = 0.0005;
 const DROP_BYTE_CHANCE = 0.008;
 const REPEAT_BYTE_CHANCE = 0.008;
+const DROP_GENE_CHANCE = 0.03;
+const REPEAT_GENE_CHANCE = 0.03;
 
 /**
  * Returns a gene with a control byte followed a random number of
@@ -74,16 +84,21 @@ const countBits = bytes => bytes.reduce((count, byte) => (
   count + byte.toString(2).split('').filter(bit => bit === '1').length
 ), 0);
 
+/**
+ * Find the indexes of any control bytes in a genome
+ *
+ * @param {Uint8Array|number[]} genome - the full genome
+ * @returns {number[]}
+ */
+const findControlIndexes = genome => findIndexes(Array.from(genome), byte => byte >= 0xF0);
 
 /**
- * Split a full genome into an array of genes each with a leading control byte
+ * Split a full genome into an array of gene objects by control byte
  *
  * @param {Uint8Array} genome - the full genome
  * @returns {Gene[]}
  */
-const toGenes = genome => Array.from(genome)
-  .map((byte, i) => (byte >= 0xF0 ? i : -1))
-  .filter(index => index !== -1)
+const toGenes = genome => findControlIndexes(genome)
   .map((index, i, indexes) => ({
     type: genome[index],
     location: index / genome.length,
@@ -177,5 +192,11 @@ export const replicateGenome = (genome) => {
   const byteMutations = repeatItems(bitMutations, REPEAT_BYTE_CHANCE)
     .filter(() => rand() >= DROP_BYTE_CHANCE);
 
-  return Uint8Array.from(byteMutations);
+  const ofGenes = findControlIndexes(byteMutations)
+    .map((index, i, indexes) => byteMutations.slice(index, indexes[i + 1]));
+
+  const geneMutations = repeatItems(ofGenes, REPEAT_GENE_CHANCE)
+    .filter(() => rand() >= DROP_GENE_CHANCE);
+
+  return concatBytes(...geneMutations);
 };
