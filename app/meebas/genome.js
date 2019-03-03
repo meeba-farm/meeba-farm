@@ -52,8 +52,10 @@ const BITS_PER_SPIKE_LENGTH = 2;
 const MUTATE_BIT_CHANCE = 0.0005;
 const DROP_BYTE_CHANCE = 0.008;
 const REPEAT_BYTE_CHANCE = 0.008;
+const TRANSPOSE_BYTE_CHANCE = 0.016;
 const DROP_GENE_CHANCE = 0.03;
 const REPEAT_GENE_CHANCE = 0.03;
+const TRANSPOSE_GENE_CHANCE = 0.06;
 
 /**
  * Returns a gene with a control byte followed a random number of
@@ -186,6 +188,32 @@ const repeatItems = (arr, chance) => {
 };
 
 /**
+ * Shuffle random items in an array or Uint8array
+ *
+ * @param {array|Uint8Array} arr
+ * @param {number} chance - chance from 0 to 1 an item is shuffled
+ * @returns {array}
+ */
+const transposeItems = (arr, chance) => {
+  const transposed = [];
+  const toTranspose = [];
+
+  for (const item of arr) {
+    if (rand() < chance) {
+      toTranspose.push(item);
+    } else {
+      transposed.push(item);
+    }
+  }
+
+  for (const item of toTranspose) {
+    transposed.splice(randInt(0, transposed.length), 0, item);
+  }
+
+  return transposed;
+};
+
+/**
  * Splits a genome into sub-arrays by control byte
  *
  * @param {Uint8Array} genome
@@ -212,8 +240,10 @@ export const replicateGenome = genome => pipe(genome)
   .into(map, mutateBits)
   .into(repeatItems, REPEAT_BYTE_CHANCE)
   .into(filter, () => rand() >= DROP_BYTE_CHANCE)
+  .into(transposeItems, TRANSPOSE_BYTE_CHANCE)
   .into(splitGenome)
   .into(repeatItems, REPEAT_GENE_CHANCE)
   .into(filter, () => rand() >= DROP_GENE_CHANCE)
+  .into(transposeItems, TRANSPOSE_GENE_CHANCE)
   .into(joinGeneArray)
   .done();
