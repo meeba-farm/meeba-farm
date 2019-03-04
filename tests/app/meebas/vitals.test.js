@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const { spawnSpike } = require('./spikes.common.js');
 const {
   initVitals,
   setCalories,
@@ -10,7 +11,7 @@ const {
 describe('Spike methods', () => {
   describe('initVitals', () => {
     it('should init a vitals object with starting values', () => {
-      const vitals = initVitals(100);
+      const vitals = initVitals(100, []);
 
       expect(vitals).to.be.an('object');
       expect(vitals.calories).to.be.a('number');
@@ -18,18 +19,25 @@ describe('Spike methods', () => {
       expect(vitals.spawnsAt).to.be.a('number');
       expect(vitals.isDead).to.equal(vitals.calories < vitals.diesAt);
     });
+
+    it('should include spikes in upkeep calculation', () => {
+      const noSpikes = initVitals(100, []);
+      const withSpikes = initVitals(100, [spawnSpike(10, 0, 10)]);
+
+      expect(noSpikes.upkeep).to.be.lessThan(withSpikes.upkeep);
+    });
   });
 
   describe('setCalories', () => {
     it('should mutate a vitals object with a specific calorie level', () => {
-      const vitals = initVitals(100);
+      const vitals = initVitals(100, []);
       setCalories(vitals, 50);
 
       expect(vitals.calories).to.equal(50);
     });
 
     it('should update isDead as needed', () => {
-      const vitals = initVitals(100);
+      const vitals = initVitals(100, []);
       vitals.isDead = 50;
       setCalories(vitals, 49);
 

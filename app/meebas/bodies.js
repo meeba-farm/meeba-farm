@@ -88,7 +88,7 @@ const initBody = (dna) => {
       angle: 0,
       speed: 0,
     },
-    vitals: initVitals(mass),
+    vitals: initVitals(mass, spikes),
     spikes,
     meta: {
       nextX: 0,

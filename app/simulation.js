@@ -261,7 +261,19 @@ const getSpikeDeactivator = (tick) => (body) => {
 };
 
 /**
- * Checks life-cycle status of each body, killing, deacativating, or spawning as needed
+ * Gets a function drains calories from a body based on its upkeep and time elapsed
+ *
+ * @param {number} delay - the time in seconds since the last tick
+ * @returns {function(Body): void} - mutates calories
+ */
+const getCalorieUpkeeper = (delay) => (body) => {
+  if (!body.vitals.isDead) {
+    drainCalories(body.vitals, delay * body.vitals.upkeep);
+  }
+};
+
+/**
+ * Checks life-cycle status of each body, killing, deactivating, or spawning as needed
  *
  * @param {Body[]} bodies - full array of bodies (including inactive)
  * @returns {function(Body): void} - mutates any deactivating spikes
@@ -327,6 +339,7 @@ export const simulateFrame = (bodies, start, stop) => {
   const bounceWall = getWallBouncer(delay);
   const interactBodies = getBodyInteractor(bodies, delay, stop);
   const deactivateSpikes = getSpikeDeactivator(stop);
+  const upkeepCalories = getCalorieUpkeeper(delay);
   const checkVitals = getVitalChecker(bodies);
 
   bodies.forEach(calcMove);
@@ -334,6 +347,7 @@ export const simulateFrame = (bodies, start, stop) => {
   bodies.forEach(interactBodies);
   bodies.forEach(deactivateSpikes);
   bodies.forEach(moveBody);
+  bodies.forEach(upkeepCalories);
   bodies.forEach(checkVitals);
 
   return bodies.filter(body => !body.isInactive);
