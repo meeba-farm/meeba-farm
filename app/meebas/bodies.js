@@ -60,6 +60,9 @@ import {
 const MIN_MASS = Math.ceil(Math.PI * sqr(settings.meebas.minRadius));
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
 const COLOR_RANGE = 256 * 256 * 256;
+const MOTE_COLOR = '#792';
+const MOTE_MASS = Math.ceil(Math.PI * sqr(settings.motes.radius));
+const MAX_MOTE_SPEED = Math.floor(MAX_ENERGY / MOTE_MASS / 32);
 const { width, height } = settings.tank;
 
 /**
@@ -138,4 +141,40 @@ export const replicateParent = (parent, angle) => {
   body.spikes.forEach(getSpikeMover(body.x, body.y));
 
   return body;
+};
+
+/**
+ * Creates a random "mote", a spikeless body with no calorie upkeep,
+ * which will drift around until consumed
+ *
+ * @returns {Body}
+ */
+export const spawnMote = () => {
+  const { radius } = settings.motes;
+
+  return {
+    dna: '',
+    fill: MOTE_COLOR,
+    x: randInt(radius, width - radius),
+    y: randInt(radius, height - radius),
+    mass: MOTE_MASS,
+    radius,
+    velocity: {
+      angle: rand(),
+      speed: randInt(0, MAX_MOTE_SPEED),
+    },
+    vitals: {
+      calories: MOTE_MASS * 2,
+      upkeep: 0,
+      isDead: false,
+      spawnsAt: Number.MAX_SAFE_INTEGER,
+      diesAt: 0,
+    },
+    spikes: [],
+    meta: {
+      nextX: 0,
+      nextY: 0,
+      lastCollisionBody: null,
+    },
+  };
 };

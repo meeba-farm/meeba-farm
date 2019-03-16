@@ -18,3 +18,7 @@ export const meebas = {
   averageStartingGeneCount: 48,
   averageStartingGeneSize: 6,
 };
+
+export const motes = {
+  radius: 8,
+};

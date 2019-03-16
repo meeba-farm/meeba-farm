@@ -11,15 +11,16 @@ settings.tank.height = 100;
 const {
   getRandomBody,
   replicateParent,
+  spawnMote,
 } = require('./bodies.common.js');
 
 const getCircleArea = radius => Math.floor(Math.PI * radius * radius);
 
 const expectIsValidNewBody = (body) => {
-  expect(body.dna).to.match(/^[0-9A-F]{4,}$/);
+  expect(body.dna).to.match(/^[0-9A-F]*$/);
   expect(body.fill).to.be.a('string');
 
-  expect(body.radius).to.be.at.least(settings.meebas.minRadius);
+  expect(body.radius).to.be.a('number').greaterThan(0);
   expect(body.mass).to.be.within(getCircleArea(body.radius), getCircleArea(body.radius + 1));
 
   expect(body.x).to.be.a('number');
@@ -48,6 +49,7 @@ describe('Body methods', () => {
       expectIsValidNewBody(body);
       expect(body.x).to.be.within(body.radius, settings.tank.width - body.radius);
       expect(body.y).to.be.within(body.radius, settings.tank.height - body.radius);
+      expect(body.radius).to.be.at.least(settings.meebas.minRadius);
     });
   });
 
@@ -62,6 +64,17 @@ describe('Body methods', () => {
       expect(child.fill).to.equal('#f00ba6');
       expect(child.velocity.angle).to.equal(0.25);
       expect(child.velocity.speed).to.equal(123);
+    });
+  });
+
+  describe('spawnMote', () => {
+    it('should create a new random mote', () => {
+      const mote = spawnMote();
+
+      expectIsValidNewBody(mote);
+      expect(mote.dna).to.equal('');
+      expect(mote.radius).to.equal(settings.motes.radius);
+      expect(mote.vitals.upkeep).to.equal(0);
     });
   });
 });
