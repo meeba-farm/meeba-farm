@@ -8,7 +8,7 @@ const {
   drainCalories,
 } = require('./vitals.common.js');
 
-describe('Spike methods', () => {
+describe('Vitals methods', () => {
   describe('initVitals', () => {
     it('should init a vitals object with starting values', () => {
       const vitals = initVitals(100, []);
