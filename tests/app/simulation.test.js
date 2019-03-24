@@ -5,8 +5,10 @@ const settings = require('./settings.common.js');
 
 const oldWidth = settings.tank.width;
 const oldHeight = settings.tank.height;
+const oldRate = settings.motes.rate;
 settings.tank.width = 100;
 settings.tank.height = 100;
+settings.motes.rate = 0;
 
 const {
   getRandomBody,
@@ -23,6 +25,7 @@ describe('Simulation methods', () => {
   after(() => {
     settings.tank.width = oldWidth;
     settings.tank.height = oldHeight;
+    settings.motes.rate = oldRate;
   });
 
   describe('separateBodies', () => {

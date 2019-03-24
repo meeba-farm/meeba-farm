@@ -21,4 +21,5 @@ export const meebas = {
 
 export const motes = {
   radius: 8,
+  rate: 4,
 };

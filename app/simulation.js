@@ -1,6 +1,7 @@
 import * as settings from './settings.js';
 import {
   replicateParent,
+  spawnMote,
 } from './meebas/bodies.js';
 import {
   getSpikeMover,
@@ -9,9 +10,13 @@ import {
   drainCalories,
 } from './meebas/vitals.js';
 import {
+  range,
+} from './utils/arrays.js';
+import {
   getGap,
   isShorter,
   isCloser,
+  rand,
   randInt,
 } from './utils/math.js';
 import {
@@ -40,6 +45,8 @@ import {
 const MAX_SEPARATION_ATTEMPTS = 10;
 const SPIKE_HIGHLIGHT_TIME = 167;
 const { width, height } = settings.tank;
+const MOTE_RADIUS = settings.motes.radius;
+const MAX_BODIES = Math.min(800, (width / MOTE_RADIUS / 2) * (height / MOTE_RADIUS / 2));
 
 /**
  * Gets a function to calculate the next location of a body
@@ -300,6 +307,23 @@ const getVitalChecker = (bodies) => (body) => {
 };
 
 /**
+ * Returns an array of new motes to add based on spawn rate and the delay since the last frame
+ *
+ * @param {number} delay - the time passed since the last frame
+ * @returns {Body[]} - the new motes
+ */
+const getNewMotes = (delay) => {
+  const chance = settings.motes.rate * delay;
+  const motes = range(Math.floor(chance)).map(spawnMote);
+
+  if (rand() < chance % 1) {
+    motes.push(spawnMote());
+  }
+
+  return motes;
+};
+
+/**
  * Takes an array of bodies and teleports them randomly until none overlap
  *
  * @param {Body[]} bodies - mutated!
@@ -350,5 +374,9 @@ export const simulateFrame = (bodies, start, stop) => {
   bodies.forEach(upkeepCalories);
   bodies.forEach(checkVitals);
 
-  return bodies.filter(body => !body.isInactive);
+  const newMotes = bodies.length < MAX_BODIES ? getNewMotes(delay) : [];
+
+  return bodies
+    .filter(body => !body.isInactive)
+    .concat(newMotes);
 };
