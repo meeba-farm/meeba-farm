@@ -31,8 +31,8 @@ import {
 
 const SPIKE_WIDTH = 6;
 const HALF_WIDTH = SPIKE_WIDTH / 2;
-const BASE_DRAIN = 8000 * Math.max(0, settings.simulation.temperature) / 30;
-const DRAIN_LENGTH_QUOTIENT = 1.1;
+const BASE_DRAIN = 25000 * Math.max(0, settings.simulation.temperature) / 30;
+const DRAIN_LENGTH_QUOTIENT = 1.2;
 
 /**
  * Get's a point's X coordinates relative to the center of a meeba

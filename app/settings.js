@@ -9,7 +9,7 @@ export const tank = {
 
 export const simulation = {
   bodies: 75,
-  energy: 2000000,
+  energy: 3500000,
   temperature: 30,
 };
 

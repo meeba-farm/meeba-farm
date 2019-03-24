@@ -22,9 +22,9 @@ const CALORIES_START = (CALORIES_DEATH + CALORIES_SPAWN) / 2;
 const MASS_CALORIE_QUOTIENT = 0.66; // Idealized Kleiber's law
 const BASE_SPIKE_UPKEEP = 8;
 const SPIKE_LENGTH_UPKEEP = 1;
-const SPIKE_ADJUSTMENT = 100; // Adjust so "average" spike cost is about equal to mass cost
+const SPIKE_ADJUSTMENT = 200; // Adjust so cost of four is about equal to mass cost
 const TEMPERATURE_ADJUSTMENT = Math.max(0, settings.simulation.temperature) / 30;
-const UPKEEP_ADJUST = TEMPERATURE_ADJUSTMENT * 0.125; // Adjust so "average" use is ~25 cal/sec
+const UPKEEP_ADJUST = TEMPERATURE_ADJUSTMENT * 0.075; // Adjust so "average" use is ~15 cal/sec
 
 /**
  * @param {Spike[]} spikes
