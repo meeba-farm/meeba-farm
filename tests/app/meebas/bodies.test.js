@@ -63,7 +63,7 @@ describe('Body methods', () => {
       expectIsValidNewBody(child);
       expect(child.fill).to.equal('#f00ba6');
       expect(child.velocity.angle).to.equal(0.25);
-      expect(child.velocity.speed).to.equal(123);
+      expect(child.velocity.speed).to.be.at.least(123);
     });
   });
 

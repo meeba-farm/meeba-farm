@@ -59,6 +59,7 @@ import {
 
 const MIN_MASS = Math.ceil(Math.PI * sqr(settings.meebas.minRadius));
 const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
+const MAX_REPRODUCTION_ENERGY = MAX_ENERGY * 0.75;
 const COLOR_RANGE = 256 * 256 * 256;
 const MOTE_COLOR = '#792';
 const MOTE_MASS = Math.ceil(Math.PI * sqr(settings.motes.radius));
@@ -136,7 +137,7 @@ export const replicateParent = (parent, angle) => {
   body.x = parent.x + relativeLocation.x;
   body.y = parent.y + relativeLocation.y;
   body.velocity.angle = angle;
-  body.velocity.speed = parent.velocity.speed;
+  body.velocity.speed = parent.velocity.speed + randInt(0, MAX_REPRODUCTION_ENERGY / body.mass);
 
   body.spikes.forEach(getSpikeMover(body.x, body.y));
 
