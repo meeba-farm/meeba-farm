@@ -35,6 +35,9 @@ export const settings = {
   },
 };
 
+/** @type Array<function(): void> */
+const updateListeners = [];
+
 /**
  * Updates a particular setting with a primitive value, updates a core value if
  * passed a single key rather than a full path
@@ -47,4 +50,19 @@ export const updateSetting = (pathString, value) => {
   const fullPath = pathArray.length > 1 ? pathArray : ['core', ...pathArray];
 
   setNested(settings, fullPath, value);
+
+  for (const onUpdate of updateListeners) {
+    onUpdate();
+  }
+};
+
+/**
+ * Takes a setting function which will be called immediately, and then again
+ * every time the settings object is updated
+ *
+ * @param {function(): void} onUpdate - a function to run on updates
+ */
+export const addUpdateListener = (onUpdate) => {
+  onUpdate();
+  updateListeners.push(onUpdate);
 };
