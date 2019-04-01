@@ -1,6 +1,6 @@
 /**
  * @callback Into
- * @param {any} operand - value to pipe into a function
+ * @param {function} fn - the next function in the pipe
  * @param {...any} [args] - additional arguments to apply to function
  * @returns Pipeable
  */
