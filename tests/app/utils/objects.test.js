@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const {
   getNested,
+  setNested,
 } = require('./objects.common.js');
 
 describe('Object utils', () => {
@@ -33,6 +34,55 @@ describe('Object utils', () => {
 
     it('should return the value if passed a primitive with an empty path', () => {
       expect(getNested('foo', [])).to.equal('foo');
+    });
+  });
+
+  describe('setNested', () => {
+    it('should set a nested property on an object', () => {
+      const obj = { foo: {} };
+
+      setNested(obj, ['foo', 'bar'], 7);
+
+      expect(obj).to.deep.equal({
+        foo: {
+          bar: 7,
+        },
+      });
+    });
+
+    it('should overwrite an existing property', () => {
+      const foo = { bar: false };
+      const obj = { foo };
+
+      setNested(obj, ['foo', 'bar'], true);
+
+      expect(obj.foo.bar).to.equal(true);
+      expect(obj.foo).to.equal(foo);
+    });
+
+    it('should create nested objects as needed', () => {
+      const obj = {};
+
+      setNested(obj, ['foo', 'bar'], 'baz');
+
+      expect(obj.foo).to.be.an('object');
+      expect(obj.foo.bar).to.equal('baz');
+    });
+
+    it('should overwrite nested primitives with objects as needed', () => {
+      const obj = { foo: 7 };
+
+      setNested(obj, ['foo', 'bar'], 'baz');
+
+      expect(obj.foo).to.deep.equal({ bar: 'baz' });
+    });
+
+    it('should do nothing if passed an empty path', () => {
+      const obj = { foo: 7 };
+
+      setNested(obj, [], 'bar');
+
+      expect(obj).to.deep.equal({ foo: 7 });
     });
   });
 });
