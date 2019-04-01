@@ -27,18 +27,34 @@ anyWindow.MeebaFarm = MeebaFarm;
 MeebaFarm.bodies = range(settings.simulation.bodies).map(getRandomBody);
 separateBodies(MeebaFarm.bodies);
 
+/** @type {boolean} */
+let isRunning;
+
 /** @param {number} lastTick */
 const simulate = (lastTick) => {
-  const thisTick = performance.now();
-  MeebaFarm.bodies = simulateFrame(MeebaFarm.bodies, lastTick, thisTick);
-  setTimeout(() => simulate(thisTick), 8);
+  if (isRunning) {
+    const thisTick = performance.now();
+    MeebaFarm.bodies = simulateFrame(MeebaFarm.bodies, lastTick, thisTick);
+    setTimeout(() => simulate(thisTick), 8);
+  }
 };
 const render = () => {
-  renderFrame(MeebaFarm.bodies);
+  if (isRunning) {
+    renderFrame(MeebaFarm.bodies);
+    requestAnimationFrame(render);
+  }
+};
+
+MeebaFarm.pause = () => {
+  isRunning = false;
+};
+
+MeebaFarm.resume = () => {
+  isRunning = true;
+  simulate(performance.now());
   requestAnimationFrame(render);
 };
 
 // eslint-disable-next-line no-console
 console.log('Simulating with seed:', settings.seed);
-simulate(performance.now());
-requestAnimationFrame(render);
+MeebaFarm.resume();
