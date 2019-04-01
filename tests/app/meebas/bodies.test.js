@@ -1,12 +1,12 @@
 'use strict';
 
 const { expect } = require('chai');
-const settings = require('../settings.common.js');
+const { settings } = require('../settings.common.js');
 
-const oldWidth = settings.tank.width;
-const oldHeight = settings.tank.height;
-settings.tank.width = 100;
-settings.tank.height = 100;
+const oldWidth = settings.core.width;
+const oldHeight = settings.core.height;
+settings.core.width = 100;
+settings.core.height = 100;
 
 const {
   getRandomBody,
@@ -38,8 +38,8 @@ const expectIsValidNewBody = (body) => {
 
 describe('Body methods', () => {
   after(() => {
-    settings.tank.width = oldWidth;
-    settings.tank.height = oldHeight;
+    settings.core.width = oldWidth;
+    settings.core.height = oldHeight;
   });
 
   describe('getRandomBody', () => {
@@ -47,9 +47,8 @@ describe('Body methods', () => {
       const body = getRandomBody();
 
       expectIsValidNewBody(body);
-      expect(body.x).to.be.within(body.radius, settings.tank.width - body.radius);
-      expect(body.y).to.be.within(body.radius, settings.tank.height - body.radius);
-      expect(body.radius).to.be.at.least(settings.meebas.minRadius);
+      expect(body.x).to.be.within(body.radius, settings.core.width - body.radius);
+      expect(body.y).to.be.within(body.radius, settings.core.height - body.radius);
     });
   });
 
@@ -73,7 +72,6 @@ describe('Body methods', () => {
 
       expectIsValidNewBody(mote);
       expect(mote.dna).to.equal('');
-      expect(mote.radius).to.equal(settings.motes.radius);
       expect(mote.vitals.upkeep).to.equal(0);
     });
   });

@@ -1,25 +1,50 @@
+import { setNested } from './utils/objects.js';
+
+/**
+ * Core setting which are visible to and updatable by the GUI
+ *
+ * @typedef CoreSettings
+ * @prop {number} energy
+ * @prop {number} height
+ * @prop {number} moteSpawnRate
+ * @prop {string} seed
+ * @prop {number} startingBodies
+ * @prop {number} temperature
+ * @prop {number} width
+ */
+
+/**
+ * The settings object used by all modules
+ *
+ * @typedef Settings
+ * @prop {CoreSettings} core
+ */
+
 const TANK_BUFFER = 20;
 
-export const seed = Math.random().toString(36).slice(2);
-
-export const tank = {
-  width: window.innerWidth - TANK_BUFFER,
-  height: window.innerHeight - TANK_BUFFER,
+/** @type Settings */
+export const settings = {
+  core: {
+    height: window.innerHeight - TANK_BUFFER,
+    energy: 3500000,
+    moteSpawnRate: 4,
+    seed: Math.random().toString(36).slice(2),
+    startingBodies: 75,
+    temperature: 30,
+    width: window.innerWidth - TANK_BUFFER,
+  },
 };
 
-export const simulation = {
-  bodies: 75,
-  energy: 3500000,
-  temperature: 30,
-};
+/**
+ * Updates a particular setting with a primitive value, updates a core value if
+ * passed a single key rather than a full path
+ *
+ * @param {string} pathString - dot-separated setting path
+ * @param {string|number|boolean} value - the new setting value
+ */
+export const updateSetting = (pathString, value) => {
+  const pathArray = pathString.split('.');
+  const fullPath = pathArray.length > 1 ? pathArray : ['core', ...pathArray];
 
-export const meebas = {
-  minRadius: 10,
-  averageStartingGeneCount: 48,
-  averageStartingGeneSize: 6,
-};
-
-export const motes = {
-  radius: 8,
-  rate: 4,
+  setNested(settings, fullPath, value);
 };

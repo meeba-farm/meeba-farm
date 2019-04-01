@@ -1,4 +1,4 @@
-import * as settings from '../settings.js';
+import { settings } from '../settings.js';
 import {
   createGenome,
   readGenome,
@@ -57,14 +57,16 @@ import {
  * @prop {boolean} [isInactive] - the body should be removed from the simulation
  */
 
-const MIN_MASS = Math.ceil(Math.PI * sqr(settings.meebas.minRadius));
-const MAX_ENERGY = 2 * settings.simulation.energy / settings.simulation.bodies;
+const { width, height, energy, startingBodies } = settings.core;
+const MIN_RADIUS = 10;
+const MIN_MASS = Math.ceil(Math.PI * sqr(MIN_RADIUS));
+const MAX_ENERGY = 2 * energy / startingBodies;
 const MAX_REPRODUCTION_ENERGY = MAX_ENERGY * 0.75;
 const COLOR_RANGE = 256 * 256 * 256;
 const MOTE_COLOR = '#792';
-const MOTE_MASS = Math.ceil(Math.PI * sqr(settings.motes.radius));
+const MOTE_RADIUS = 8;
+const MOTE_MASS = Math.ceil(Math.PI * sqr(MOTE_RADIUS));
 const MAX_MOTE_SPEED = Math.floor(MAX_ENERGY / MOTE_MASS / 32);
-const { width, height } = settings.tank;
 
 /**
  * Generates a new body from dna and default values
@@ -150,32 +152,28 @@ export const replicateParent = (parent, angle) => {
  *
  * @returns {Body}
  */
-export const spawnMote = () => {
-  const { radius } = settings.motes;
-
-  return {
-    dna: '',
-    fill: MOTE_COLOR,
-    x: randInt(radius, width - radius),
-    y: randInt(radius, height - radius),
-    mass: MOTE_MASS,
-    radius,
-    velocity: {
-      angle: rand(),
-      speed: randInt(0, MAX_MOTE_SPEED),
-    },
-    vitals: {
-      calories: MOTE_MASS * 2,
-      upkeep: 0,
-      isDead: false,
-      spawnsAt: Number.MAX_SAFE_INTEGER,
-      diesAt: 0,
-    },
-    spikes: [],
-    meta: {
-      nextX: 0,
-      nextY: 0,
-      lastCollisionBody: null,
-    },
-  };
-};
+export const spawnMote = () => ({
+  dna: '',
+  fill: MOTE_COLOR,
+  x: randInt(MOTE_RADIUS, width - MOTE_RADIUS),
+  y: randInt(MOTE_RADIUS, height - MOTE_RADIUS),
+  mass: MOTE_MASS,
+  radius: MOTE_RADIUS,
+  velocity: {
+    angle: rand(),
+    speed: randInt(0, MAX_MOTE_SPEED),
+  },
+  vitals: {
+    calories: MOTE_MASS * 2,
+    upkeep: 0,
+    isDead: false,
+    spawnsAt: Number.MAX_SAFE_INTEGER,
+    diesAt: 0,
+  },
+  spikes: [],
+  meta: {
+    nextX: 0,
+    nextY: 0,
+    lastCollisionBody: null,
+  },
+});

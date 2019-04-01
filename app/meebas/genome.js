@@ -1,4 +1,3 @@
-import * as settings from '../settings.js';
 import {
   map,
   filter,
@@ -40,9 +39,10 @@ import {
  * @prop {number} angle - position around meeba circumference (in turns)
  */
 
-const { averageStartingGeneCount, averageStartingGeneSize } = settings.meebas;
-const MAX_GENES = 2 * averageStartingGeneCount;
-const MAX_BYTES = 2 * averageStartingGeneSize;
+const AVERAGE_STARTING_GENE_COUNT = 48;
+const AVERAGE_STARTING_GENE_SIZE = 6;
+const MAX_GENES = 2 * AVERAGE_STARTING_GENE_COUNT;
+const MAX_BYTES = 2 * AVERAGE_STARTING_GENE_SIZE;
 
 const CONTROL_BYTES = [
   { byte: 0xF1, maxRoll: 0.05 }, // 1/20 odds

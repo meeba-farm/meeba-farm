@@ -1,4 +1,4 @@
-import * as settings from '../settings.js';
+import { settings } from '../settings.js';
 
 /**
  * @typedef {import('./spikes.js').Spike} Spike
@@ -23,7 +23,7 @@ const MASS_CALORIE_QUOTIENT = 0.66; // Idealized Kleiber's law
 const BASE_SPIKE_UPKEEP = 8;
 const SPIKE_LENGTH_UPKEEP = 1;
 const SPIKE_ADJUSTMENT = 200; // Adjust so cost of four is about equal to mass cost
-const TEMPERATURE_ADJUSTMENT = Math.max(0, settings.simulation.temperature) / 30;
+const TEMPERATURE_ADJUSTMENT = Math.max(0, settings.core.temperature) / 30;
 const UPKEEP_ADJUST = TEMPERATURE_ADJUSTMENT * 0.075; // Adjust so "average" use is ~15 cal/sec
 
 /**

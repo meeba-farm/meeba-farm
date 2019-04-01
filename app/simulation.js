@@ -1,4 +1,4 @@
-import * as settings from './settings.js';
+import { settings } from './settings.js';
 import {
   replicateParent,
   spawnMote,
@@ -44,8 +44,8 @@ import {
 
 const MAX_SEPARATION_ATTEMPTS = 10;
 const SPIKE_HIGHLIGHT_TIME = 167;
-const { width, height } = settings.tank;
-const MOTE_RADIUS = settings.motes.radius;
+const { width, height } = settings.core;
+const MOTE_RADIUS = 8;
 const MAX_BODIES = Math.min(800, (width / MOTE_RADIUS / 2) * (height / MOTE_RADIUS / 2));
 
 /**
@@ -313,7 +313,7 @@ const getVitalChecker = (bodies) => (body) => {
  * @returns {Body[]} - the new motes
  */
 const getNewMotes = (delay) => {
-  const chance = settings.motes.rate * delay;
+  const chance = settings.core.moteSpawnRate * delay;
   const motes = range(Math.floor(chance)).map(spawnMote);
 
   if (rand() < chance % 1) {

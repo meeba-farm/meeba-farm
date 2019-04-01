@@ -1,4 +1,7 @@
-import * as settings from './settings.js';
+import {
+  settings,
+  updateSetting,
+} from './settings.js';
 import {
   createView,
   getFrameRenderer,
@@ -14,7 +17,7 @@ import {
   range,
 } from './utils/arrays.js';
 
-const { width, height } = settings.tank;
+const { width, height, startingBodies } = settings.core;
 
 const view = createView(width, height);
 const renderFrame = getFrameRenderer(view);
@@ -24,7 +27,7 @@ const anyWindow = window;
 const MeebaFarm = {};
 anyWindow.MeebaFarm = MeebaFarm;
 
-MeebaFarm.bodies = range(settings.simulation.bodies).map(getRandomBody);
+MeebaFarm.bodies = range(startingBodies).map(getRandomBody);
 separateBodies(MeebaFarm.bodies);
 
 /** @type {boolean} */
@@ -45,6 +48,8 @@ const render = () => {
   }
 };
 
+MeebaFarm.updateSetting = updateSetting;
+
 MeebaFarm.pause = () => {
   isRunning = false;
 };
@@ -56,5 +61,5 @@ MeebaFarm.resume = () => {
 };
 
 // eslint-disable-next-line no-console
-console.log('Simulating with seed:', settings.seed);
+console.log('Simulating with seed:', settings.core.seed);
 MeebaFarm.resume();

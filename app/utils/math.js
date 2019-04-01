@@ -1,4 +1,4 @@
-import * as settings from '../settings.js';
+import { settings } from '../settings.js';
 import { range } from './arrays.js';
 
 export const PI_2 = 2 * Math.PI;
@@ -203,7 +203,7 @@ const getPrng = (alphaNumSeed) => {
  *
  * @returns {number}
  */
-export const rand = getPrng(settings.seed);
+export const rand = getPrng(settings.core.seed);
 
 /**
  * Gets a random integer between a specified min and max (non-inclusive)
