@@ -1,4 +1,7 @@
 import {
+  settings,
+} from '../settings.js';
+import {
   map,
   filter,
   range,
@@ -52,13 +55,14 @@ const CONTROL_BYTES = [
 const BITS_PER_SIZE_PIXEL = 1;
 const BITS_PER_SPIKE_LENGTH = 2;
 
-const MUTATE_BIT_CHANCE = 0.0005;
-const DROP_BYTE_CHANCE = 0.008;
-const REPEAT_BYTE_CHANCE = 0.008;
-const TRANSPOSE_BYTE_CHANCE = 0.016;
-const DROP_GENE_CHANCE = 0.03;
-const REPEAT_GENE_CHANCE = 0.03;
-const TRANSPOSE_GENE_CHANCE = 0.06;
+const VOLATILITY_ADJUSTMENT = settings.core.volatility / 100;
+const MUTATE_BIT_CHANCE = 0.0005 * VOLATILITY_ADJUSTMENT;
+const DROP_BYTE_CHANCE = 0.008 * VOLATILITY_ADJUSTMENT;
+const REPEAT_BYTE_CHANCE = 0.008 * VOLATILITY_ADJUSTMENT;
+const TRANSPOSE_BYTE_CHANCE = 0.016 * VOLATILITY_ADJUSTMENT;
+const DROP_GENE_CHANCE = 0.03 * VOLATILITY_ADJUSTMENT;
+const REPEAT_GENE_CHANCE = 0.03 * VOLATILITY_ADJUSTMENT;
+const TRANSPOSE_GENE_CHANCE = 0.06 * VOLATILITY_ADJUSTMENT;
 
 /**
  * Returns a random control byte based on the odds in the CONTROL_BYTES array
@@ -250,12 +254,12 @@ const joinGeneArray = geneArray => concatBytes(...geneArray);
  */
 export const replicateGenome = genome => pipe(genome)
   .into(map, mutateBits)
-  .into(repeatItems, REPEAT_BYTE_CHANCE)
   .into(filter, () => rand() >= DROP_BYTE_CHANCE)
+  .into(repeatItems, REPEAT_BYTE_CHANCE)
   .into(transposeItems, TRANSPOSE_BYTE_CHANCE)
   .into(splitGenome)
-  .into(repeatItems, REPEAT_GENE_CHANCE)
   .into(filter, () => rand() >= DROP_GENE_CHANCE)
+  .into(repeatItems, REPEAT_GENE_CHANCE)
   .into(transposeItems, TRANSPOSE_GENE_CHANCE)
   .into(joinGeneArray)
   .done();

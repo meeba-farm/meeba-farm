@@ -10,6 +10,7 @@ import { setNested } from './utils/objects.js';
  * @prop {string} seed
  * @prop {number} startingBodies
  * @prop {number} temperature
+ * @prop {number} volatility
  * @prop {number} width
  */
 
@@ -31,6 +32,7 @@ export const settings = {
     seed: Math.random().toString(36).slice(2),
     startingBodies: 75,
     temperature: 30,
+    volatility: 100,
     width: window.innerWidth - TANK_BUFFER,
   },
 };
