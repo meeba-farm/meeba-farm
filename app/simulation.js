@@ -1,4 +1,7 @@
-import { settings } from './settings.js';
+import {
+  settings,
+  addUpdateListener,
+} from './settings.js';
 import {
   replicateParent,
   spawnMote,
@@ -43,10 +46,17 @@ import {
  */
 
 const MAX_SEPARATION_ATTEMPTS = 10;
-const SPIKE_HIGHLIGHT_TIME = 167;
-const { width, height } = settings.core;
-const MOTE_RADIUS = 8;
-const MAX_BODIES = Math.min(800, (width / MOTE_RADIUS / 2) * (height / MOTE_RADIUS / 2));
+
+const { core, bodies: bodySettings, simulation: fixed } = settings;
+fixed.maxBodies = 800;
+fixed.spikeHighlightTime = 167;
+
+let bodyLimit = 0;
+addUpdateListener(() => {
+  const { moteRadius } = bodySettings;
+  const maxMotes = Math.ceil((core.width / moteRadius / 2) * (core.height / moteRadius / 2));
+  bodyLimit = Math.min(fixed.maxBodies, maxMotes);
+});
 
 /**
  * Gets a function to calculate the next location of a body
@@ -83,13 +93,13 @@ const moveBody = (body) => {
 const getWallBouncer = (delay) => (body) => {
   const { radius, velocity: { angle }, meta: { nextX, nextY } } = body;
 
-  if (getGap(0, angle) < 0.25 && nextX > width - radius) {
+  if (getGap(0, angle) < 0.25 && nextX > core.width - radius) {
     bounceX(body);
   } else if (getGap(0.25, angle) < 0.25 && nextY < radius) {
     bounceY(body);
   } else if (getGap(0.5, angle) < 0.25 && nextX < radius) {
     bounceX(body);
-  } else if (getGap(0.75, angle) < 0.25 && nextY > height - radius) {
+  } else if (getGap(0.75, angle) < 0.25 && nextY > core.height - radius) {
     bounceY(body);
   } else {
     return;
@@ -219,7 +229,7 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
     for (const spike of body.spikes) {
       if (isSpikeOverlapping(spike)) {
         spike.fill = 'red';
-        spike.meta.deactivateTime = tick + SPIKE_HIGHLIGHT_TIME;
+        spike.meta.deactivateTime = tick + fixed.spikeHighlightTime;
 
         const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
         body.vitals.calories += drainAmount;
@@ -313,7 +323,7 @@ const getVitalChecker = (bodies) => (body) => {
  * @returns {Body[]} - the new motes
  */
 const getNewMotes = (delay) => {
-  const chance = settings.core.moteSpawnRate * delay;
+  const chance = core.moteSpawnRate * delay;
   const motes = range(Math.floor(chance)).map(spawnMote);
 
   if (rand() < chance % 1) {
@@ -340,8 +350,8 @@ export const separateBodies = (bodies) => {
       for (const other of bodies) {
         if (body !== other && isOverlapping(body, other)) {
           overlapsFound = true;
-          body.x = randInt(body.radius, width - body.radius);
-          body.y = randInt(body.radius, height - body.radius);
+          body.x = randInt(body.radius, core.width - body.radius);
+          body.y = randInt(body.radius, core.height - body.radius);
         }
       }
     }
@@ -374,7 +384,7 @@ export const simulateFrame = (bodies, start, stop) => {
   bodies.forEach(upkeepCalories);
   bodies.forEach(checkVitals);
 
-  const newMotes = bodies.length < MAX_BODIES ? getNewMotes(delay) : [];
+  const newMotes = bodies.length < bodyLimit ? getNewMotes(delay) : [];
 
   return bodies
     .filter(body => !body.isInactive)

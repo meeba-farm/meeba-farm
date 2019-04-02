@@ -1,4 +1,7 @@
-import { settings } from '../settings.js';
+import {
+  settings,
+  addUpdateListener,
+} from '../settings.js';
 
 /**
  * @typedef {import('./spikes.js').Spike} Spike
@@ -15,23 +18,36 @@ import { settings } from '../settings.js';
  * @prop {boolean} isDead - whether or not the meeba is dead
  */
 
-const CALORIES_DEATH = 0.5;
-const CALORIES_SPAWN = 2;
-const CALORIES_START = (CALORIES_DEATH + CALORIES_SPAWN) / 2;
+/**
+ * Dynamically calculated spike settings
+ *
+ * @typedef DynamicSpikeSettings
+ * @prop {number} percentStartsAt
+ * @prop {number} upkeepAdjustment
+ */
 
-const MASS_CALORIE_QUOTIENT = 0.66; // Idealized Kleiber's law
-const BASE_SPIKE_UPKEEP = 8;
-const SPIKE_LENGTH_UPKEEP = 1;
-const SPIKE_ADJUSTMENT = 200; // Adjust so cost of four is about equal to mass cost
-const TEMPERATURE_ADJUSTMENT = Math.max(0, settings.core.temperature) / 30;
-const UPKEEP_ADJUST = TEMPERATURE_ADJUSTMENT * 0.075; // Adjust so "average" use is ~15 cal/sec
+const { core, vitals: fixed } = settings;
+fixed.massCalorieExponent = 0.66; // Idealized Kleiber's law
+fixed.percentDiesAt = 0.5;
+fixed.percentSpawnsAt = 2;
+fixed.upkeepPerSpike = 8;
+fixed.upkeepPerLength = 1;
+fixed.baseUpkeepAdjustment = 0.075; // Adjust so "average" use is ~15 cal/sec
+fixed.spikeUpkeepAdjustment = 200; // Adjust so cost of four is about equal to mass cost
+
+const dynamic = /** @type {DynamicSpikeSettings} */ ({});
+addUpdateListener(() => {
+  const temperatureAdjustment = Math.max(0, core.temperature) / 30;
+  dynamic.percentStartsAt = (fixed.percentDiesAt + fixed.percentSpawnsAt) / 2;
+  dynamic.upkeepAdjustment = fixed.baseUpkeepAdjustment * temperatureAdjustment;
+});
 
 /**
  * @param {Spike[]} spikes
  * @returns {number}
  */
 const calcSpikeUpkeep = spikes => spikes
-  .map(({ length }) => BASE_SPIKE_UPKEEP + length * SPIKE_LENGTH_UPKEEP)
+  .map(({ length }) => fixed.upkeepPerSpike + length * fixed.upkeepPerLength)
   .reduce((total, perSpike) => total + perSpike, 0);
 
 /**
@@ -40,9 +56,9 @@ const calcSpikeUpkeep = spikes => spikes
  * @returns {number}
  */
 const calcUpkeep = (mass, spikes) => {
-  const massCost = mass ** MASS_CALORIE_QUOTIENT;
-  const spikeCost = calcSpikeUpkeep(spikes) / massCost * SPIKE_ADJUSTMENT;
-  return Math.floor((massCost + spikeCost) * UPKEEP_ADJUST);
+  const massCost = mass ** fixed.massCalorieExponent;
+  const spikeCost = calcSpikeUpkeep(spikes) / massCost * fixed.spikeUpkeepAdjustment;
+  return Math.floor((massCost + spikeCost) * dynamic.upkeepAdjustment);
 };
 
 /**
@@ -54,14 +70,14 @@ const calcUpkeep = (mass, spikes) => {
  * @returns {Vitals}
  */
 export const initVitals = (mass, spikes) => {
-  const calories = Math.floor(mass * CALORIES_START);
-  const diesAt = Math.floor(mass * CALORIES_DEATH);
+  const calories = Math.floor(mass * dynamic.percentStartsAt);
+  const diesAt = Math.floor(mass * fixed.percentDiesAt);
 
   return {
     calories,
     upkeep: calcUpkeep(mass, spikes),
     diesAt,
-    spawnsAt: Math.floor(mass * CALORIES_SPAWN),
+    spawnsAt: Math.floor(mass * fixed.percentSpawnsAt),
     isDead: calories < diesAt,
   };
 };

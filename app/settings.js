@@ -15,10 +15,66 @@ import { setNested } from './utils/objects.js';
  */
 
 /**
+ * @typedef BodiesModuleSettings
+ * @prop {number} minRadius
+ * @prop {string} moteColor
+ * @prop {number} moteRadius
+ * @prop {number} moteCalorieAdjustment
+ * @prop {number} moteSpeedAdjustment
+ * @prop {number} spawningEnergyAdjustment
+ */
+
+/**
+ * @typedef GenomeModuleSettings
+ * @prop {number} averageGeneCount
+ * @prop {number} averageGeneSize
+ * @prop {number} baseChanceMutateBit
+ * @prop {number} baseChanceDropByte
+ * @prop {number} baseChanceRepeatByte
+ * @prop {number} baseChanceTransposeByte
+ * @prop {number} baseChanceDropGene
+ * @prop {number} baseChanceRepeatGene
+ * @prop {number} baseChanceTransposeGene
+ * @prop {number} bitsPerMass
+ * @prop {number} bitsPerSpikeLength
+ * @prop {number} percentSizeGenes
+ * @prop {number} percentSpikeGenes
+ */
+
+/**
+ * @typedef SimulationModuleSettings
+ * @prop {number} maxBodies
+ * @prop {number} spikeHighlightTime
+ */
+
+/**
+ * @typedef SpikesModuleSettings
+ * @prop {number} baseSpikeDrain
+ * @prop {number} drainLengthExponent
+ * @prop {number} spikeWidth
+ */
+
+/**
+ * @typedef VitalsModuleSettings
+ * @prop {number} massCalorieExponent
+ * @prop {number} percentDiesAt
+ * @prop {number} percentSpawnsAt
+ * @prop {number} upkeepPerSpike
+ * @prop {number} upkeepPerLength
+ * @prop {number} baseUpkeepAdjustment
+ * @prop {number} spikeUpkeepAdjustment
+ */
+
+/**
  * The settings object used by all modules
  *
  * @typedef Settings
  * @prop {CoreSettings} core
+ * @prop {BodiesModuleSettings} bodies
+ * @prop {GenomeModuleSettings} genome
+ * @prop {SimulationModuleSettings} simulation
+ * @prop {SpikesModuleSettings} spikes
+ * @prop {VitalsModuleSettings} vitals
  */
 
 const TANK_BUFFER = 20;
@@ -35,6 +91,11 @@ export const settings = {
     volatility: 100,
     width: window.innerWidth - TANK_BUFFER,
   },
+  bodies: /** @type {BodiesModuleSettings} */ ({}),
+  genome: /** @type {GenomeModuleSettings} */ ({}),
+  simulation: /** @type {SimulationModuleSettings} */ ({}),
+  spikes: /** @type {SpikesModuleSettings} */ ({}),
+  vitals: /** @type {VitalsModuleSettings} */ ({}),
 };
 
 /** @type Array<function(): void> */

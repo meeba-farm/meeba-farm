@@ -1,5 +1,6 @@
 import {
   settings,
+  addUpdateListener,
 } from '../settings.js';
 import {
   map,
@@ -42,27 +43,62 @@ import {
  * @prop {number} angle - position around meeba circumference (in turns)
  */
 
-const AVERAGE_STARTING_GENE_COUNT = 48;
-const AVERAGE_STARTING_GENE_SIZE = 6;
-const MAX_GENES = 2 * AVERAGE_STARTING_GENE_COUNT;
-const MAX_BYTES = 2 * AVERAGE_STARTING_GENE_SIZE;
+/**
+ * Dynamically calculated genome settings
+ *
+ * @typedef DynamicGenomeSettings
+ * @prop {number} maxGeneCount
+ * @prop {number} maxGeneSize
+ * @prop {number} chanceMutateBit
+ * @prop {number} chanceDropByte
+ * @prop {number} chanceRepeatByte
+ * @prop {number} chanceTransposeByte
+ * @prop {number} chanceDropGene
+ * @prop {number} chanceRepeatGene
+ * @prop {number} chanceTransposeGene
+ * @prop {{byte: number, maxRoll: number}[]} controlByteChances
+ */
 
-const CONTROL_BYTES = [
-  { byte: 0xF1, maxRoll: 0.05 }, // 1/20 odds
-  { byte: 0xF0, maxRoll: 1 }, // 19/20 odds
-];
+const { core, genome: fixed } = settings;
+fixed.averageGeneCount = 48;
+fixed.averageGeneSize = 6;
 
-const BITS_PER_SIZE_PIXEL = 1;
-const BITS_PER_SPIKE_LENGTH = 2;
+fixed.baseChanceMutateBit = 0.0005;
+fixed.baseChanceDropByte = 0.008;
+fixed.baseChanceRepeatByte = 0.008;
+fixed.baseChanceTransposeByte = 0.016;
+fixed.baseChanceDropGene = 0.03;
+fixed.baseChanceRepeatGene = 0.03;
+fixed.baseChanceTransposeGene = 0.06;
 
-const VOLATILITY_ADJUSTMENT = settings.core.volatility / 100;
-const MUTATE_BIT_CHANCE = 0.0005 * VOLATILITY_ADJUSTMENT;
-const DROP_BYTE_CHANCE = 0.008 * VOLATILITY_ADJUSTMENT;
-const REPEAT_BYTE_CHANCE = 0.008 * VOLATILITY_ADJUSTMENT;
-const TRANSPOSE_BYTE_CHANCE = 0.016 * VOLATILITY_ADJUSTMENT;
-const DROP_GENE_CHANCE = 0.03 * VOLATILITY_ADJUSTMENT;
-const REPEAT_GENE_CHANCE = 0.03 * VOLATILITY_ADJUSTMENT;
-const TRANSPOSE_GENE_CHANCE = 0.06 * VOLATILITY_ADJUSTMENT;
+fixed.bitsPerMass = 1;
+fixed.bitsPerSpikeLength = 2;
+
+fixed.percentSizeGenes = 0.95;
+fixed.percentSpikeGenes = 0.05;
+
+const dynamic = /** @type {DynamicGenomeSettings} */ ({});
+addUpdateListener(() => {
+  dynamic.maxGeneCount = 2 * fixed.averageGeneCount;
+  dynamic.maxGeneSize = 2 * fixed.averageGeneSize;
+
+  const volatilityAdjustment = core.volatility / 100;
+  dynamic.chanceMutateBit = fixed.baseChanceMutateBit * volatilityAdjustment;
+  dynamic.chanceDropByte = fixed.baseChanceDropByte * volatilityAdjustment;
+  dynamic.chanceRepeatByte = fixed.baseChanceRepeatByte * volatilityAdjustment;
+  dynamic.chanceTransposeByte = fixed.baseChanceTransposeByte * volatilityAdjustment;
+  dynamic.chanceDropGene = fixed.baseChanceDropGene * volatilityAdjustment;
+  dynamic.chanceRepeatGene = fixed.baseChanceRepeatGene * volatilityAdjustment;
+  dynamic.chanceTransposeGene = fixed.baseChanceTransposeGene * volatilityAdjustment;
+
+  // Get control bytes in order with the maximum 0 - 1 "roll" that will select them
+  const { percentSpikeGenes, percentSizeGenes } = fixed;
+  const ratioToOne = 1 / (percentSizeGenes + percentSpikeGenes);
+  dynamic.controlByteChances = [
+    { byte: 0xF0, maxRoll: percentSizeGenes * ratioToOne },
+    { byte: 0xF1, maxRoll: 1 },
+  ];
+});
 
 /**
  * Returns a random control byte based on the odds in the CONTROL_BYTES array
@@ -70,9 +106,10 @@ const TRANSPOSE_GENE_CHANCE = 0.06 * VOLATILITY_ADJUSTMENT;
  * @returns {number}
  */
 const randControlByte = () => {
+  const { controlByteChances } = dynamic;
   const roll = rand();
-  const matchingByte = CONTROL_BYTES.find(({ maxRoll }) => roll < maxRoll)
-    || CONTROL_BYTES[CONTROL_BYTES.length - 1]; // Make TypeScript happy
+  const matchingByte = controlByteChances.find(({ maxRoll }) => roll < maxRoll)
+    || controlByteChances[controlByteChances.length - 1]; // Make TypeScript happy
   return matchingByte.byte;
 };
 
@@ -83,7 +120,7 @@ const randControlByte = () => {
  * @returns {number[]}
  */
 const randGene = () => {
-  const body = range(randInt(1, MAX_BYTES)).map(() => randInt(0, 256));
+  const body = range(randInt(1, dynamic.maxGeneSize)).map(() => randInt(0, 256));
   return [randControlByte(), ...body];
 };
 
@@ -93,7 +130,7 @@ const randGene = () => {
  * @returns {Uint8Array}
  */
 export const createGenome = () => {
-  const genes = range(randInt(1, MAX_GENES)).map(randGene);
+  const genes = range(randInt(1, dynamic.maxGeneCount)).map(randGene);
   return Uint8Array.from(flatten(genes));
 };
 
@@ -134,7 +171,7 @@ const toGenes = genome => findControlIndexes(genome)
  * @param {Gene} gene - the size gene
  * @returns {number} - the amount of size this gene contributes
  */
-const readSizeGene = ({ bytes }) => Math.floor(countBits(bytes) / BITS_PER_SIZE_PIXEL);
+const readSizeGene = ({ bytes }) => Math.floor(countBits(bytes) / fixed.bitsPerMass);
 
 /**
  * Read a spike gene, returning the basic instructions for building a spike object
@@ -144,7 +181,7 @@ const readSizeGene = ({ bytes }) => Math.floor(countBits(bytes) / BITS_PER_SIZE_
  */
 const readSpikeGene = ({ location, bytes }) => ({
   angle: location,
-  length: Math.floor(countBits(bytes) / BITS_PER_SPIKE_LENGTH),
+  length: Math.floor(countBits(bytes) / fixed.bitsPerSpikeLength),
 });
 
 /**
@@ -176,7 +213,7 @@ export const readGenome = (genome) => {
  */
 const mutateBits = (byte) => {
   const xorMask = parseInt(range(8)
-    .map(() => (rand() < MUTATE_BIT_CHANCE ? '1' : '0'))
+    .map(() => (rand() < dynamic.chanceMutateBit ? '1' : '0'))
     .join(''), 2);
 
   // eslint-disable-next-line no-bitwise
@@ -254,12 +291,12 @@ const joinGeneArray = geneArray => concatBytes(...geneArray);
  */
 export const replicateGenome = genome => pipe(genome)
   .into(map, mutateBits)
-  .into(filter, () => rand() >= DROP_BYTE_CHANCE)
-  .into(repeatItems, REPEAT_BYTE_CHANCE)
-  .into(transposeItems, TRANSPOSE_BYTE_CHANCE)
+  .into(filter, () => rand() >= dynamic.chanceDropByte)
+  .into(repeatItems, dynamic.chanceRepeatByte)
+  .into(transposeItems, dynamic.chanceTransposeByte)
   .into(splitGenome)
-  .into(filter, () => rand() >= DROP_GENE_CHANCE)
-  .into(repeatItems, REPEAT_GENE_CHANCE)
-  .into(transposeItems, TRANSPOSE_GENE_CHANCE)
+  .into(filter, () => rand() >= dynamic.chanceDropGene)
+  .into(repeatItems, dynamic.chanceRepeatGene)
+  .into(transposeItems, dynamic.chanceTransposeGene)
   .into(joinGeneArray)
   .done();

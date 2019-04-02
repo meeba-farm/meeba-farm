@@ -1,4 +1,7 @@
-import { settings } from '../settings.js';
+import {
+  settings,
+  addUpdateListener,
+} from '../settings.js';
 import {
   createGenome,
   readGenome,
@@ -57,16 +60,43 @@ import {
  * @prop {boolean} [isInactive] - the body should be removed from the simulation
  */
 
-const { width, height, energy, startingBodies } = settings.core;
-const MIN_RADIUS = 10;
-const MIN_MASS = Math.ceil(Math.PI * sqr(MIN_RADIUS));
-const MAX_ENERGY = 2 * energy / startingBodies;
-const MAX_REPRODUCTION_ENERGY = MAX_ENERGY * 0.75;
+/**
+ * Dynamically calculated body settings
+ *
+ * @typedef DynamicBodySettings
+ * @prop {number} minMass
+ * @prop {number} maxEnergy
+ * @prop {number} moteMass
+ * @prop {number} moteStartingCalories
+ * @prop {number} moteMaxSpeed
+ * @prop {number} moteBorderRight
+ * @prop {number} moteBorderBottom
+ * @prop {number} spawningEnergy
+ */
+
 const COLOR_RANGE = 256 * 256 * 256;
-const MOTE_COLOR = '#792';
-const MOTE_RADIUS = 8;
-const MOTE_MASS = Math.ceil(Math.PI * sqr(MOTE_RADIUS));
-const MAX_MOTE_SPEED = Math.floor(MAX_ENERGY / MOTE_MASS / 32);
+
+const { core, bodies: fixed } = settings;
+fixed.minRadius = 10;
+fixed.moteColor = '#792';
+fixed.moteRadius = 8;
+fixed.moteCalorieAdjustment = 2;
+fixed.moteSpeedAdjustment = 0.03;
+fixed.spawningEnergyAdjustment = 0.75;
+
+const dynamic = /** @type DynamicBodySettings */ ({});
+addUpdateListener(() => {
+  dynamic.minMass = Math.ceil(Math.PI * sqr(fixed.minRadius));
+  dynamic.maxEnergy = Math.ceil(2 * core.energy / core.startingBodies);
+  dynamic.moteMass = Math.ceil(Math.PI * sqr(fixed.moteRadius));
+  dynamic.moteStartingCalories = Math.ceil(dynamic.moteMass * fixed.moteCalorieAdjustment);
+  dynamic.moteMaxSpeed = Math.ceil(
+    dynamic.maxEnergy / dynamic.moteMass * fixed.moteSpeedAdjustment,
+  );
+  dynamic.moteBorderRight = core.width - fixed.moteRadius;
+  dynamic.moteBorderBottom = core.height - fixed.moteRadius;
+  dynamic.spawningEnergy = Math.ceil(dynamic.maxEnergy * fixed.spawningEnergyAdjustment);
+});
 
 /**
  * Generates a new body from dna and default values
@@ -76,7 +106,7 @@ const MAX_MOTE_SPEED = Math.floor(MAX_ENERGY / MOTE_MASS / 32);
  */
 const initBody = (dna) => {
   const dnaCommands = readGenome(dna);
-  const mass = MIN_MASS + dnaCommands.size;
+  const mass = dynamic.minMass + dnaCommands.size;
   const radius = Math.floor(Math.sqrt(mass / Math.PI));
 
   const spikes = dnaCommands.spikes
@@ -113,10 +143,10 @@ export const getRandomBody = () => {
   const body = initBody(createGenome());
 
   body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
-  body.x = randInt(body.radius, width - body.radius);
-  body.y = randInt(body.radius, height - body.radius);
+  body.x = randInt(body.radius, core.width - body.radius);
+  body.y = randInt(body.radius, core.height - body.radius);
   body.velocity.angle = rand();
-  body.velocity.speed = randInt(0, MAX_ENERGY / body.mass);
+  body.velocity.speed = randInt(0, dynamic.maxEnergy / body.mass);
 
   return body;
 };
@@ -139,7 +169,7 @@ export const replicateParent = (parent, angle) => {
   body.x = parent.x + relativeLocation.x;
   body.y = parent.y + relativeLocation.y;
   body.velocity.angle = angle;
-  body.velocity.speed = parent.velocity.speed + randInt(0, MAX_REPRODUCTION_ENERGY / body.mass);
+  body.velocity.speed = parent.velocity.speed + randInt(0, dynamic.spawningEnergy / body.mass);
 
   body.spikes.forEach(getSpikeMover(body.x, body.y));
 
@@ -152,28 +182,32 @@ export const replicateParent = (parent, angle) => {
  *
  * @returns {Body}
  */
-export const spawnMote = () => ({
-  dna: '',
-  fill: MOTE_COLOR,
-  x: randInt(MOTE_RADIUS, width - MOTE_RADIUS),
-  y: randInt(MOTE_RADIUS, height - MOTE_RADIUS),
-  mass: MOTE_MASS,
-  radius: MOTE_RADIUS,
-  velocity: {
-    angle: rand(),
-    speed: randInt(0, MAX_MOTE_SPEED),
-  },
-  vitals: {
-    calories: MOTE_MASS * 2,
-    upkeep: 0,
-    isDead: false,
-    spawnsAt: Number.MAX_SAFE_INTEGER,
-    diesAt: 0,
-  },
-  spikes: [],
-  meta: {
-    nextX: 0,
-    nextY: 0,
-    lastCollisionBody: null,
-  },
-});
+export const spawnMote = () => {
+  const { moteRadius } = fixed;
+
+  return {
+    dna: '',
+    fill: fixed.moteColor,
+    x: randInt(moteRadius, dynamic.moteBorderRight),
+    y: randInt(moteRadius, dynamic.moteBorderBottom),
+    mass: dynamic.moteMass,
+    radius: moteRadius,
+    velocity: {
+      angle: rand(),
+      speed: randInt(0, dynamic.moteMaxSpeed),
+    },
+    vitals: {
+      calories: dynamic.moteStartingCalories,
+      upkeep: 0,
+      isDead: false,
+      spawnsAt: Number.MAX_SAFE_INTEGER,
+      diesAt: 0,
+    },
+    spikes: [],
+    meta: {
+      nextX: 0,
+      nextY: 0,
+      lastCollisionBody: null,
+    },
+  };
+};

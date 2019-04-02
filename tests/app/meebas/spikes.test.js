@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const { settings } = require('../settings.common.js');
 const {
   sin,
   cos,
@@ -11,9 +12,7 @@ const {
   getSpikeMover,
 } = require('./spikes.common.js');
 
-const SPIKE_WIDTH = 8;
-const HALF_WIDTH = SPIKE_WIDTH / 2;
-
+const HALF_WIDTH = settings.spikes.spikeWidth / 2;
 const getOffsetAngle = radius => asin(HALF_WIDTH / radius);
 const getXOffset = (angle, distance) => Math.floor(cos(angle) * distance);
 const getYOffset = (angle, distance) => Math.floor(-sin(angle) * distance);

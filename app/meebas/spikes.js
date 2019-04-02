@@ -1,4 +1,7 @@
-import { settings } from '../settings.js';
+import {
+  settings,
+  addUpdateListener,
+} from '../settings.js';
 import {
   cos,
   sin,
@@ -29,10 +32,25 @@ import {
  *   @prop {number|null} meta.deactivateTime
  */
 
-const SPIKE_WIDTH = 6;
-const HALF_WIDTH = SPIKE_WIDTH / 2;
-const BASE_DRAIN = 25000 * Math.max(0, settings.core.temperature) / 30;
-const DRAIN_LENGTH_QUOTIENT = 1.2;
+/**
+ * Dynamically calculated spike settings
+ *
+ * @typedef DynamicSpikeSettings
+ * @prop {number} halfWidth
+ * @prop {number} adjustedDrain
+ */
+
+const { core, spikes: fixed } = settings;
+fixed.baseSpikeDrain = 2500;
+fixed.drainLengthExponent = 1.2;
+fixed.spikeWidth = 6;
+
+const dynamic = /** @type {DynamicSpikeSettings} */ ({});
+addUpdateListener(() => {
+  const temperatureAdjustment = Math.max(0, core.temperature) / 30;
+  dynamic.halfWidth = Math.ceil(fixed.spikeWidth / 2);
+  dynamic.adjustedDrain = Math.ceil(fixed.baseSpikeDrain * temperatureAdjustment);
+});
 
 /**
  * Get's a point's X coordinates relative to the center of a meeba
@@ -62,12 +80,12 @@ const getYOffset = (angle, distance) => Math.floor(-sin(angle) * distance);
  * @returns {Spike}
  */
 export const spawnSpike = (radius, angle, length) => {
-  const offsetAngle = asin(HALF_WIDTH / radius);
+  const offsetAngle = asin(dynamic.halfWidth / radius);
 
   return {
     fill: 'black',
     length,
-    drain: BASE_DRAIN / (length ** DRAIN_LENGTH_QUOTIENT),
+    drain: dynamic.adjustedDrain / (length ** fixed.drainLengthExponent),
     // Absolute coordinates will be set the first time the spike moves
     x1: 0,
     y1: 0,

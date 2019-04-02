@@ -1,13 +1,10 @@
 'use strict';
 
 const { expect } = require('chai');
-const { settings } = require('../settings.common.js');
-
-const oldWidth = settings.core.width;
-const oldHeight = settings.core.height;
-settings.core.width = 100;
-settings.core.height = 100;
-
+const {
+  settings,
+  updateSetting,
+} = require('../settings.common.js');
 const {
   getRandomBody,
   replicateParent,
@@ -37,9 +34,17 @@ const expectIsValidNewBody = (body) => {
 };
 
 describe('Body methods', () => {
-  after(() => {
-    settings.core.width = oldWidth;
-    settings.core.height = oldHeight;
+  const oldWidth = settings.core.width;
+  const oldHeight = settings.core.height;
+
+  beforeEach(() => {
+    updateSetting('width', 100);
+    updateSetting('height', 100);
+  });
+
+  afterEach(() => {
+    updateSetting('width', oldWidth);
+    updateSetting('height', oldHeight);
   });
 
   describe('getRandomBody', () => {

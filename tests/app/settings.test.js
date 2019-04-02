@@ -6,12 +6,15 @@ const {
   updateSetting,
   addUpdateListener,
 } = require('./settings.common.js');
+require('./meebas/genome.common.js');
 
 describe('Settings methods', () => {
   const oldSeed = settings.core.seed;
+  const oldMassBits = settings.genome.bitsPerMass;
 
   afterEach(() => {
     settings.core.seed = oldSeed;
+    settings.genome.bitsPerMass = oldMassBits;
     delete settings.foo;
   });
 
@@ -19,6 +22,11 @@ describe('Settings methods', () => {
     it('should update a core setting when passed a single key', () => {
       updateSetting('seed', 'foo');
       expect(settings.core.seed).to.equal('foo');
+    });
+
+    it('should update a module setting if passed a path', () => {
+      updateSetting('genome.bitsPerMass', 4);
+      expect(settings.genome.bitsPerMass).to.equal(4);
     });
 
     it('should create new nested settings if they do not exist', () => {

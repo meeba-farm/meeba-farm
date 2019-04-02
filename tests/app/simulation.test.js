@@ -1,15 +1,10 @@
 'use strict';
 
 const { expect } = require('chai');
-const { settings } = require('./settings.common.js');
-
-const oldWidth = settings.core.width;
-const oldHeight = settings.core.height;
-const oldRate = settings.core.moteSpawnRate;
-settings.core.width = 100;
-settings.core.height = 100;
-settings.core.moteSpawnRate = 0;
-
+const {
+  settings,
+  updateSetting,
+} = require('./settings.common.js');
 const {
   getRandomBody,
 } = require('./meebas/bodies.common.js');
@@ -22,10 +17,20 @@ const sqr = n => n * n;
 const getCircleArea = radius => Math.floor(Math.PI * radius * radius);
 
 describe('Simulation methods', () => {
-  after(() => {
-    settings.core.width = oldWidth;
-    settings.core.height = oldHeight;
-    settings.core.moteSpawnRate = oldRate;
+  const oldWidth = settings.core.width;
+  const oldHeight = settings.core.height;
+  const oldRate = settings.core.moteSpawnRate;
+
+  beforeEach(() => {
+    updateSetting('width', 100);
+    updateSetting('height', 100);
+    updateSetting('moteSpawnRate', 0);
+  });
+
+  afterEach(() => {
+    updateSetting('width', oldWidth);
+    updateSetting('height', oldHeight);
+    updateSetting('moteSpawnRate', oldRate);
   });
 
   describe('separateBodies', () => {
