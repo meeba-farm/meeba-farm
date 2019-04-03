@@ -107,7 +107,7 @@ const frameElement = e(
       float: 'left',
       width: `${UI_WIDTH}px`,
     },
-  }, getInterface()),
+  }, getInterface(MeebaFarm)),
   e('div', {
     style: {
       float: 'right',
