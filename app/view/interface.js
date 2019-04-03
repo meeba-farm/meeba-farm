@@ -1,5 +1,7 @@
 import {
   button,
+  row,
+  setting,
 } from './components.js';
 import { e } from './dom.js';
 
@@ -23,8 +25,10 @@ const INTERFACE_ID = 'interface';
 export const getInterface = ({ pause, resume, reset }) => (
   e('div', { id: INTERFACE_ID },
     e('h1', {}, 'Meeba Farm'),
-    e('div', {},
+    row(
       button('Pause', pause),
       button('Resume', resume),
-      button('Reset', reset)))
+      button('Reset', reset),
+    ),
+    setting('seed', 'Seed'))
 );

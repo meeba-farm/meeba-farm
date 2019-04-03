@@ -57,3 +57,17 @@ export const appendById = (id, child) => {
     container.append(child);
   }
 };
+
+/**
+ * Finds an element by its id and if found, appends a child element to it
+ *
+ * @param {string} id
+ * @param {string} attribute - the name of the attribute to set
+ * @param {string|number|boolean} value - the value to set
+ */
+export const setById = (id, attribute, value) => {
+  const elem = /** @type {any} */(document.getElementById(id));
+  if (elem) {
+    elem[attribute] = value;
+  }
+};
