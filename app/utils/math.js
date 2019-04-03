@@ -183,7 +183,7 @@ export const getGap = (angle1, angle2) => {
 
 /**
  * A simple pseudo-random number generator which takes a base36 seed
- * Based on this github gist by @blixit:
+ * Based on this github gist by @blixt:
  * gist.github.com/blixt/f17b47c62508be59987b
  *
  * @param {string} alphaNumSeed - a base36 string, i.e. [0-9a-z]
