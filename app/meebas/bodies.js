@@ -95,7 +95,11 @@ addUpdateListener(() => {
   );
   dynamic.moteBorderRight = core.width - fixed.moteRadius;
   dynamic.moteBorderBottom = core.height - fixed.moteRadius;
-  dynamic.spawningEnergy = Math.ceil(dynamic.maxEnergy * fixed.spawningEnergyAdjustment);
+
+  const tankSizeAdjustment = core.width * core.height / 2073600;
+  dynamic.spawningEnergy = Math.ceil(
+    dynamic.maxEnergy * fixed.spawningEnergyAdjustment * tankSizeAdjustment,
+  );
 });
 
 /**
