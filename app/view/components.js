@@ -62,14 +62,16 @@ export const header = label => (
  *
  * @param {string} id
  * @param {string|number|boolean} placeholder
+ * @param {object} [attrs] - may optionally specify additional attributes
  * @returns {HTMLInputElement}
  */
-export const input = (id, placeholder) => e('input', {
+export const input = (id, placeholder, attrs = {}) => e('input', {
   id,
   placeholder,
   style: {
     'margin-right': '0.5em',
   },
+  ...attrs,
 });
 
 /**
@@ -89,11 +91,12 @@ export const row = (...children) => e('div', {
  * A live-updating text field tied to a core setting
  *
  * @param {keyof CoreSettings} key - the key of the core setting
+ * @param {object} [attrs] - may optionally specify attributes
  * @returns {HTMLInputElement}
  */
-export const settingInput = (key) => {
+export const settingInput = (key, attrs = {}) => {
   settingsToUpdate.push(key);
-  return input(key, core[key]);
+  return input(key, core[key], attrs);
 };
 
 // eslint-disable-next-line valid-jsdoc
