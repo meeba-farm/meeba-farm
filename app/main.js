@@ -17,18 +17,26 @@ import {
   seedPrng,
 } from './utils/math.js';
 import {
-  createView,
   getFrameRenderer,
 } from './view/animation.js';
+import {
+  canvas,
+} from './view/components.js';
+import {
+  appendById,
+} from './view/dom.js';
 
 /**
  * @typedef {import('./simulation.js').Body} Body
  */
 
+const APP_ID = 'app';
+const VIEW_ID = 'view';
 const { core } = settings;
 
-const view = createView(core.width, core.height);
+const view = canvas(VIEW_ID, core.width, core.height);
 const renderFrame = getFrameRenderer(view);
+appendById(APP_ID, view);
 
 let oldWidth = core.width;
 let oldHeight = core.height;

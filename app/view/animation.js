@@ -32,30 +32,6 @@ import { PI_2 } from '../utils/math.js';
  * @prop {string} fill - a color to fill the drawable
  */
 
-const VIEW_ID = 'view';
-
-/**
- * Creates a canvas of specified dimensions and appends it to the DOM
- *
- * @param {number} width - width in pixels
- * @param {number} height - height in pixels
- * @returns {HTMLCanvasElement}
- */
-export const createView = (width, height) => {
-  const view = document.createElement('canvas');
-  view.setAttribute('id', VIEW_ID);
-  view.width = width;
-  view.height = height;
-
-  const app = document.getElementById('app');
-  if (!app) {
-    throw new Error('Unable to find #app element!');
-  }
-  app.appendChild(view);
-
-  return view;
-};
-
 /**
  * Gets a function to draw the outline of a circle
  *
