@@ -21,8 +21,8 @@ import { e } from './dom.js';
 const INTERFACE_ID = 'interface';
 
 const sizeSettings = () => {
-  const widthInput = settingInput('width', { size: 7 });
-  const heightInput = settingInput('height', { size: 7 });
+  const widthInput = settingInput('width', { style: { width: '5em' } });
+  const heightInput = settingInput('height', { style: { width: '5em' } });
 
   return row(
     header('Tank Size'),
@@ -56,7 +56,7 @@ export const getInterface = ({ pause, resume, reset }) => (
       button('Resume', resume),
       button('Reset', reset),
     ),
-    setting('seed', 'Seed'),
+    setting('seed', 'Seed', { type: 'text' }),
     sizeSettings(),
     setting('startingBodies', 'Initial Meeba Count'),
     setting('moteSpawnRate', 'Mote Spawn Rate'),

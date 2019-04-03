@@ -62,14 +62,15 @@ export const header = label => (
  *
  * @param {string} id
  * @param {string|number|boolean} placeholder
- * @param {object} [attrs] - may optionally specify additional attributes
+ * @param {object} [attrs] - may optionally specify additional styles and attributes
  * @returns {HTMLInputElement}
  */
-export const input = (id, placeholder, attrs = {}) => e('input', {
+export const input = (id, placeholder, { style = {}, ...attrs } = {}) => e('input', {
   id,
   placeholder,
   style: {
     'margin-right': '0.5em',
+    ...style,
   },
   ...attrs,
 });
@@ -109,7 +110,7 @@ export const title = label => e('h1', {
  */
 export const settingInput = (key, attrs = {}) => {
   settingsToUpdate.push(key);
-  return input(key, core[key], attrs);
+  return input(key, core[key], { type: 'number', ...attrs });
 };
 
 // eslint-disable-next-line valid-jsdoc
@@ -118,10 +119,11 @@ export const settingInput = (key, attrs = {}) => {
  *
  * @param {keyof CoreSettings} key
  * @param {string} label
+ * @param {object} [inputAttrs] - may optionally specify additional input attributes
  * @returns {HTMLDivElement}
  */
-export const setting = (key, label) => {
-  const inputRef = settingInput(key);
+export const setting = (key, label, inputAttrs = {}) => {
+  const inputRef = settingInput(key, inputAttrs);
 
   return row(
     header(label),
