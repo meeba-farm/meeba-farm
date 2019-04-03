@@ -22,7 +22,7 @@ import {
 } from './utils/math.js';
 
 /**
- * @typedef {import('./meebas/bodies.js').Body} Body
+ * @typedef {import('./simulation.js').Body} Body
  */
 
 const { core } = settings;
