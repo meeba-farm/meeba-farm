@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const { range } = require('./arrays.common.js');
 const {
   PI_2,
   sqr,
@@ -13,6 +14,7 @@ const {
   isShorter,
   isCloser,
   getGap,
+  seedPrng,
   rand,
   randInt,
 } = require('./math.common.js');
@@ -183,6 +185,12 @@ describe('Math utils', () => {
     });
   });
 
+  describe('seedPrng', () => {
+    it('should accept any string as a seed', () => {
+      expect(() => seedPrng('f0O\nb$R\t;-" !')).to.not.throw();
+    });
+  });
+
   describe('rand', () => {
     it('should return a random number between 0 and 1', () => {
       expect(rand()).to.be.within(0, 1);
@@ -201,19 +209,13 @@ describe('Math utils', () => {
     });
 
     it('should return the same number when restarted from the same seed', () => {
-      // This is unorthodox and implementation dependent but will get us
-      // two rand functions with the same seed
-      delete require.cache[require.resolve('./math.common.js')];
-      // eslint-disable-next-line global-require
-      const { rand: rand1 } = require('./math.common.js');
+      seedPrng('foo');
+      const randNums = range(10).map(rand);
 
-      delete require.cache[require.resolve('./math.common.js')];
-      // eslint-disable-next-line global-require
-      const { rand: rand2 } = require('./math.common.js');
+      seedPrng('foo');
+      const randNumsAgain = range(10).map(rand);
 
-      expect(rand1()).to.equal(rand2());
-      expect(rand1()).to.equal(rand2());
-      expect(rand1()).to.equal(rand2());
+      expect(randNums).to.deep.equal(randNumsAgain);
     });
   });
 

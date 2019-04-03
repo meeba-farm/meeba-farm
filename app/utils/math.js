@@ -1,4 +1,3 @@
-import { settings } from '../settings.js';
 import { range } from './arrays.js';
 
 export const PI_2 = 2 * Math.PI;
@@ -198,18 +197,32 @@ const getPrng = (alphaNumSeed) => {
   };
 };
 
+let prng = () => 0;
+
 /**
- * Gets a random floating point number between 0 and 1
+ * Seeds the PRNG, which will allow rand and randInt to begin functioning
+ *
+ * @param {string} seed - any string, will be converted to base36
+ */
+export const seedPrng = (seed) => {
+  const alphaNumSeed = seed.toLowerCase().replace(/[^0-9a-z]/, '');
+  prng = getPrng(alphaNumSeed);
+};
+
+/**
+ * Gets a random floating point number between 0 and 1,
+ * must be seeded or will always return 0
  *
  * @returns {number}
  */
-export const rand = getPrng(settings.core.seed);
+export const rand = () => prng();
 
 /**
- * Gets a random integer between a specified min and max (non-inclusive)
+ * Gets a random integer between a specified min and max (non-inclusive),
+ * must be seeded or will always return min
  *
  * @param {number} min - the minimum random number (inclusive)
  * @param {number} max - the maximum random number (non-inclusive)
  * @returns {number}
  */
-export const randInt = (min, max) => min + Math.floor(rand() * (max - min));
+export const randInt = (min, max) => min + Math.floor(prng() * (max - min));

@@ -17,6 +17,13 @@ import {
 import {
   range,
 } from './utils/arrays.js';
+import {
+  seedPrng,
+} from './utils/math.js';
+
+/**
+ * @typedef {import('./meebas/bodies.js').Body} Body
+ */
 
 const { core } = settings;
 
@@ -40,11 +47,9 @@ const anyWindow = window;
 const MeebaFarm = {};
 anyWindow.MeebaFarm = MeebaFarm;
 
-MeebaFarm.bodies = range(core.startingBodies).map(getRandomBody);
-separateBodies(MeebaFarm.bodies);
-
-/** @type {boolean} */
-let isRunning;
+/** @type {Body[]} */
+MeebaFarm.bodies = [];
+let isRunning = false;
 
 /** @param {number} lastTick */
 const simulate = (lastTick) => {
@@ -73,6 +78,13 @@ MeebaFarm.resume = () => {
   requestAnimationFrame(render);
 };
 
-// eslint-disable-next-line no-console
-console.log('Simulating with seed:', settings.core.seed);
+MeebaFarm.reset = () => {
+  // eslint-disable-next-line no-console
+  console.log('Starting simulation with seed:', core.seed);
+  seedPrng(core.seed);
+  MeebaFarm.bodies = range(core.startingBodies).map(getRandomBody);
+  separateBodies(MeebaFarm.bodies);
+};
+
+MeebaFarm.reset();
 MeebaFarm.resume();
