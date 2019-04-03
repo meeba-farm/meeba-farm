@@ -56,5 +56,10 @@ export const getInterface = ({ pause, resume, reset }) => (
       button('Reset', reset),
     ),
     setting('seed', 'Seed'),
-    sizeSettings())
+    sizeSettings(),
+    setting('startingBodies', 'Initial Meeba Count'),
+    setting('moteSpawnRate', 'Mote Spawn Rate'),
+    setting('energy', 'Kinetic Energy'),
+    setting('temperature', 'Tank Temperature'),
+    setting('volatility', 'Gene Volatility'))
 );
