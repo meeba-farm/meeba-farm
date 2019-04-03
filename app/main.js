@@ -1,6 +1,7 @@
 import {
   settings,
   updateSetting,
+  addUpdateListener,
 } from './settings.js';
 import {
   createView,
@@ -17,17 +18,29 @@ import {
   range,
 } from './utils/arrays.js';
 
-const { width, height, startingBodies } = settings.core;
+const { core } = settings;
 
-const view = createView(width, height);
+const view = createView(core.width, core.height);
 const renderFrame = getFrameRenderer(view);
+
+let oldWidth = core.width;
+let oldHeight = core.height;
+addUpdateListener(() => {
+  const { width, height } = core;
+  if (width !== oldWidth || height !== oldHeight) {
+    view.width = width;
+    view.height = height;
+    oldWidth = width;
+    oldHeight = height;
+  }
+});
 
 /** @type {Object<string, any>} */
 const anyWindow = window;
 const MeebaFarm = {};
 anyWindow.MeebaFarm = MeebaFarm;
 
-MeebaFarm.bodies = range(startingBodies).map(getRandomBody);
+MeebaFarm.bodies = range(core.startingBodies).map(getRandomBody);
 separateBodies(MeebaFarm.bodies);
 
 /** @type {boolean} */
