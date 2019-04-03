@@ -86,6 +86,19 @@ export const row = (...children) => e('div', {
   },
 }, ...children);
 
+/**
+ * Page title with reduced margins
+ *
+ * @param {string} label
+ * @returns {HTMLHeadingElement}
+ */
+export const title = label => e('h1', {
+  style: {
+    'margin-block-start': 0,
+    'margin-block-end': '0.25em',
+  },
+}, label);
+
 // eslint-disable-next-line valid-jsdoc
 /**
  * A live-updating text field tied to a core setting

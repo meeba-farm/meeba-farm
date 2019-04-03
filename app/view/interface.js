@@ -3,6 +3,7 @@ import {
   button,
   header,
   row,
+  title,
   settingInput,
   setting,
 } from './components.js';
@@ -49,7 +50,7 @@ const sizeSettings = () => {
  */
 export const getInterface = ({ pause, resume, reset }) => (
   e('div', { id: INTERFACE_ID },
-    e('h1', {}, 'Meeba Farm'),
+    title('Meeba Farm'),
     row(
       button('Pause', pause),
       button('Resume', resume),
