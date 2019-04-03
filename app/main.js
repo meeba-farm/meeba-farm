@@ -4,10 +4,6 @@ import {
   addUpdateListener,
 } from './settings.js';
 import {
-  createView,
-  getFrameRenderer,
-} from './view.js';
-import {
   separateBodies,
   simulateFrame,
 } from './simulation.js';
@@ -20,6 +16,10 @@ import {
 import {
   seedPrng,
 } from './utils/math.js';
+import {
+  createView,
+  getFrameRenderer,
+} from './view/animation.js';
 
 /**
  * @typedef {import('./simulation.js').Body} Body

@@ -1,11 +1,11 @@
 import {
   flatten,
   groupBy,
-} from './utils/arrays.js';
-import { PI_2 } from './utils/math.js';
+} from '../utils/arrays.js';
+import { PI_2 } from '../utils/math.js';
 
 /**
- * @typedef {import('./simulation.js').Body} Body
+ * @typedef {import('../simulation.js').Body} Body
  */
 
 /**
