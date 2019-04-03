@@ -1,4 +1,24 @@
 /**
+ * Ensures a style object is a string
+ *
+ * @param {any} style - an object of style key/values
+ * @returns {string}
+ */
+const styleToString = (style) => {
+  if (typeof style === 'string') {
+    return style;
+  }
+
+  if (style && typeof style === 'object') {
+    return Object.entries(style)
+      .map(([key, value]) => `${key}:${value};`)
+      .join('');
+  }
+
+  throw new Error(`Style must be a string or object: ${style}`);
+};
+
+/**
  * Creates an HTMLElement with arbitrary attributes
  *
  * The short name makes it easy to nest calls, inspired by Mithril.js:
@@ -9,8 +29,12 @@
  * @param {(HTMLElement|string)[]} children - children to append, if any
  * @returns {any}
  */
-export const e = (tag, attrs, ...children) => {
+export const e = (tag, { style, ...attrs }, ...children) => {
   const elem = /** @type {any} */(document.createElement(tag)); // unfortunate TS workaround
+
+  if (style) {
+    elem.style = styleToString(style);
+  }
 
   for (const [key, value] of Object.entries(attrs)) {
     elem[key] = value;

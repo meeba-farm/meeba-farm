@@ -77,19 +77,21 @@ import { setNested } from './utils/objects.js';
  * @prop {VitalsModuleSettings} vitals
  */
 
-const TANK_BUFFER = 20;
+const EXTRA_BUFFER = 16;
+export const TANK_PADDING = 5;
+export const UI_WIDTH = 250;
 
 /** @type Settings */
 export const settings = {
   core: {
-    height: window.innerHeight - TANK_BUFFER,
+    height: window.innerHeight - 2 * TANK_PADDING - EXTRA_BUFFER,
     energy: 3500000,
     moteSpawnRate: 4,
     seed: Math.random().toString(36).slice(2),
     startingBodies: 75,
     temperature: 30,
     volatility: 100,
-    width: window.innerWidth - TANK_BUFFER,
+    width: window.innerWidth - UI_WIDTH - 2 * TANK_PADDING - EXTRA_BUFFER,
   },
   bodies: /** @type {BodiesModuleSettings} */ ({}),
   genome: /** @type {GenomeModuleSettings} */ ({}),

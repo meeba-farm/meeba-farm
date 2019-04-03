@@ -35,6 +35,8 @@
                 ".*\\.json",
                 "@\\w*",
                 "#[0-9a-f]+",
+                "[0-9]+px",
+                "[0-9]+em",
                 "eslint-.*"
             ],
             "skipWords": [
@@ -72,6 +74,7 @@
                 "outliner",
                 "pipeable",
                 "prng",
+                "px",
                 "qux",
                 "quux",
                 "quuz",

@@ -1,4 +1,6 @@
 import {
+  TANK_PADDING,
+  UI_WIDTH,
   settings,
   updateSetting,
   addUpdateListener,
@@ -23,8 +25,12 @@ import {
   canvas,
 } from './view/components.js';
 import {
+  e,
   appendById,
 } from './view/dom.js';
+import {
+  getInterface,
+} from './view/interface.js';
 
 /**
  * @typedef {import('./simulation.js').Body} Body
@@ -36,7 +42,6 @@ const { core } = settings;
 
 const view = canvas(VIEW_ID, core.width, core.height);
 const renderFrame = getFrameRenderer(view);
-appendById(APP_ID, view);
 
 let oldWidth = core.width;
 let oldHeight = core.height;
@@ -94,5 +99,24 @@ MeebaFarm.reset = () => {
   separateBodies(MeebaFarm.bodies);
 };
 
+const frameElement = e(
+  'div',
+  { style: { width: `${UI_WIDTH + 2 * TANK_PADDING}px` } },
+  e('div', {
+    style: {
+      float: 'left',
+      width: `${UI_WIDTH}px`,
+    },
+  }, getInterface()),
+  e('div', {
+    style: {
+      float: 'right',
+      padding: `${TANK_PADDING}px`,
+      width: '0px',
+    },
+  }, view),
+);
+
+appendById(APP_ID, frameElement);
 MeebaFarm.reset();
 MeebaFarm.resume();
