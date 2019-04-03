@@ -85,7 +85,7 @@ export const spawnSpike = (radius, angle, length) => {
   return {
     fill: 'black',
     length,
-    drain: dynamic.adjustedDrain / (length ** fixed.drainLengthExponent),
+    drain: Math.ceil(dynamic.adjustedDrain / (length ** fixed.drainLengthExponent)),
     // Absolute coordinates will be set the first time the spike moves
     x1: 0,
     y1: 0,
