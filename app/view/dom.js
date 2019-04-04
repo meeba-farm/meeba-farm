@@ -1,3 +1,7 @@
+import {
+  isObject,
+} from '../utils/objects.js';
+
 /**
  * Ensures a style object is a string
  *
@@ -9,7 +13,7 @@ const styleToString = (style) => {
     return style;
   }
 
-  if (style && typeof style === 'object') {
+  if (isObject(style)) {
     return Object.entries(style)
       .map(([key, value]) => `${key}:${value};`)
       .join('');

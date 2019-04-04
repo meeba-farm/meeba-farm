@@ -2,11 +2,31 @@
 
 const { expect } = require('chai');
 const {
+  isObject,
   getNested,
   setNested,
 } = require('./objects.common.js');
 
 describe('Object utils', () => {
+  describe('isObject', () => {
+    it('should pass objects', () => {
+      expect(isObject({ a: 1 })).to.be.true;
+      expect(isObject([])).to.be.true;
+      expect(isObject(new Date())).to.be.true;
+    });
+
+    it('should fail primitives', () => {
+      expect(isObject('foo')).to.be.false;
+      expect(isObject(7)).to.be.false;
+      expect(isObject(true)).to.be.false;
+      expect(isObject(undefined)).to.be.false;
+    });
+
+    it('should fail null', () => {
+      expect(isObject(null)).to.be.false;
+    });
+  });
+
   describe('getNested', () => {
     it('should fetch a nested property from an object', () => {
       const obj = {

@@ -1,4 +1,12 @@
 /**
+ * Checks if a value is an object
+ *
+ * @param {any} value - the value to test
+ * @returns {boolean}
+ */
+export const isObject = value => typeof value === 'object' && value !== null;
+
+/**
  * Recursively fetch a nested property from an object
  *
  * @param {any} obj - the object to fetch a property from
@@ -9,7 +17,7 @@ export const getNested = (obj, path) => {
   if (path.length === 0) {
     return obj;
   }
-  if (!obj || typeof obj !== 'object') {
+  if (!isObject(obj)) {
     return undefined;
   }
   return getNested(obj[path[0]], path.slice(1));
@@ -28,7 +36,7 @@ export const setNested = (obj, path, value) => {
   if (path.length === 1) {
     obj[key] = value;
   } else if (path.length > 1) {
-    if (!obj[key] || typeof obj[key] !== 'object') {
+    if (!isObject(obj[key])) {
       obj[key] = {};
     }
     setNested(obj[key], path.slice(1), value);
