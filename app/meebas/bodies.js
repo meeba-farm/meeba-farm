@@ -77,13 +77,6 @@ import {
 const COLOR_RANGE = 256 * 256 * 256;
 
 const { core, bodies: fixed } = settings;
-fixed.minRadius = 10;
-fixed.moteColor = '#792';
-fixed.moteRadius = 8;
-fixed.moteCalorieAdjustment = 2;
-fixed.moteSpeedAdjustment = 0.03;
-fixed.spawningEnergyAdjustment = 0.75;
-
 const dynamic = /** @type DynamicBodySettings */ ({});
 addUpdateListener(() => {
   dynamic.minMass = Math.ceil(Math.PI * sqr(fixed.minRadius));

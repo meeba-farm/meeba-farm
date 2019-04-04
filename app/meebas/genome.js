@@ -60,23 +60,6 @@ import {
  */
 
 const { core, genome: fixed } = settings;
-fixed.averageGeneCount = 48;
-fixed.averageGeneSize = 6;
-
-fixed.baseChanceMutateBit = 0.0005;
-fixed.baseChanceDropByte = 0.008;
-fixed.baseChanceRepeatByte = 0.008;
-fixed.baseChanceTransposeByte = 0.016;
-fixed.baseChanceDropGene = 0.03;
-fixed.baseChanceRepeatGene = 0.03;
-fixed.baseChanceTransposeGene = 0.06;
-
-fixed.bitsPerMass = 1;
-fixed.bitsPerSpikeLength = 2;
-
-fixed.percentSizeGenes = 0.95;
-fixed.percentSpikeGenes = 0.05;
-
 const dynamic = /** @type {DynamicGenomeSettings} */ ({});
 addUpdateListener(() => {
   dynamic.maxGeneCount = 2 * fixed.averageGeneCount;

@@ -27,14 +27,6 @@ import {
  */
 
 const { core, vitals: fixed } = settings;
-fixed.massCalorieExponent = 0.66; // Idealized Kleiber's law
-fixed.percentDiesAt = 0.5;
-fixed.percentSpawnsAt = 2;
-fixed.upkeepPerSpike = 8;
-fixed.upkeepPerLength = 1;
-fixed.baseUpkeepAdjustment = 0.075; // Adjust so "average" use is ~15 cal/sec
-fixed.spikeUpkeepAdjustment = 200; // Adjust so cost of four is about equal to mass cost
-
 const dynamic = /** @type {DynamicSpikeSettings} */ ({});
 addUpdateListener(() => {
   const temperatureAdjustment = Math.max(0, core.temperature) / 30;

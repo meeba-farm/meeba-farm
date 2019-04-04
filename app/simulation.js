@@ -48,8 +48,6 @@ import {
 const MAX_SEPARATION_ATTEMPTS = 10;
 
 const { core, bodies: bodySettings, simulation: fixed } = settings;
-fixed.maxBodies = 800;
-fixed.spikeHighlightTime = 167;
 
 let bodyLimit = 0;
 addUpdateListener(() => {

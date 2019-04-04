@@ -41,10 +41,6 @@ import {
  */
 
 const { core, spikes: fixed } = settings;
-fixed.baseSpikeDrain = 2500;
-fixed.drainLengthExponent = 1.2;
-fixed.spikeWidth = 6;
-
 const dynamic = /** @type {DynamicSpikeSettings} */ ({});
 addUpdateListener(() => {
   const temperatureAdjustment = Math.max(0, core.temperature) / 30;

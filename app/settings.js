@@ -96,11 +96,47 @@ export const settings = {
     volatility: 100,
     width: window.innerWidth - UI_WIDTH - 2 * TANK_PADDING - EXTRA_BUFFER,
   },
-  bodies: /** @type {BodiesModuleSettings} */ ({}),
-  genome: /** @type {GenomeModuleSettings} */ ({}),
-  simulation: /** @type {SimulationModuleSettings} */ ({}),
-  spikes: /** @type {SpikesModuleSettings} */ ({}),
-  vitals: /** @type {VitalsModuleSettings} */ ({}),
+  bodies: {
+    minRadius: 10,
+    moteColor: '#792',
+    moteRadius: 8,
+    moteCalorieAdjustment: 2,
+    moteSpeedAdjustment: 0.03,
+    spawningEnergyAdjustment: 0.75,
+  },
+  genome: {
+    averageGeneCount: 48,
+    averageGeneSize: 6,
+    baseChanceMutateBit: 0.0005,
+    baseChanceDropByte: 0.008,
+    baseChanceRepeatByte: 0.008,
+    baseChanceTransposeByte: 0.016,
+    baseChanceDropGene: 0.03,
+    baseChanceRepeatGene: 0.03,
+    baseChanceTransposeGene: 0.06,
+    bitsPerMass: 1,
+    bitsPerSpikeLength: 2,
+    percentSizeGenes: 0.95,
+    percentSpikeGenes: 0.05,
+  },
+  simulation: {
+    maxBodies: 800,
+    spikeHighlightTime: 167,
+  },
+  spikes: {
+    baseSpikeDrain: 2500,
+    drainLengthExponent: 1.2,
+    spikeWidth: 6,
+  },
+  vitals: {
+    massCalorieExponent: 0.66, // Idealized Kleiber's law
+    percentDiesAt: 0.5,
+    percentSpawnsAt: 2,
+    upkeepPerSpike: 8,
+    upkeepPerLength: 1,
+    baseUpkeepAdjustment: 0.075, // Adjust so "average" use is ~15 cal/sec
+    spikeUpkeepAdjustment: 200, // Adjust so cost of four is about equal to mass cost
+  },
 };
 
 /** @type Array<function(): void> */
