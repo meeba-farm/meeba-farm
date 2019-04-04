@@ -78,7 +78,7 @@ export const setById = (id, attribute, value) => {
 
 /**
  * @callback ValueCallback
- * @param {string|number} [value]
+ * @param {any} [value]
  * @param {HTMLInputElement} [input]
  * @returns void
  */

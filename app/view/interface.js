@@ -1,6 +1,10 @@
 import {
   settings,
   updateSetting,
+  addUpdateListener,
+  getSavedSettings,
+  loadSettings,
+  restoreDefaultSettings,
 } from '../settings.js';
 import {
   getNested,
@@ -77,6 +81,22 @@ const sizeSettings = () => {
   );
 };
 
+const settingsLoader = () => {
+  const saveStringInput = input('saveString', 'Paste a saved settings string');
+  addUpdateListener(() => {
+    const saved = getSavedSettings();
+    if (saved) {
+      saveStringInput.value = saved;
+    }
+  });
+
+  return row(
+    header('Load Settings'),
+    saveStringInput,
+    button('Load', withValue(saveStringInput, loadSettings)),
+  );
+};
+
 /**
  * Returns an HTML element with the entire user interface
  *
@@ -98,5 +118,7 @@ export const getInterface = ({ pause, resume, reset }) => (
     setting('energy', 'Kinetic Energy'),
     setting('temperature', 'Tank Temperature'),
     setting('volatility', 'Gene Volatility'),
-    debugSettings())
+    debugSettings(),
+    settingsLoader(),
+    row(button('Restore Default Settings', restoreDefaultSettings)))
 );
