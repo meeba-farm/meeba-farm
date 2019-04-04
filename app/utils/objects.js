@@ -19,6 +19,15 @@ export const isObject = value => typeof value === 'object' && value !== null;
 export const isEmpty = obj => Object.keys(obj).length === 0;
 
 /**
+ * Checks if an object, array, or other value has own property or index
+ *
+ * @param {any} value - the value to test
+ * @param {string|number} key - the key or index to test
+ * @returns {boolean}
+ */
+export const hasProp = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+
+/**
  * Recursively fetch a nested property from an object
  *
  * @param {any} obj - the object to fetch a property from

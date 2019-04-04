@@ -4,6 +4,7 @@ const { expect } = require('chai');
 const {
   isObject,
   isEmpty,
+  hasProp,
   getNested,
   setNested,
   listKeys,
@@ -39,6 +40,25 @@ describe('Object utils', () => {
     it('should fail objects with keys', () => {
       expect(isEmpty({ a: 1 })).to.be.false;
       expect(isEmpty(['foo'])).to.be.false;
+    });
+  });
+
+  describe('hasProp', () => {
+    it('should pass a value with the specified own property', () => {
+      expect(hasProp({ foo: 7 }, 'foo')).to.be.true;
+      expect(hasProp([1, 2], 0)).to.be.true;
+      expect(hasProp('foo', 2)).to.be.true;
+    });
+
+    it('should fail a value without the specified own property', () => {
+      expect(hasProp({ foo: 7 }, 'bar')).to.be.false;
+      expect(hasProp([1, 2], 'foo')).to.be.false;
+      expect(hasProp('foo', -1)).to.be.false;
+    });
+
+    it('should fail on props inherited from the prototype chain', () => {
+      expect(hasProp({}, 'toString')).to.be.false;
+      expect(hasProp(new Date(), 'getTime')).to.be.false;
     });
   });
 
