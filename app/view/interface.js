@@ -120,5 +120,12 @@ export const getInterface = ({ pause, resume, reset }) => (
     setting('volatility', 'Gene Volatility'),
     debugSettings(),
     settingsLoader(),
-    row(button('Restore Default Settings', restoreDefaultSettings)))
+    row(button('Restore Default Settings', restoreDefaultSettings)),
+    e('div', { style: { 'margin-top': '2em' } },
+      e('small', {},
+        e('em', {},
+          e('div', { style: { 'margin-bottom': '0.25em' } }, 'Created by ',
+            e('a', { href: 'https://github.com/delventhalz' }, 'Zac Delventhal')),
+          e('div', {}, 'Learn more and report issues on ',
+            e('a', { href: 'https://github.com/meeba-farm/meeba-farm' }, 'GitHub'))))))
 );

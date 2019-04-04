@@ -37,7 +37,8 @@
                 "#[0-9a-f]+",
                 "[0-9]+px",
                 "[0-9]+em",
-                "eslint-.*"
+                "eslint-.*",
+                "https?:\\/\\/.*"
             ],
             "skipWords": [
                 "arccosine",
@@ -53,6 +54,7 @@
                 "corge",
                 "ctx",
                 "deactivator",
+                "delventhal",
                 "dir",
                 "dna",
                 "drawable",
@@ -60,6 +62,7 @@
                 "extname",
                 "fn",
                 "fs",
+                "href",
                 "init",
                 "interactor",
                 "kleiber",
@@ -93,7 +96,8 @@
                 "utils",
                 "vec",
                 "vn",
-                "vt"
+                "vt",
+                "zac"
             ]
         }],
         "valid-jsdoc": ["error", {
