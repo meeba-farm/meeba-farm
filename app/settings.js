@@ -1,6 +1,8 @@
 import {
   getNested,
   setNested,
+  listKeys,
+  listValues,
 } from './utils/objects.js';
 
 /**
@@ -80,9 +82,15 @@ import {
  * @prop {VitalsModuleSettings} vitals
  */
 
+const STORAGE_KEY = 'meeba-farm.settings';
 const EXTRA_BUFFER = 16;
 export const TANK_PADDING = 5;
 export const UI_WIDTH = 250;
+
+/**
+ * @returns {string}
+ */
+const getRandomSeed = () => Math.random().toString(36).slice(2);
 
 /** @type Settings */
 export const settings = {
@@ -90,7 +98,7 @@ export const settings = {
     height: window.innerHeight - 2 * TANK_PADDING - EXTRA_BUFFER,
     energy: 3500000,
     moteSpawnRate: 4,
-    seed: Math.random().toString(36).slice(2),
+    seed: getRandomSeed(),
     startingBodies: 75,
     temperature: 30,
     volatility: 100,
@@ -139,8 +147,21 @@ export const settings = {
   },
 };
 
+const SETTINGS_KEYS = listKeys(settings);
+const DEFAULT_VALUES = listValues(settings);
+
+const storeSettings = () => {
+  const settingsString = window.btoa(JSON.stringify(listValues(settings)));
+  window.localStorage.setItem(STORAGE_KEY, settingsString);
+};
+
 /** @type Array<function(): void> */
 const updateListeners = [];
+const triggerListeners = () => {
+  for (const onUpdate of updateListeners) {
+    onUpdate();
+  }
+};
 
 /**
  * @param {string} pathString - dot-separated setting path
@@ -152,6 +173,15 @@ const parsePathString = (pathString) => {
 };
 
 /**
+ * @param {string} pathString - dot-separated setting path
+ * @param {string|number|boolean} value
+ */
+const setSetting = (pathString, value) => {
+  const path = parsePathString(pathString);
+  setNested(settings, path, value);
+};
+
+/**
  * Updates a particular setting with a primitive value, updates a core value if
  * passed a single key rather than a full path
  *
@@ -159,13 +189,9 @@ const parsePathString = (pathString) => {
  * @param {string|number|boolean} value - the new setting value
  */
 export const updateSetting = (pathString, value) => {
-  const path = parsePathString(pathString);
-
-  setNested(settings, path, value);
-
-  for (const onUpdate of updateListeners) {
-    onUpdate();
-  }
+  setSetting(pathString, value);
+  storeSettings();
+  triggerListeners();
 };
 
 /**
@@ -189,3 +215,48 @@ export const getSetting = (pathString) => {
   const path = parsePathString(pathString);
   return getNested(settings, path);
 };
+
+/**
+ * Takes string of settings values and updates all settings to match
+ *
+ * @param {string} settingsString - base64 encoded JSON array
+ */
+export const loadSettings = (settingsString) => {
+  let values = /** @type {(string|number|boolean)[]} */([]);
+  try {
+    values = JSON.parse(window.atob(settingsString));
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(`Unable to load settings: ${err}`);
+  }
+
+  if (values.length === SETTINGS_KEYS.length) {
+    SETTINGS_KEYS.forEach((key, i) => setSetting(key, values[i]));
+    triggerListeners();
+  }
+};
+
+/**
+ * Returns the currently saved settings string
+ *
+ * @returns {string|null} - base64 encoded JSON array of settings values
+ */
+export const getSavedSettings = () => window.localStorage.getItem(STORAGE_KEY);
+
+/**
+ * Clears out all saved settings and restores the defaults
+ */
+export const restoreDefaultSettings = () => {
+  window.localStorage.removeItem(STORAGE_KEY);
+  SETTINGS_KEYS.forEach((key, i) => setSetting(key, DEFAULT_VALUES[i]));
+  setSetting('seed', getRandomSeed());
+  triggerListeners();
+};
+
+// Load settings from local storage if any, otherwise save defaults
+const previousSettings = getSavedSettings();
+if (previousSettings) {
+  loadSettings(previousSettings);
+} else {
+  storeSettings();
+}
