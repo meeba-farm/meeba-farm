@@ -7,6 +7,14 @@
 export const isObject = value => typeof value === 'object' && value !== null;
 
 /**
+ * Checks if an object has keys
+ *
+ * @param {object} obj - the object to test
+ * @returns {boolean}
+ */
+export const isEmpty = obj => Object.keys(obj).length === 0;
+
+/**
  * Recursively fetch a nested property from an object
  *
  * @param {any} obj - the object to fetch a property from

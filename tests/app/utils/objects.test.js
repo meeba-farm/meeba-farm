@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const {
   isObject,
+  isEmpty,
   getNested,
   setNested,
 } = require('./objects.common.js');
@@ -24,6 +25,19 @@ describe('Object utils', () => {
 
     it('should fail null', () => {
       expect(isObject(null)).to.be.false;
+    });
+  });
+
+  describe('isEmpty', () => {
+    it('should pass objects with no properties', () => {
+      expect(isEmpty({})).to.be.true;
+      expect(isEmpty([])).to.be.true;
+      expect(isEmpty(Object.create(Date))).to.be.true;
+    });
+
+    it('should fail objects with keys', () => {
+      expect(isEmpty({ a: 1 })).to.be.false;
+      expect(isEmpty(['foo'])).to.be.false;
     });
   });
 
