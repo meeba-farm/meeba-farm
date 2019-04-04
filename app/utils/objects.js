@@ -1,3 +1,7 @@
+import {
+  flatten,
+} from './arrays.js';
+
 /**
  * Checks if a value is an object
  *
@@ -49,4 +53,23 @@ export const setNested = (obj, path, value) => {
     }
     setNested(obj[key], path.slice(1), value);
   }
+};
+
+/**
+ * Recursively creates a sorted list of all keys in an object,
+ * uses dot-separation for nested keys
+ *
+ * @param {object} obj
+ * @param {string[]} [parentKeys]
+ * @returns {string[]}
+ */
+export const listKeys = (obj, parentKeys = []) => {
+  const nested = Object.entries(obj).map(([key, val]) => {
+    const keyList = [...parentKeys, key];
+    return isObject(val) && !isEmpty(val)
+      ? listKeys(val, keyList)
+      : keyList.join('.');
+  });
+
+  return flatten(nested).sort();
 };
