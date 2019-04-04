@@ -16,7 +16,10 @@ import {
   settingInput,
   setting,
 } from './components.js';
-import { e } from './dom.js';
+import {
+  e,
+  withValue,
+} from './dom.js';
 
 /**
  * Object with methods for interacting with the simulation
@@ -40,36 +43,27 @@ const debugSettings = () => {
     onchange: () => {
       selected = debugSelect.value;
       debugInput.placeholder = getNested(settings, selected.split('.'), '--');
+      if (STRING_SETTINGS.has(selected)) {
+        debugInput.type = 'text';
+      } else {
+        debugInput.type = 'number';
+      }
     },
   }, ...debugKeys);
-
-  const debugButton = button('Set', () => {
-    const { value } = debugInput;
-    if (value !== '') {
-      if (STRING_SETTINGS.has(selected)) {
-        updateSetting(selected, value);
-      } else {
-        const parsed = Number(value);
-        if (!Number.isNaN(parsed)) {
-          updateSetting(selected, parsed);
-        }
-      }
-      debugInput.placeholder = value;
-      debugInput.value = '';
-    }
-  });
 
   return row(
     header('Experimental Debug Settings'),
     debugSelect,
     debugInput,
-    debugButton,
+    button('Set', withValue(debugInput, value => updateSetting(selected, value))),
   );
 };
 
 const sizeSettings = () => {
   const widthInput = settingInput('width', { style: { width: '5em' } });
   const heightInput = settingInput('height', { style: { width: '5em' } });
+  const setWidth = withValue(widthInput, value => updateSetting('width', value));
+  const setHeight = withValue(heightInput, value => updateSetting('height', value));
 
   return row(
     header('Tank Size'),
@@ -77,14 +71,8 @@ const sizeSettings = () => {
     e('span', { style: { 'margin-right': '0.5em' } }, 'x'),
     heightInput,
     button('Set', () => {
-      if (widthInput.value !== '') {
-        updateSetting('width', widthInput.value);
-        widthInput.value = '';
-      }
-      if (heightInput.value !== '') {
-        updateSetting('height', heightInput.value);
-        heightInput.value = '';
-      }
+      setWidth();
+      setHeight();
     }),
   );
 };

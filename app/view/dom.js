@@ -75,3 +75,36 @@ export const setById = (id, attribute, value) => {
     elem[attribute] = value;
   }
 };
+
+/**
+ * @callback ValueCallback
+ * @param {string|number} [value]
+ * @param {HTMLInputElement} [input]
+ * @returns void
+ */
+
+/**
+ * Returns a function that when called will check the value of an input element.
+ * If not empty, it will pass that value (parsed as a number if needed)
+ * to the provided callback
+ *
+ * @param {HTMLInputElement} input
+ * @param {ValueCallback} callback
+ * @returns {function(): void}
+ */
+export const withValue = (input, callback) => () => {
+  const { value } = input;
+
+  if (value !== '') {
+    if (input.type === 'number') {
+      const parsed = Number(value);
+      if (!Number.isNaN(parsed)) {
+        callback(parsed, input);
+      }
+    } else {
+      callback(value, input);
+    }
+
+    input.value = '';
+  }
+};

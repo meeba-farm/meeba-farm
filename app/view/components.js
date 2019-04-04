@@ -6,6 +6,7 @@ import {
 import {
   e,
   setById,
+  withValue,
 } from './dom.js';
 
 /**
@@ -142,11 +143,6 @@ export const setting = (key, label, inputAttrs = {}) => {
   return row(
     header(label),
     inputRef,
-    button('Set', () => {
-      if (inputRef.value !== '') {
-        updateSetting(key, inputRef.value);
-        inputRef.value = '';
-      }
-    }),
+    button('Set', withValue(inputRef, value => updateSetting(key, value))),
   );
 };
