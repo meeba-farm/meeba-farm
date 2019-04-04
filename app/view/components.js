@@ -88,6 +88,20 @@ export const row = (...children) => e('div', {
 }, ...children);
 
 /**
+ * Select element
+ *
+ * @param {string} label
+ * @param {object} attrs
+ * @param {string[]} options
+ * @returns {HTMLSelectElement}
+ */
+export const select = (label, { style = {}, ...attrs }, ...options) => (
+  e('select', { style: { 'margin-right': '0.5em', ...style }, ...attrs },
+    e('option', { value: '' }, label),
+    ...options.map(value => e('option', { value }, value)))
+);
+
+/**
  * Page title with reduced margins
  *
  * @param {string} label

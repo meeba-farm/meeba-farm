@@ -1,8 +1,17 @@
-import { updateSetting } from '../settings.js';
+import {
+  settings,
+  updateSetting,
+} from '../settings.js';
+import {
+  getNested,
+  listKeys,
+} from '../utils/objects.js';
 import {
   button,
   header,
+  input,
   row,
+  select,
   title,
   settingInput,
   setting,
@@ -19,6 +28,44 @@ import { e } from './dom.js';
  */
 
 const INTERFACE_ID = 'interface';
+const STRING_SETTINGS = new Set(['core.seed', 'bodies.moteColor']);
+
+const debugSettings = () => {
+  let selected = '';
+  const debugKeys = listKeys(settings).filter(key => key.slice(0, 5) !== 'core.');
+
+  const debugInput = input('debug', '--', { style: { width: '5em' } });
+  const debugSelect = select('Select Debug Setting...', {
+    style: { width: '8em' },
+    onchange: () => {
+      selected = debugSelect.value;
+      debugInput.placeholder = getNested(settings, selected.split('.'), '--');
+    },
+  }, ...debugKeys);
+
+  const debugButton = button('Set', () => {
+    const { value } = debugInput;
+    if (value !== '') {
+      if (STRING_SETTINGS.has(selected)) {
+        updateSetting(selected, value);
+      } else {
+        const parsed = Number(value);
+        if (!Number.isNaN(parsed)) {
+          updateSetting(selected, parsed);
+        }
+      }
+      debugInput.placeholder = value;
+      debugInput.value = '';
+    }
+  });
+
+  return row(
+    header('Experimental Debug Settings'),
+    debugSelect,
+    debugInput,
+    debugButton,
+  );
+};
 
 const sizeSettings = () => {
   const widthInput = settingInput('width', { style: { width: '5em' } });
@@ -62,5 +109,6 @@ export const getInterface = ({ pause, resume, reset }) => (
     setting('moteSpawnRate', 'Mote Spawn Rate'),
     setting('energy', 'Kinetic Energy'),
     setting('temperature', 'Tank Temperature'),
-    setting('volatility', 'Gene Volatility'))
+    setting('volatility', 'Gene Volatility'),
+    debugSettings())
 );
