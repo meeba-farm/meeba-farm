@@ -4,6 +4,7 @@ import {
   settings,
   updateSetting,
   addUpdateListener,
+  getSetting,
 } from './settings.js';
 import {
   separateBodies,
@@ -80,6 +81,7 @@ const render = () => {
 };
 
 MeebaFarm.updateSetting = updateSetting;
+MeebaFarm.getSetting = getSetting;
 
 MeebaFarm.pause = () => {
   isRunning = false;

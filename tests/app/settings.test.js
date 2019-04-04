@@ -5,6 +5,7 @@ const {
   settings,
   updateSetting,
   addUpdateListener,
+  getSetting,
 } = require('./settings.common.js');
 require('./meebas/genome.common.js');
 
@@ -55,6 +56,16 @@ describe('Settings methods', () => {
       });
 
       expect(upperCaseSeed).to.equal('FOO');
+    });
+  });
+
+  describe('getSetting', () => {
+    it('should fetch a core setting when passed a single key', () => {
+      expect(getSetting('seed')).to.equal(settings.core.seed);
+    });
+
+    it('should fetch a module setting if passed a path', () => {
+      expect(getSetting('genome.bitsPerMass')).to.equal(settings.genome.bitsPerMass);
     });
   });
 });

@@ -1,4 +1,7 @@
-import { setNested } from './utils/objects.js';
+import {
+  getNested,
+  setNested,
+} from './utils/objects.js';
 
 /**
  * Core setting which are visible to and updatable by the GUI
@@ -104,6 +107,15 @@ export const settings = {
 const updateListeners = [];
 
 /**
+ * @param {string} pathString - dot-separated setting path
+ * @returns {string[]} - path array
+ */
+const parsePathString = (pathString) => {
+  const pathArray = pathString.split('.');
+  return pathArray.length > 1 ? pathArray : ['core', ...pathArray];
+};
+
+/**
  * Updates a particular setting with a primitive value, updates a core value if
  * passed a single key rather than a full path
  *
@@ -111,10 +123,9 @@ const updateListeners = [];
  * @param {string|number|boolean} value - the new setting value
  */
 export const updateSetting = (pathString, value) => {
-  const pathArray = pathString.split('.');
-  const fullPath = pathArray.length > 1 ? pathArray : ['core', ...pathArray];
+  const path = parsePathString(pathString);
 
-  setNested(settings, fullPath, value);
+  setNested(settings, path, value);
 
   for (const onUpdate of updateListeners) {
     onUpdate();
@@ -130,4 +141,15 @@ export const updateSetting = (pathString, value) => {
 export const addUpdateListener = (onUpdate) => {
   onUpdate();
   updateListeners.push(onUpdate);
+};
+
+/**
+ * Gets a setting value by its dot-separated path string
+ *
+ * @param {string} pathString - dot-separated setting path
+ * @returns {string|number|boolean}
+ */
+export const getSetting = (pathString) => {
+  const path = parsePathString(pathString);
+  return getNested(settings, path);
 };
