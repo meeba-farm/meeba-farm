@@ -53,9 +53,28 @@ describe('Object utils', () => {
       expect(getNested(obj, ['foo', 'bar'])).to.equal(7);
     });
 
+    it('should handle nested array indexes', () => {
+      const obj = {
+        arr: [
+          null,
+          true,
+          {
+            bar: 'baz',
+          },
+        ],
+      };
+
+      expect(getNested(obj, ['arr', 2, 'bar'])).to.equal('baz');
+    });
+
     it('should return undefined if the object does not have a property', () => {
       const obj = {};
       expect(getNested(obj, ['foo'])).to.be.undefined;
+    });
+
+    it('should accept an optional default value', () => {
+      const obj = {};
+      expect(getNested(obj, ['foo'], 'bar')).to.equal('bar');
     });
 
     it('should return the object itself if the path is empty', () => {

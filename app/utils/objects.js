@@ -23,16 +23,20 @@ export const isEmpty = obj => Object.keys(obj).length === 0;
  *
  * @param {any} obj - the object to fetch a property from
  * @param {string[]} path - the path to the nested property
+ * @param {any} [defaultVal] - optional default value to return if property does not exist
  * @returns {any}
  */
-export const getNested = (obj, path) => {
+export const getNested = (obj, path, defaultVal) => {
   if (path.length === 0) {
     return obj;
   }
-  if (!isObject(obj)) {
-    return undefined;
+
+  const [next, ...rest] = path;
+  if (!hasProp(obj, next)) {
+    return defaultVal;
   }
-  return getNested(obj[path[0]], path.slice(1));
+
+  return getNested(obj[next], rest, defaultVal);
 };
 
 /**
