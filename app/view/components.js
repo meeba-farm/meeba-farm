@@ -5,7 +5,6 @@ import {
 } from '../settings.js';
 import {
   e,
-  setById,
   withValue,
 } from './dom.js';
 
@@ -13,15 +12,7 @@ import {
  * @typedef {import('../settings.js').CoreSettings} CoreSettings
  */
 
-/** @type {(keyof CoreSettings)[]} */
-const settingsToUpdate = [];
-
 const { core } = settings;
-addUpdateListener(() => {
-  for (const setting of settingsToUpdate) {
-    setById(setting, 'placeholder', core[setting]);
-  }
-});
 
 /**
  * Returns a basic button element with an onclick listener
@@ -61,13 +52,11 @@ export const header = label => (
 /**
  * Returns a basic text input
  *
- * @param {string} id
  * @param {string|number|boolean} placeholder
  * @param {object} [attrs] - may optionally specify additional styles and attributes
  * @returns {HTMLInputElement}
  */
-export const input = (id, placeholder, { style = {}, ...attrs } = {}) => e('input', {
-  id,
+export const input = (placeholder, { style = {}, ...attrs } = {}) => e('input', {
   placeholder,
   style: {
     'margin-right': '0.5em',
@@ -124,8 +113,11 @@ export const title = label => e('h1', {
  * @returns {HTMLInputElement}
  */
 export const settingInput = (key, attrs = {}) => {
-  settingsToUpdate.push(key);
-  return input(key, core[key], { type: 'number', ...attrs });
+  const inputRef = input(core[key], { type: 'number', ...attrs });
+  addUpdateListener(() => {
+    inputRef.placeholder = core[key].toString();
+  });
+  return inputRef;
 };
 
 // eslint-disable-next-line valid-jsdoc

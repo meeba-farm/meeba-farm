@@ -41,7 +41,7 @@ const debugSettings = () => {
   let selected = '';
   const debugKeys = listKeys(settings).filter(key => key.slice(0, 5) !== 'core.');
 
-  const debugInput = input('debug', '--', { style: { width: '5em' } });
+  const debugInput = input('--', { style: { width: '5em' } });
   const debugSelect = select('Select Debug Setting...', {
     style: { width: '8em' },
     onchange: () => {
@@ -82,7 +82,7 @@ const sizeSettings = () => {
 };
 
 const settingsLoader = () => {
-  const saveStringInput = input('saveString', 'Paste a saved settings string');
+  const saveStringInput = input('Paste a saved settings string');
   addUpdateListener(() => {
     const saved = getSavedSettings();
     if (saved) {
