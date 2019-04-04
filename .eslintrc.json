@@ -1,0 +1,123 @@
+{
+    "env": {
+        "browser": true
+    },
+    "extends": "airbnb-base",
+    "plugins": [
+        "curry",
+        "spellcheck"
+    ],
+    "rules": {
+        "arrow-parens": "off",
+        "curry/arrow-parens": ["error", "as-needed", { "requireForBlockBody": true, "curry": "always" }],
+        "import/extensions": "always",
+        "import/prefer-default-export": "off",
+        "no-param-reassign": ["error", { "props": false }],
+        "no-restricted-syntax": [
+            "error",
+            {
+                "selector": "ForInStatement",
+                "message": "for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array."
+            },
+            {
+                "selector": "LabeledStatement",
+                "message": "Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand."
+            },
+            {
+                "selector": "WithStatement",
+                "message": "`with` is disallowed in strict mode because it makes code impossible to predict and optimize."
+            }
+        ],
+        "object-curly-newline": ["error",  { "consistent": true }],
+        "spellcheck/spell-checker": ["error", {
+            "skipIfMatch": [
+                ".*\\.js",
+                ".*\\.json",
+                "@\\w*",
+                "#[0-9a-f]+",
+                "[0-9]+px",
+                "[0-9]+em",
+                "eslint-.*",
+                "https?:\\/\\/.*"
+            ],
+            "skipWords": [
+                "arccosine",
+                "args",
+                "attrs",
+                "baz",
+                "bdd",
+                "calc",
+                "chai",
+                "collider",
+                "concatted",
+                "const",
+                "corge",
+                "ctx",
+                "deactivator",
+                "delventhal",
+                "dir",
+                "dna",
+                "drawable",
+                "drawables",
+                "extname",
+                "fn",
+                "fs",
+                "href",
+                "init",
+                "interactor",
+                "kleiber",
+                "len",
+                "lut",
+                "meeba",
+                "meebas",
+                "mn",
+                "noop",
+                "num",
+                "nums",
+                "onclick",
+                "outliner",
+                "pipeable",
+                "prng",
+                "px",
+                "qux",
+                "quux",
+                "quuz",
+                "readdir",
+                "rect",
+                "renderer",
+                "sqr",
+                "typeof",
+                "uint",
+                "un",
+                "ungrouped",
+                "upkeeper",
+                "ut",
+                "utf-8",
+                "utils",
+                "vec",
+                "vn",
+                "vt",
+                "zac"
+            ]
+        }],
+        "valid-jsdoc": ["error", {
+            "matchDescription": "^(?![\\S\\s])|^[A-Z][\\S\\s]*[^.?!]$",
+            "requireParamDescription": false,
+            "requireParamType": true,
+            "requireReturn": false,
+            "requireReturnDescription": false,
+            "requireReturnType": true,
+            "prefer": {
+                "arg": "param",
+                "argument": "param",
+                "property": "prop",
+                "return": "returns"
+            },
+            "preferType": {
+                "Boolean": "boolean",
+                "Number": "number",
+                "String": "string"
+            }
+        }]
+    }
+}

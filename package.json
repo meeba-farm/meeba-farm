@@ -1,0 +1,35 @@
+{
+  "name": "meeba-farm",
+  "version": "0.2.0",
+  "description": "A life simulator where simple \"meebas\" live, eat, breed, and die",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "http-server -p 3384",
+    "test": "npm run lint && npm run type-check && npm run unit-tests",
+    "lint": "eslint app/ tests/",
+    "type-check": "tsc --allowJs --checkJs --noEmit --strict --target ES2017 app/*.js",
+    "unit-tests": "mocha --require tests/modules-to-common.js \"tests/main.js\" \"tests/**/*.test.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meeba-farm/meeba-farm.git"
+  },
+  "author": "Zac Delventhal <delventhalz@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/meeba-farm/meeba-farm/issues"
+  },
+  "homepage": "https://meeba-farm.github.io/",
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^5.3.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-curry": "^0.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-spellcheck": "0.0.11",
+    "http-server": "^0.11.1",
+    "mocha": "^5.2.0",
+    "typescript": "^3.2.4"
+  }
+}

@@ -1,0 +1,12 @@
+{
+    "env": {
+        "mocha": true
+    },
+    "parserOptions": {
+        "sourceType": "script"
+    },
+    "rules": {
+        "no-unused-expressions": "off",
+        "import/no-unresolved": "off"
+    }
+}
