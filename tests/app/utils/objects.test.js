@@ -8,6 +8,7 @@ const {
   getNested,
   setNested,
   listKeys,
+  listValues,
 } = require('./objects.common.js');
 
 describe('Object utils', () => {
@@ -180,6 +181,29 @@ describe('Object utils', () => {
       });
 
       expect(keys).to.deep.equal(['corge', 'foo.bar.baz', 'qux.quux']);
+    });
+  });
+
+  describe('listValues', () => {
+    it('should list the values of an object, sorted by key', () => {
+      const keys = listValues({ foo: 1, bar: false });
+      expect(keys).to.deep.equal([false, 1]);
+    });
+
+    it('should recursively list nested values', () => {
+      const keys = listValues({
+        foo: {
+          bar: {
+            baz: undefined,
+          },
+        },
+        qux: {
+          quux: 7,
+        },
+        corge: {},
+      });
+
+      expect(keys).to.deep.equal([{}, undefined, 7]);
     });
   });
 });

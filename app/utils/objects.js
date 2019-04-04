@@ -86,3 +86,14 @@ export const listKeys = (obj, parentKeys = []) => {
 
   return flatten(nested).sort();
 };
+
+/**
+ * Recursively lists all values in an object, following the same sorting as listKeys
+ *
+ * @param {object} obj
+ * @returns {any[]}
+ */
+export const listValues = (obj) => {
+  const keys = listKeys(obj);
+  return keys.map(key => getNested(obj, key.split('.')));
+};
