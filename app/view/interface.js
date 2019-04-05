@@ -59,7 +59,10 @@ const debugSettings = () => {
     header('Experimental Debug Settings'),
     debugSelect,
     debugInput,
-    button('Set', withValue(debugInput, value => updateSetting(selected, value))),
+    button('Set', withValue(debugInput, (value) => {
+      updateSetting(selected, value);
+      debugInput.placeholder = value;
+    })),
   );
 };
 
