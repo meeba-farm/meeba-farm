@@ -1,6 +1,6 @@
 {
   "name": "meeba-farm",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "A life simulator where simple \"meebas\" live, eat, breed, and die",
   "main": "app/main.js",
   "scripts": {
