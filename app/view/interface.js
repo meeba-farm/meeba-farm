@@ -37,6 +37,12 @@ import {
 const INTERFACE_ID = 'interface';
 const STRING_SETTINGS = new Set(['core.seed', 'bodies.moteColor']);
 
+const BLURB = [
+  'An evolving life simulation with simple mutating creates called "meebas", each',
+  'with their own unique DNA. Modify the environmental settings below to see how',
+  'it changes the meeba species that emerge through natural selection.',
+].join(' ');
+
 const debugSettings = () => {
   let selected = '';
   const debugKeys = listKeys(settings).filter(key => key.slice(0, 5) !== 'core.');
@@ -114,6 +120,7 @@ export const getInterface = ({ pause, resume, reset }) => (
       button('Resume', resume),
       button('Reset', reset),
     ),
+    row(e('p', {}, BLURB)),
     setting('seed', 'Seed', { type: 'text' }),
     sizeSettings(),
     setting('startingBodies', 'Initial Meeba Count'),
