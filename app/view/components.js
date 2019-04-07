@@ -45,7 +45,7 @@ export const canvas = (id, width, height) => e('canvas', { id, width, height });
  * @returns {HTMLDivElement}
  */
 export const header = label => (
-  e('div', { 'margin-bottom': '0.5em' },
+  e('div', {},
     e('strong', {}, label))
 );
 
