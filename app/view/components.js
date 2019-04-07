@@ -42,10 +42,11 @@ export const canvas = (id, width, height) => e('canvas', { id, width, height });
  * A header with a modest bottom margin
  *
  * @param {string} label
+ * @param {object} [attrs] - may optionally specify additional attributes
  * @returns {HTMLDivElement}
  */
-export const header = label => (
-  e('div', {},
+export const header = (label, attrs = {}) => (
+  e('div', { ...attrs },
     e('strong', {}, label))
 );
 
@@ -126,14 +127,15 @@ export const settingInput = (key, attrs = {}) => {
  *
  * @param {keyof CoreSettings} key
  * @param {string} label
+ * @param {string} toolTip - tool tip to display as a title on the header
  * @param {object} [inputAttrs] - may optionally specify additional input attributes
  * @returns {HTMLDivElement}
  */
-export const setting = (key, label, inputAttrs = {}) => {
+export const setting = (key, label, toolTip, inputAttrs = {}) => {
   const inputRef = settingInput(key, inputAttrs);
 
   return row(
-    header(label),
+    header(label, { title: toolTip }),
     inputRef,
     button('Set', withValue(inputRef, value => updateSetting(key, value))),
   );
