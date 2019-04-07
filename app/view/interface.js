@@ -134,7 +134,7 @@ export const getInterface = ({ pause, resume, reset }) => (
     e('div', { style: { 'margin-top': '2em' } },
       e('small', {},
         e('em', {},
-          e('div', { style: { 'margin-bottom': '0.25em' } }, 'Created by ',
+          e('div', { style: { 'margin-bottom': '0.25em' } }, 'Written with vanilla JS by ',
             e('a', { href: 'https://github.com/delventhalz' }, 'Zac Delventhal')),
           e('div', {}, 'Learn more and report issues on ',
             e('a', { href: 'https://github.com/meeba-farm/meeba-farm' }, 'GitHub'))))))
