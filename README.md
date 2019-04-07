@@ -16,9 +16,11 @@ evolve into new and different species better suited to their environment.
     * [Debug Settings](#debug-settings)
     * [Sharing Your Settings](#sharing-your-settings)
 - [Development](#development)
-    * [Linter](#linter)
-    * [Type Checker](#type-checker)
-    * [Unit Tests](#unit-tests)
+    * [Philosophy](#philosophy)
+    * [Tools](#tools)
+        - [Linter](#linter)
+        - [Type Checker](#type-checker)
+        - [Unit Tests](#unit-tests)
 - [Contributing](#contributing)
 - [License](#license)
 - [Attribution](#attribution)
@@ -87,6 +89,25 @@ and save it or send it to a friend. Later when you want to load saved settings,
 paste the string back into that same text field and click "Load".
 
 ## Development
+
+### Philosophy
+
+This project is not just a cool life simulation, but also an opportunity to
+experiment with how I write modern JavaScript. In this repo you will find:
+
+- Modern ES6 syntax
+- ES6 based modules
+- No runtime dependencies
+- No build step
+- A preference for functional patterns over object-oriented
+- A preference for interfaces (via JSDoc types) over classes
+
+For the most part these approaches have been positive and will continue, though
+at some point I may introduce webpack and proper TypeScript interfaces. As cool
+as it is to just be able to boot up my source directly without transpiling, you
+really do give up a lot of utility.
+
+### Tools
 
 Since Meeba Farm is written in vanilla JS with no build step, you only need to
 serve the static files to run the simulation locally. This can be done by
