@@ -37,6 +37,23 @@ import {
 const INTERFACE_ID = 'interface';
 const STRING_SETTINGS = new Set(['core.seed', 'bodies.moteColor']);
 
+const BLURB = [
+  'An evolving life simulation with simple mutating creates called "meebas", each',
+  'with their own unique DNA. Modify the environmental settings below to see how',
+  'it changes the meeba species that emerge through natural selection.',
+].join(' ');
+const TOOL_TIPS = {
+  SEED: 'Specify a seed to ensure the same initial population spawns each reset',
+  TANK_SIZE: 'The height and width of the meeba tank in pixels',
+  INITIAL_COUNT: 'How many meebas to start each simulation with',
+  MOTE_RATE: 'How many motes (food pellets) appear in the tank each second',
+  ENERGY: 'How fast everything bounces around',
+  TEMPERATE: 'A warmer tank increases meeba metabolism, they will feed and die faster',
+  VOLATILITY: 'The more volatile meeba genes, the more mutations their children will inherit',
+  DEBUG: 'Warning! These internal simulation settings can have extreme affects',
+  LOAD: 'Copy this text to share your settings, paste text to load saved settings',
+};
+
 const debugSettings = () => {
   let selected = '';
   const debugKeys = listKeys(settings).filter(key => key.slice(0, 5) !== 'core.');
@@ -56,7 +73,7 @@ const debugSettings = () => {
   }, ...debugKeys);
 
   return row(
-    header('Experimental Debug Settings'),
+    header('Beta Debug Settings', { title: TOOL_TIPS.DEBUG }),
     debugSelect,
     debugInput,
     button('Set', withValue(debugInput, (value) => {
@@ -73,7 +90,7 @@ const sizeSettings = () => {
   const setHeight = withValue(heightInput, value => updateSetting('height', value));
 
   return row(
-    header('Tank Size'),
+    header('Tank Size', { title: TOOL_TIPS.TANK_SIZE }),
     widthInput,
     e('span', { style: { 'margin-right': '0.5em' } }, 'x'),
     heightInput,
@@ -94,7 +111,7 @@ const settingsLoader = () => {
   });
 
   return row(
-    header('Load Settings'),
+    header('Load Settings', { title: TOOL_TIPS.LOAD }),
     saveStringInput,
     button('Load', withValue(saveStringInput, loadSettings)),
   );
@@ -114,20 +131,21 @@ export const getInterface = ({ pause, resume, reset }) => (
       button('Resume', resume),
       button('Reset', reset),
     ),
-    setting('seed', 'Seed', { type: 'text' }),
+    row(e('p', {}, BLURB)),
+    setting('seed', 'Seed', TOOL_TIPS.SEED, { type: 'text' }),
     sizeSettings(),
-    setting('startingBodies', 'Initial Meeba Count'),
-    setting('moteSpawnRate', 'Mote Spawn Rate'),
-    setting('energy', 'Kinetic Energy'),
-    setting('temperature', 'Tank Temperature'),
-    setting('volatility', 'Gene Volatility'),
+    setting('startingBodies', 'Initial Meeba Count', TOOL_TIPS.INITIAL_COUNT),
+    setting('moteSpawnRate', 'Mote Spawn Rate', TOOL_TIPS.MOTE_RATE),
+    setting('energy', 'Kinetic Energy', TOOL_TIPS.ENERGY),
+    setting('temperature', 'Tank Temperature', TOOL_TIPS.TEMPERATE),
+    setting('volatility', 'Gene Volatility', TOOL_TIPS.VOLATILITY),
     debugSettings(),
     settingsLoader(),
     row(button('Restore Default Settings', restoreDefaultSettings)),
     e('div', { style: { 'margin-top': '2em' } },
       e('small', {},
         e('em', {},
-          e('div', { style: { 'margin-bottom': '0.25em' } }, 'Created by ',
+          e('div', { style: { 'margin-bottom': '0.25em' } }, 'Written with vanilla JS by ',
             e('a', { href: 'https://github.com/delventhalz' }, 'Zac Delventhal')),
           e('div', {}, 'Learn more and report issues on ',
             e('a', { href: 'https://github.com/meeba-farm/meeba-farm' }, 'GitHub'))))))

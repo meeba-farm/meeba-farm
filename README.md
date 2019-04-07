@@ -16,9 +16,11 @@ evolve into new and different species better suited to their environment.
     * [Debug Settings](#debug-settings)
     * [Sharing Your Settings](#sharing-your-settings)
 - [Development](#development)
-    * [Linter](#linter)
-    * [Type Checker](#type-checker)
-    * [Unit Tests](#unit-tests)
+    * [Philosophy](#philosophy)
+    * [Tools](#tools)
+        - [Linter](#linter)
+        - [Type Checker](#type-checker)
+        - [Unit Tests](#unit-tests)
 - [Contributing](#contributing)
 - [License](#license)
 - [Attribution](#attribution)
@@ -88,6 +90,25 @@ paste the string back into that same text field and click "Load".
 
 ## Development
 
+### Philosophy
+
+This project is not just a cool life simulation, but also an opportunity to
+experiment with how I write modern JavaScript. In this repo you will find:
+
+- Modern ES6 syntax
+- ES6 based modules
+- No runtime dependencies
+- No build step
+- A preference for functional patterns over object-oriented
+- A preference for interfaces (via JSDoc types) over classes
+
+For the most part these approaches have been positive and will continue, though
+at some point I may introduce webpack and proper TypeScript interfaces. As cool
+as it is to just be able to boot up my source directly without transpiling, you
+really do give up a lot of utility.
+
+### Tools
+
 Since Meeba Farm is written in vanilla JS with no build step, you only need to
 serve the static files to run the simulation locally. This can be done by
 using the following command in your console:
@@ -111,11 +132,11 @@ npm test
 ### Linter
 
 The linter is [ESLint](https://eslint.org/) with a very slightly modified
-version of [AirBnB's Style](https://github.com/airbnb/javascript) installed.
-The biggest addition is a
+version of [AirBnB's Style Guide ](https://github.com/airbnb/javascript)
+installed. The biggest addition is a
 [spell checker](https://github.com/aotaduy/eslint-plugin-spellcheck). Feel free
 to add new "skipWords" to `.eslintrc.json` as needed. The default dictionary is
-missing quite a few technical words, but I find having a spell checker it
+missing quite a few technical words, but I find having a spell checker
 eliminates a whole class of silly typos.
 
 To run _just_ the linter use:
@@ -126,7 +147,7 @@ npm run lint
 
 ### Type Checker
 
-Throughout the code types are meticulously documented with JSDoc comments and
+Throughout the code, types are meticulously documented with JSDoc comments and
 then checked in "strict" mode using the CLI for TypeScript. This is honestly
 kind of a pain, and if I ever refactor the code to use a build step, I will
 probably convert everything to proper TypeScript. But hey, static type checks
@@ -142,13 +163,13 @@ npm run type-check
 
 The unit tests are written with
 [Mocha](https://mochajs.org/)/[Chai](https://www.chaijs.com/) and can be found
-in the [tests/](./tests) directory in files suffixed with `.test.js`. The tests
-run in Node not the browser. I solve ES6 module vs CommonJS issue by running
-the source files through a custom script to convert them to CommonJS. A bit
-hacky, but it works. These generated files are suffixed with `.common.js` and
-should not be modified directly.
+in [tests/app/](./tests/app) in files suffixed with `.test.js`. The tests run
+in Node not the browser. I solve ES6 module vs CommonJS issue by running the
+source files through a custom script to convert them to CommonJS. A bit hacky,
+but it works. These generated files are suffixed with `.common.js` and should
+not be modified directly.
 
-To run _just_ the type checker use:
+To run _just_ the unit tests use:
 
 ```bash
 npm run unit-tests
@@ -157,10 +178,10 @@ npm run unit-tests
 ## Contributing
 
 I always welcome contributions, and I love well formed PRs even more. A
-detailed contributing guide is on the to do list, but in the meantime just make
-sure `npm test` passes, and try to follow
-[Chris Beams's Guide](https://chris.beams.io/posts/git-commit/) to good
-commits.
+detailed contributing guide is on the to do list. In the meantime, fork the
+repo, make your changes, make sure `npm test` passes, and try to follow
+[Chris Beams's Guide](https://chris.beams.io/posts/git-commit/) for your
+commit messages.
 
 ## License
 
@@ -169,5 +190,5 @@ Meeba Farm is open-source and licensed under [MIT](./LICENSE).
 ## Attribution
 
 Meeba Farm was originally inspired by David Bau's
-[Genetic Cars](https://rednuht.org/genetic_cars_2/). It is still pretty sweet,
-so check it out!
+[Genetic Cars](https://rednuht.org/genetic_cars_2/). It's pretty sweet
+simulation, check it out!
