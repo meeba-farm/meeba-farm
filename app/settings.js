@@ -92,17 +92,27 @@ export const UI_WIDTH = 250;
  */
 const getRandomSeed = () => Math.random().toString(36).slice(2);
 
+/**
+ * @returns {number}
+ */
+const getTankWidth = () => window.innerWidth - UI_WIDTH - 2 * TANK_PADDING - EXTRA_BUFFER;
+
+/**
+ * @returns {number}
+ */
+const getTankHeight = () => window.innerHeight - 2 * TANK_PADDING - EXTRA_BUFFER;
+
 /** @type Settings */
 export const settings = {
   core: {
-    height: window.innerHeight - 2 * TANK_PADDING - EXTRA_BUFFER,
+    height: getTankHeight(),
     energy: 3000000,
     moteSpawnRate: 16,
     seed: getRandomSeed(),
     startingBodies: 50,
     temperature: 30,
     volatility: 100,
-    width: window.innerWidth - UI_WIDTH - 2 * TANK_PADDING - EXTRA_BUFFER,
+    width: getTankWidth(),
   },
   bodies: {
     minRadius: 10,
@@ -250,6 +260,8 @@ export const restoreDefaultSettings = () => {
   window.localStorage.removeItem(STORAGE_KEY);
   SETTINGS_KEYS.forEach((key, i) => setSetting(key, DEFAULT_VALUES[i]));
   setSetting('seed', getRandomSeed());
+  setSetting('width', getTankWidth());
+  setSetting('height', getTankHeight());
   triggerListeners();
 };
 
