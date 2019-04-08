@@ -96,10 +96,10 @@ const getRandomSeed = () => Math.random().toString(36).slice(2);
 export const settings = {
   core: {
     height: window.innerHeight - 2 * TANK_PADDING - EXTRA_BUFFER,
-    energy: 3500000,
-    moteSpawnRate: 4,
+    energy: 3000000,
+    moteSpawnRate: 16,
     seed: getRandomSeed(),
-    startingBodies: 75,
+    startingBodies: 50,
     temperature: 30,
     volatility: 100,
     width: window.innerWidth - UI_WIDTH - 2 * TANK_PADDING - EXTRA_BUFFER,
@@ -107,7 +107,7 @@ export const settings = {
   bodies: {
     minRadius: 10,
     moteColor: '#792',
-    moteRadius: 8,
+    moteRadius: 5,
     moteCalorieAdjustment: 2,
     moteSpeedAdjustment: 0.03,
     spawningEnergyAdjustment: 0.75,
@@ -128,11 +128,11 @@ export const settings = {
     percentSpikeGenes: 0.05,
   },
   simulation: {
-    maxBodies: 800,
+    maxBodies: 500,
     spikeHighlightTime: 167,
   },
   spikes: {
-    baseSpikeDrain: 2500,
+    baseSpikeDrain: 10000,
     drainLengthExponent: 1.2,
     spikeWidth: 6,
   },
@@ -140,10 +140,10 @@ export const settings = {
     massCalorieExponent: 0.66, // Idealized Kleiber's law
     percentDiesAt: 0.5,
     percentSpawnsAt: 2,
-    upkeepPerSpike: 8,
+    upkeepPerSpike: 16,
     upkeepPerLength: 1,
     baseUpkeepAdjustment: 0.075, // Adjust so "average" use is ~15 cal/sec
-    spikeUpkeepAdjustment: 200, // Adjust so cost of four is about equal to mass cost
+    spikeUpkeepAdjustment: 250, // Adjust so cost of four is about equal to mass cost
   },
 };
 
