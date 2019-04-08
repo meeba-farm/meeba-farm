@@ -1,7 +1,6 @@
 import {
   settings,
   updateSetting,
-  addUpdateListener,
   getSavedSettings,
   loadSettings,
   restoreDefaultSettings,
@@ -51,7 +50,7 @@ const TOOL_TIPS = {
   TEMPERATE: 'A warmer tank increases meeba metabolism, they will feed and die faster',
   VOLATILITY: 'The more volatile meeba genes, the more mutations their children will inherit',
   DEBUG: 'Warning! These internal simulation settings can have extreme affects',
-  LOAD: 'Copy this text to share your settings, paste text to load saved settings',
+  LOAD: 'Copy this text string to share your settings, paste to load saved settings',
 };
 
 const debugSettings = () => {
@@ -102,18 +101,20 @@ const sizeSettings = () => {
 };
 
 const settingsLoader = () => {
-  const saveStringInput = input('Paste a saved settings string');
-  addUpdateListener(() => {
-    const saved = getSavedSettings();
-    if (saved) {
-      saveStringInput.value = saved;
-    }
+  const saveStringInput = e('textarea', {
+    placeholder: 'Click "Get" to retrieve saved settings,\nclick "Load" to load new settings...',
+    rows: 5,
+    style: { width: '95%' },
   });
 
   return row(
-    header('Load Settings', { title: TOOL_TIPS.LOAD }),
+    header('Save/Load Settings', { title: TOOL_TIPS.LOAD }),
     saveStringInput,
+    button('Get', () => {
+      saveStringInput.value = getSavedSettings() || '';
+    }),
     button('Load', withValue(saveStringInput, loadSettings)),
+    button('Restore Defaults', restoreDefaultSettings),
   );
 };
 
@@ -141,7 +142,6 @@ export const getInterface = ({ pause, resume, reset }) => (
     setting('volatility', 'Gene Volatility', TOOL_TIPS.VOLATILITY),
     debugSettings(),
     settingsLoader(),
-    row(button('Restore Default Settings', restoreDefaultSettings)),
     e('div', { style: { 'margin-top': '2em' } },
       e('small', {},
         e('em', {},
