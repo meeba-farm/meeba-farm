@@ -37,7 +37,7 @@ const INTERFACE_ID = 'interface';
 const STRING_SETTINGS = new Set(['core.seed', 'bodies.moteColor']);
 
 const BLURB = [
-  'An evolving life simulation with simple mutating creates called "meebas", each',
+  'An evolving life simulation with simple mutating creatures called "meebas", each',
   'with their own unique DNA. Modify the environmental settings below to see how',
   'it changes the meeba species that emerge through natural selection.',
 ].join(' ');
