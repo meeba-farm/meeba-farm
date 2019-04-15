@@ -135,7 +135,7 @@ export const getInterface = ({ pause, resume, reset }) => (
     row(e('p', {}, BLURB)),
     setting('seed', 'Seed', TOOL_TIPS.SEED, { type: 'text' }),
     sizeSettings(),
-    setting('startingBodies', 'Initial Meeba Count', TOOL_TIPS.INITIAL_COUNT),
+    setting('startingMeebaCount', 'Initial Meeba Count', TOOL_TIPS.INITIAL_COUNT),
     setting('moteSpawnRate', 'Mote Spawn Rate', TOOL_TIPS.MOTE_RATE),
     setting('energy', 'Kinetic Energy', TOOL_TIPS.ENERGY),
     setting('temperature', 'Tank Temperature', TOOL_TIPS.TEMPERATE),

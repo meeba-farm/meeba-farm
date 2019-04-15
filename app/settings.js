@@ -13,7 +13,7 @@ import {
  * @prop {number} height
  * @prop {number} moteSpawnRate
  * @prop {string} seed
- * @prop {number} startingBodies
+ * @prop {number} startingMeebaCount
  * @prop {number} temperature
  * @prop {number} volatility
  * @prop {number} width
@@ -48,6 +48,12 @@ import {
  */
 
 /**
+ * @typedef SettingsModuleSettings
+ * @prop {number} baseMoteSpawn
+ * @prop {number} baseStartingMeebas
+ */
+
+/**
  * @typedef SimulationModuleSettings
  * @prop {number} maxBodies
  * @prop {number} spikeHighlightTime
@@ -79,6 +85,7 @@ import {
  * @prop {CoreSettings} core
  * @prop {BodiesModuleSettings} bodies
  * @prop {GenomeModuleSettings} genome
+ * @prop {SettingsModuleSettings} settings
  * @prop {SimulationModuleSettings} simulation
  * @prop {SpikesModuleSettings} spikes
  * @prop {VitalsModuleSettings} vitals
@@ -86,6 +93,7 @@ import {
 
 const STORAGE_KEY = 'meeba-farm.settings';
 const EXTRA_BUFFER = 16;
+const BASE_TANK_SIZE = 1920 * 1080;
 export const TANK_PADDING = 5;
 export const UI_WIDTH = 250;
 
@@ -109,9 +117,9 @@ export const settings = {
   core: {
     height: getTankHeight(),
     energy: 5000,
-    moteSpawnRate: 16,
+    moteSpawnRate: 0, // Set dynamically
     seed: getRandomSeed(),
-    startingBodies: 50,
+    startingMeebaCount: 0, // Set dynamically
     temperature: 30,
     volatility: 100,
     width: getTankWidth(),
@@ -140,6 +148,10 @@ export const settings = {
     percentSizeGenes: 0.95,
     percentSpikeGenes: 0.05,
   },
+  settings: {
+    baseMoteSpawn: 32,
+    baseStartingMeebas: 100,
+  },
   simulation: {
     maxBodies: 1000,
     spikeHighlightTime: 167,
@@ -160,6 +172,13 @@ export const settings = {
     upkeepPerSpike: 16,
   },
 };
+
+const getTankAdjust = () => (settings.core.width * settings.core.height) / BASE_TANK_SIZE;
+const getMoteSpawnRate = () => Math.floor(settings.settings.baseMoteSpawn * getTankAdjust());
+const getStartingCount = () => Math.floor(settings.settings.baseStartingMeebas * getTankAdjust());
+
+settings.core.moteSpawnRate = getMoteSpawnRate();
+settings.core.startingMeebaCount = getStartingCount();
 
 const SETTINGS_KEYS = listKeys(settings);
 const DEFAULT_VALUES = listValues(settings);
@@ -266,6 +285,8 @@ export const restoreDefaultSettings = () => {
   setSetting('seed', getRandomSeed());
   setSetting('width', getTankWidth());
   setSetting('height', getTankHeight());
+  setSetting('moteSpawnRate', getMoteSpawnRate());
+  setSetting('startingMeebaCount', getStartingCount());
   triggerListeners();
 };
 
