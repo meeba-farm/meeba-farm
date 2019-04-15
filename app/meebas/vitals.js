@@ -38,9 +38,14 @@ addUpdateListener(() => {
  * @param {Spike[]} spikes
  * @returns {number}
  */
-const calcSpikeUpkeep = spikes => spikes
-  .map(({ length }) => fixed.upkeepPerSpike + length * fixed.upkeepPerLength)
-  .reduce((total, perSpike) => total + perSpike, 0);
+const calcSpikeUpkeep = (spikes) => {
+  const countCost = (spikes.length * fixed.upkeepPerSpike) ** fixed.spikeCountExponent;
+  const lengthCost = spikes
+    .map(spike => spike.length)
+    .reduce((total, perSpike) => total + perSpike, 0);
+
+  return countCost + lengthCost;
+};
 
 /**
  * @param {number} mass

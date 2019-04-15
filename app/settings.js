@@ -62,10 +62,11 @@ import {
 
 /**
  * @typedef VitalsModuleSettings
- * @prop {number} massCalorieExponent
  * @prop {number} percentDiesAt
  * @prop {number} percentSpawnsAt
  * @prop {number} baseUpkeepAdjustment
+ * @prop {number} massCalorieExponent
+ * @prop {number} spikeCountExponent
  * @prop {number} upkeepPerSpike
  * @prop {number} upkeepPerMass
  * @prop {number} upkeepPerLength
@@ -149,13 +150,14 @@ export const settings = {
     spikeWidth: 6,
   },
   vitals: {
-    massCalorieExponent: 0.66, // Idealized Kleiber's law
     percentDiesAt: 0.5,
     percentSpawnsAt: 2,
     baseUpkeepAdjustment: 1,
+    massCalorieExponent: 0.66, // Idealized Kleiber's law
+    spikeCountExponent: 1.6,
     upkeepPerLength: 8,
     upkeepPerMass: 1,
-    upkeepPerSpike: 128,
+    upkeepPerSpike: 16,
   },
 };
 
