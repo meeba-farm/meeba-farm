@@ -48,9 +48,10 @@ const calcSpikeUpkeep = spikes => spikes
  * @returns {number}
  */
 const calcUpkeep = (mass, spikes) => {
-  const massCost = mass ** fixed.massCalorieExponent;
-  const spikeCost = calcSpikeUpkeep(spikes) / massCost * fixed.spikeUpkeepAdjustment;
-  return Math.floor((massCost + spikeCost) * dynamic.upkeepAdjustment);
+  const massAdjustment = 1 / (mass ** fixed.massCalorieExponent);
+  const massCost = mass * fixed.upkeepPerMass;
+  const spikeCost = calcSpikeUpkeep(spikes);
+  return Math.floor((massCost + spikeCost) * massAdjustment * dynamic.upkeepAdjustment);
 };
 
 /**

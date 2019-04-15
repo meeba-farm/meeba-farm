@@ -65,10 +65,10 @@ import {
  * @prop {number} massCalorieExponent
  * @prop {number} percentDiesAt
  * @prop {number} percentSpawnsAt
- * @prop {number} upkeepPerSpike
- * @prop {number} upkeepPerLength
  * @prop {number} baseUpkeepAdjustment
- * @prop {number} spikeUpkeepAdjustment
+ * @prop {number} upkeepPerSpike
+ * @prop {number} upkeepPerMass
+ * @prop {number} upkeepPerLength
  */
 
 /**
@@ -152,10 +152,10 @@ export const settings = {
     massCalorieExponent: 0.66, // Idealized Kleiber's law
     percentDiesAt: 0.5,
     percentSpawnsAt: 2,
-    upkeepPerSpike: 16,
-    upkeepPerLength: 1,
-    baseUpkeepAdjustment: 0.075, // Adjust so "average" use is ~15 cal/sec
-    spikeUpkeepAdjustment: 250, // Adjust so cost of four is about equal to mass cost
+    baseUpkeepAdjustment: 1,
+    upkeepPerLength: 8,
+    upkeepPerMass: 1,
+    upkeepPerSpike: 128,
   },
 };
 
