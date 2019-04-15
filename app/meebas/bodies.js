@@ -71,7 +71,7 @@ import {
  * @prop {number} moteMaxSpeed
  * @prop {number} moteBorderRight
  * @prop {number} moteBorderBottom
- * @prop {number} spawningEnergy
+ * @prop {number} maxSpawningEnergy
  */
 
 const COLOR_RANGE = 256 * 256 * 256;
@@ -80,18 +80,16 @@ const { core, bodies: fixed } = settings;
 const dynamic = /** @type DynamicBodySettings */ ({});
 addUpdateListener(() => {
   dynamic.minMass = Math.ceil(Math.PI * sqr(fixed.minRadius));
-  dynamic.maxEnergy = Math.ceil(2 * core.energy / core.startingBodies);
+  dynamic.maxEnergy = Math.ceil(2 * core.energy * fixed.initialEnergyAdjustment);
   dynamic.moteMass = Math.ceil(Math.PI * sqr(fixed.moteRadius));
   dynamic.moteStartingCalories = Math.ceil(dynamic.moteMass * fixed.moteCalorieAdjustment);
-  dynamic.moteMaxSpeed = Math.ceil(
-    dynamic.maxEnergy / dynamic.moteMass * fixed.moteSpeedAdjustment,
-  );
+  dynamic.moteMaxSpeed = Math.ceil(2 * core.energy / dynamic.moteMass * fixed.moteSpeedAdjustment);
   dynamic.moteBorderRight = core.width - fixed.moteRadius;
   dynamic.moteBorderBottom = core.height - fixed.moteRadius;
 
   const tankSizeAdjustment = core.width * core.height / 2073600;
-  dynamic.spawningEnergy = Math.ceil(
-    dynamic.maxEnergy * fixed.spawningEnergyAdjustment * tankSizeAdjustment,
+  dynamic.maxSpawningEnergy = Math.ceil(
+    2 * core.energy * fixed.spawningEnergyAdjustment * tankSizeAdjustment,
   );
 });
 
@@ -166,7 +164,7 @@ export const replicateParent = (parent, angle) => {
   body.x = parent.x + relativeLocation.x;
   body.y = parent.y + relativeLocation.y;
   body.velocity.angle = angle;
-  body.velocity.speed = parent.velocity.speed + randInt(0, dynamic.spawningEnergy / body.mass);
+  body.velocity.speed = parent.velocity.speed + randInt(0, dynamic.maxSpawningEnergy / body.mass);
 
   body.spikes.forEach(getSpikeMover(body.x, body.y));
 

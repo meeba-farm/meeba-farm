@@ -65,8 +65,8 @@ population responds.
 - **Initial Meeba Count**: The number of meebas the simulation starts with
 - **Mote Spawn Rate**: The number of "motes" (green food pellets) that spawn
     each second
-- **Kinetic Energy**: The total kinetic energy in the tank, more means faster
-    movement
+- **Kinetic Energy**: The kinetic energy of each body in the tank, more means
+  faster movement
 - **Tank Temperature**: Scales meeba metabolism, the hotter it is the more
     calories they need and the faster they will feed
 - **Gene Volatility**: The frequency with which mutations occur during

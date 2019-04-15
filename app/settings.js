@@ -21,6 +21,7 @@ import {
 
 /**
  * @typedef BodiesModuleSettings
+ * @prop {number} initialEnergyAdjustment
  * @prop {number} minRadius
  * @prop {string} moteColor
  * @prop {number} moteRadius
@@ -106,7 +107,7 @@ const getTankHeight = () => window.innerHeight - 2 * TANK_PADDING - EXTRA_BUFFER
 export const settings = {
   core: {
     height: getTankHeight(),
-    energy: 3000000,
+    energy: 5000,
     moteSpawnRate: 16,
     seed: getRandomSeed(),
     startingBodies: 50,
@@ -115,12 +116,13 @@ export const settings = {
     width: getTankWidth(),
   },
   bodies: {
+    initialEnergyAdjustment: 10,
     minRadius: 10,
     moteColor: '#792',
     moteRadius: 5,
     moteCalorieAdjustment: 2,
-    moteSpeedAdjustment: 0.03,
-    spawningEnergyAdjustment: 0.75,
+    moteSpeedAdjustment: 0.2,
+    spawningEnergyAdjustment: 20,
   },
   genome: {
     averageGeneCount: 48,
