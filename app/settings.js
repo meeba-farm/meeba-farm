@@ -141,7 +141,7 @@ export const settings = {
     percentSpikeGenes: 0.05,
   },
   simulation: {
-    maxBodies: 500,
+    maxBodies: 1000,
     spikeHighlightTime: 167,
   },
   spikes: {
