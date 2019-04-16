@@ -103,7 +103,7 @@ MeebaFarm.reset = () => {
   // eslint-disable-next-line no-console
   console.log('Starting simulation with seed:', core.seed);
   seedPrng(core.seed);
-  MeebaFarm.bodies = range(core.startingBodies).map(getRandomBody);
+  MeebaFarm.bodies = range(core.startingMeebaCount).map(getRandomBody);
   separateBodies(MeebaFarm.bodies);
 };
 

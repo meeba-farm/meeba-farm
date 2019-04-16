@@ -37,7 +37,7 @@ const INTERFACE_ID = 'interface';
 const STRING_SETTINGS = new Set(['core.seed', 'bodies.moteColor']);
 
 const BLURB = [
-  'An evolving life simulation with simple mutating creates called "meebas", each',
+  'An evolving life simulation with simple mutating creatures called "meebas", each',
   'with their own unique DNA. Modify the environmental settings below to see how',
   'it changes the meeba species that emerge through natural selection.',
 ].join(' ');
@@ -135,7 +135,7 @@ export const getInterface = ({ pause, resume, reset }) => (
     row(e('p', {}, BLURB)),
     setting('seed', 'Seed', TOOL_TIPS.SEED, { type: 'text' }),
     sizeSettings(),
-    setting('startingBodies', 'Initial Meeba Count', TOOL_TIPS.INITIAL_COUNT),
+    setting('startingMeebaCount', 'Initial Meeba Count', TOOL_TIPS.INITIAL_COUNT),
     setting('moteSpawnRate', 'Mote Spawn Rate', TOOL_TIPS.MOTE_RATE),
     setting('energy', 'Kinetic Energy', TOOL_TIPS.ENERGY),
     setting('temperature', 'Tank Temperature', TOOL_TIPS.TEMPERATE),

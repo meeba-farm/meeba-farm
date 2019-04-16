@@ -38,9 +38,14 @@ addUpdateListener(() => {
  * @param {Spike[]} spikes
  * @returns {number}
  */
-const calcSpikeUpkeep = spikes => spikes
-  .map(({ length }) => fixed.upkeepPerSpike + length * fixed.upkeepPerLength)
-  .reduce((total, perSpike) => total + perSpike, 0);
+const calcSpikeUpkeep = (spikes) => {
+  const countCost = (spikes.length * fixed.upkeepPerSpike) ** fixed.spikeCountExponent;
+  const lengthCost = spikes
+    .map(spike => spike.length)
+    .reduce((total, perSpike) => total + perSpike, 0);
+
+  return countCost + lengthCost;
+};
 
 /**
  * @param {number} mass
@@ -48,9 +53,10 @@ const calcSpikeUpkeep = spikes => spikes
  * @returns {number}
  */
 const calcUpkeep = (mass, spikes) => {
-  const massCost = mass ** fixed.massCalorieExponent;
-  const spikeCost = calcSpikeUpkeep(spikes) / massCost * fixed.spikeUpkeepAdjustment;
-  return Math.floor((massCost + spikeCost) * dynamic.upkeepAdjustment);
+  const massAdjustment = 1 / (mass ** fixed.massCalorieExponent);
+  const massCost = mass * fixed.upkeepPerMass;
+  const spikeCost = calcSpikeUpkeep(spikes);
+  return Math.floor((massCost + spikeCost) * massAdjustment * dynamic.upkeepAdjustment);
 };
 
 /**
