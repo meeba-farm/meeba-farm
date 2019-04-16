@@ -9,6 +9,7 @@ const {
   flatten,
   chunk,
   findIndexes,
+  chunkBy,
   groupBy,
   concatBytes,
   toBytes,
@@ -91,6 +92,18 @@ describe('Array utils', () => {
       const indexes = findIndexes([3, 1, 4, 1, 5, 9, 2], n => n > 3);
 
       expect(indexes).to.deep.equal([2, 4, 5]);
+    });
+  });
+
+  describe('chunkBy', () => {
+    it('should chunk an array based on a predicate that identifies a leading value', () => {
+      const chunked = chunkBy([1, 2, 3, 4], n => n % 2 === 0);
+      expect(chunked).to.deep.equal([[1], [2, 3], [4]]);
+    });
+
+    it('should not create an empty chunk if the first element passes the predicate', () => {
+      const chunked = chunkBy([2, 3, 4, 5], n => n % 2 === 0);
+      expect(chunked).to.deep.equal([[2, 3], [4, 5]]);
     });
   });
 

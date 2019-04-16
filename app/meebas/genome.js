@@ -7,6 +7,7 @@ import {
   filter,
   range,
   findIndexes,
+  chunkBy,
   flatten,
   concatBytes,
 } from '../utils/arrays.js';
@@ -250,15 +251,6 @@ const transposeItems = (arr, chance) => {
 };
 
 /**
- * Splits a genome into sub-arrays by control byte
- *
- * @param {Uint8Array} genome
- * @returns {Uint8Array[]}
- */
-const splitGenome = genome => findControlIndexes(genome)
-  .map((index, i, indexes) => genome.slice(index, indexes[i + 1]));
-
-/**
  * Joins an array of gene bytes into one Uint8Array
  *
  * @param {Uint8Array[]} geneArray
@@ -277,7 +269,7 @@ export const replicateGenome = genome => pipe(genome)
   .into(filter, () => rand() >= dynamic.chanceDropByte)
   .into(repeatItems, dynamic.chanceRepeatByte)
   .into(transposeItems, dynamic.chanceTransposeByte)
-  .into(splitGenome)
+  .into(chunkBy, findControlIndexes)
   .into(filter, () => rand() >= dynamic.chanceDropGene)
   .into(repeatItems, dynamic.chanceRepeatGene)
   .into(transposeItems, dynamic.chanceTransposeGene)

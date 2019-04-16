@@ -42,6 +42,21 @@ export const findIndexes = (arr, predicate) => arr
   .filter(index => index !== -1);
 
 /**
+ * Creates a new 2D array based on a predicate which identifies which elements
+ * should start a new chunk
+ *
+ * @param {array} arr - the array to chunk
+ * @param {function(any): boolean} predicate
+ * @returns {array[]}
+ */
+export const chunkBy = (arr, predicate) => {
+  const rawIndexes = findIndexes(arr, predicate);
+  const indexes = rawIndexes[0] === 0 ? rawIndexes : [0, ...rawIndexes];
+
+  return indexes.map((index, i) => arr.slice(index, indexes[i + 1]));
+};
+
+/**
  * Groups the items in an array into sub-arrays by function output
  *
  * @param {array} arr - the array to group
