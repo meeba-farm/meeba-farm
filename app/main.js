@@ -90,13 +90,17 @@ MeebaFarm.loadSettings = loadSettings;
 MeebaFarm.restoreDefaultSettings = restoreDefaultSettings;
 
 MeebaFarm.pause = () => {
-  isRunning = false;
+  if (isRunning) {
+    isRunning = false;
+  }
 };
 
 MeebaFarm.resume = () => {
-  isRunning = true;
-  simulate(performance.now());
-  requestAnimationFrame(render);
+  if (!isRunning) {
+    isRunning = true;
+    simulate(performance.now());
+    requestAnimationFrame(render);
+  }
 };
 
 MeebaFarm.reset = () => {
