@@ -27,9 +27,8 @@ export const flatten = arr => arr.reduce((flat, nested) => flat.concat(nested), 
  * @param {number} size - the size of each chunk
  * @returns {array[]}
  */
-export const chunk = (arr, size) => range(Math.ceil(arr.length / 2))
+export const chunk = (arr, size) => range(Math.ceil(arr.length / size))
   .map(i => arr.slice(i * size, (i + 1) * size));
-
 
 /**
  * Finds the indexes of all items which match a predicate

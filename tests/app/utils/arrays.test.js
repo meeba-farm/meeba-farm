@@ -70,6 +70,14 @@ describe('Array utils', () => {
     it('should include any extra elements in the final chunk', () => {
       expect(chunk([1, 2, 3, 4], 3)).to.deep.equal([[1, 2, 3], [4]]);
     });
+
+    it('should create single item arrays if passed a size of 1', () => {
+      expect(chunk([1, 2, 3, 4], 1)).to.deep.equal([[1], [2], [3], [4]]);
+    });
+
+    it('should create a single chunk if the size is greater than the array length', () => {
+      expect(chunk([1, 2, 3, 4], 5)).to.deep.equal([[1, 2, 3, 4]]);
+    });
   });
 
   describe('findIndexes', () => {
