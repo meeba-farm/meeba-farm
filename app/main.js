@@ -83,24 +83,21 @@ let snapshots = [];
 let nextSnapshot = Infinity;
 let snapshotFrequency = 0;
 
-/** @param {number} lastTick */
-const simulate = (lastTick) => {
+/**
+ * @param {number} lastTick
+ * @returns {function(number): void}
+ */
+const run = (lastTick) => (thisTick) => {
   if (isRunning) {
-    const thisTick = performance.now();
     MeebaFarm.bodies = simulateFrame(MeebaFarm.bodies, lastTick, thisTick);
+    renderFrame(MeebaFarm.bodies);
 
     if (thisTick > nextSnapshot) {
       nextSnapshot = thisTick + snapshotFrequency;
       snapshots.push(getSnapshot(thisTick, MeebaFarm.bodies));
     }
 
-    setTimeout(() => simulate(thisTick), 8);
-  }
-};
-const render = () => {
-  if (isRunning) {
-    renderFrame(MeebaFarm.bodies);
-    requestAnimationFrame(render);
+    requestAnimationFrame(run(thisTick));
   }
 };
 
@@ -119,8 +116,9 @@ MeebaFarm.pause = () => {
 MeebaFarm.resume = () => {
   if (!isRunning) {
     isRunning = true;
-    simulate(performance.now());
-    requestAnimationFrame(render);
+    requestAnimationFrame((thisTick) => {
+      requestAnimationFrame(run(thisTick));
+    });
   }
 };
 MeebaFarm.reset = () => {
