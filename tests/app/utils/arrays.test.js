@@ -9,6 +9,7 @@ const {
   flatten,
   chunk,
   findIndexes,
+  chunkBy,
   groupBy,
   concatBytes,
   toBytes,
@@ -70,19 +71,39 @@ describe('Array utils', () => {
     it('should include any extra elements in the final chunk', () => {
       expect(chunk([1, 2, 3, 4], 3)).to.deep.equal([[1, 2, 3], [4]]);
     });
+
+    it('should create single item arrays if passed a size of 1', () => {
+      expect(chunk([1, 2, 3, 4], 1)).to.deep.equal([[1], [2], [3], [4]]);
+    });
+
+    it('should create a single chunk if the size is greater than the array length', () => {
+      expect(chunk([1, 2, 3, 4], 5)).to.deep.equal([[1, 2, 3, 4]]);
+    });
   });
 
   describe('findIndexes', () => {
-    it('should find an index that matches a predicate', () => {
+    it('should find a single index that matches a predicate', () => {
       const indexes = findIndexes(['foo', 'bar', 'baz'], item => item === 'bar');
 
       expect(indexes).to.deep.equal([1]);
     });
 
-    it('should find an index that matches a predicate', () => {
+    it('should find multiple indexes that match a predicate', () => {
       const indexes = findIndexes([3, 1, 4, 1, 5, 9, 2], n => n > 3);
 
       expect(indexes).to.deep.equal([2, 4, 5]);
+    });
+  });
+
+  describe('chunkBy', () => {
+    it('should chunk an array based on a predicate that identifies a leading value', () => {
+      const chunked = chunkBy([1, 2, 3, 4], n => n % 2 === 0);
+      expect(chunked).to.deep.equal([[1], [2, 3], [4]]);
+    });
+
+    it('should not create an empty chunk if the first element passes the predicate', () => {
+      const chunked = chunkBy([2, 3, 4, 5], n => n % 2 === 0);
+      expect(chunked).to.deep.equal([[2, 3], [4, 5]]);
     });
   });
 

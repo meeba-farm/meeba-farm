@@ -20,6 +20,10 @@ import {
   range,
 } from './utils/arrays.js';
 import {
+  getSnapshot,
+  toCsv,
+} from './utils/diagnostics.js';
+import {
   seedPrng,
 } from './utils/math.js';
 import {
@@ -38,6 +42,10 @@ import {
 
 /**
  * @typedef {import('./simulation.js').Body} Body
+ */
+
+/**
+ * @typedef {import('./utils/diagnostics.js').Snapshot} Snapshot
  */
 
 const APP_ID = 'app';
@@ -66,23 +74,34 @@ anyWindow.MeebaFarm = MeebaFarm;
 
 /** @type {Body[]} */
 MeebaFarm.bodies = [];
+
+// ------ Setup Loops ------
 let isRunning = false;
 
-/** @param {number} lastTick */
-const simulate = (lastTick) => {
+/** @type {Snapshot[]} */
+let snapshots = [];
+let nextSnapshot = Infinity;
+let snapshotFrequency = 0;
+
+/**
+ * @param {number} lastTick
+ * @returns {function(number): void}
+ */
+const run = (lastTick) => (thisTick) => {
   if (isRunning) {
-    const thisTick = performance.now();
     MeebaFarm.bodies = simulateFrame(MeebaFarm.bodies, lastTick, thisTick);
-    setTimeout(() => simulate(thisTick), 8);
-  }
-};
-const render = () => {
-  if (isRunning) {
     renderFrame(MeebaFarm.bodies);
-    requestAnimationFrame(render);
+
+    if (thisTick > nextSnapshot) {
+      nextSnapshot = thisTick + snapshotFrequency;
+      snapshots.push(getSnapshot(thisTick, MeebaFarm.bodies));
+    }
+
+    requestAnimationFrame(run(thisTick));
   }
 };
 
+// ------ Setup Debug API ------
 MeebaFarm.updateSetting = updateSetting;
 MeebaFarm.getSetting = getSetting;
 MeebaFarm.getSavedSettings = getSavedSettings;
@@ -94,15 +113,14 @@ MeebaFarm.pause = () => {
     isRunning = false;
   }
 };
-
 MeebaFarm.resume = () => {
   if (!isRunning) {
     isRunning = true;
-    simulate(performance.now());
-    requestAnimationFrame(render);
+    requestAnimationFrame((thisTick) => {
+      requestAnimationFrame(run(thisTick));
+    });
   }
 };
-
 MeebaFarm.reset = () => {
   // eslint-disable-next-line no-console
   console.log('Starting simulation with seed:', core.seed);
@@ -111,6 +129,31 @@ MeebaFarm.reset = () => {
   separateBodies(MeebaFarm.bodies);
 };
 
+MeebaFarm.snapshots = {
+  start(frequency = 5000) {
+    nextSnapshot = 0;
+    snapshotFrequency = frequency;
+  },
+
+  stop() {
+    nextSnapshot = Infinity;
+  },
+
+  clear() {
+    snapshots = [];
+  },
+
+  getCsv() {
+    return toCsv(snapshots);
+  },
+
+  getRaw() {
+    return snapshots;
+  },
+};
+
+
+// ------ Setup UI ------
 const frameElement = e(
   'div',
   { style: { width: `${UI_WIDTH + 2 * TANK_PADDING}px` } },
@@ -130,5 +173,7 @@ const frameElement = e(
 );
 
 appendById(APP_ID, frameElement);
+
+// ------ Run ------
 MeebaFarm.reset();
 MeebaFarm.resume();

@@ -62,16 +62,16 @@ describe('Simulation methods', () => {
         y: 50,
         velocity: {
           angle: 0,
-          speed: 10,
+          speed: 100,
         },
       };
 
-      let bodies = simulateFrame([body], 0, 1000);
+      let bodies = simulateFrame([body], 0, 100);
       expect(bodies[0].x).to.equal(60);
       expect(bodies[0].y).to.equal(50);
 
-      bodies = simulateFrame(bodies, 1000, 2000);
-      bodies = simulateFrame(bodies, 2000, 3000);
+      bodies = simulateFrame(bodies, 100, 200);
+      bodies = simulateFrame(bodies, 200, 300);
       expect(bodies[0].x).to.equal(80);
       expect(bodies[0].y).to.equal(50);
     });
@@ -85,14 +85,14 @@ describe('Simulation methods', () => {
         y: 50,
         velocity: {
           angle: 0.5,
-          speed: 10,
+          speed: 100,
         },
       };
 
-      const bodies = simulateFrame([body], 0, 1000);
+      const bodies = simulateFrame([body], 0, 100);
 
       expect(bodies[0].velocity.angle).to.equal(0);
-      expect(bodies[0].velocity.speed).to.equal(10);
+      expect(bodies[0].velocity.speed).to.equal(100);
     });
 
     it('should simulate body collisions', () => {
@@ -104,7 +104,7 @@ describe('Simulation methods', () => {
         y: 50,
         velocity: {
           angle: 0,
-          speed: 10,
+          speed: 100,
         },
       };
 
@@ -116,17 +116,35 @@ describe('Simulation methods', () => {
         y: 50,
         velocity: {
           angle: 0.5,
-          speed: 10,
+          speed: 100,
         },
       };
 
-      const bodies = simulateFrame([body1, body2], 0, 1000);
+      const bodies = simulateFrame([body1, body2], 0, 100);
 
       expect(bodies[0].velocity.angle).to.equal(0.5);
-      expect(bodies[0].velocity.speed).to.equal(10);
+      expect(bodies[0].velocity.speed).to.equal(100);
 
       expect(bodies[1].velocity.angle).to.equal(0);
-      expect(bodies[1].velocity.speed).to.equal(10);
+      expect(bodies[1].velocity.speed).to.equal(100);
+    });
+
+    it('should throttle frames to be no longer than 100ms', () => {
+      const body = {
+        ...getRandomBody(),
+        radius: 10,
+        mass: getCircleArea(10),
+        x: 50,
+        y: 50,
+        velocity: {
+          angle: 0,
+          speed: 100,
+        },
+      };
+
+      const bodies = simulateFrame([body], 0, 1000);
+      expect(bodies[0].x).to.equal(60);
+      expect(bodies[0].y).to.equal(50);
     });
   });
 });
