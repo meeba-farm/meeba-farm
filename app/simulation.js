@@ -45,6 +45,7 @@ import {
  * @typedef {import('./utils/physics.js').Velocity} Velocity
  */
 
+const MAX_TIME_PER_FRAME = 0.1;
 const MAX_SEPARATION_ATTEMPTS = 10;
 
 const { core, bodies: bodySettings, simulation: fixed } = settings;
@@ -365,7 +366,7 @@ export const separateBodies = (bodies) => {
  * @returns {Body[]} - new array with inactive bodies removed
  */
 export const simulateFrame = (bodies, start, stop) => {
-  const delay = (stop - start) / 1000;
+  const delay = Math.min((stop - start) / 1000, MAX_TIME_PER_FRAME);
 
   const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
