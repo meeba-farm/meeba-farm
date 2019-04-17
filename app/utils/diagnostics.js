@@ -70,3 +70,28 @@ export const getSnapshot = (timestamp, bodies) => {
     averageMoteSpeed: avg(motes, mote => mote.velocity.speed),
   };
 };
+
+/**
+ * @param {array} arr
+ * @returns {string}
+ */
+const stringify = arr => JSON.stringify(arr).slice(1, -1);
+
+/**
+ * Generates a CSV spring from an array of objects with identical properties
+ *
+ * @param {array} objArray
+ * @returns {string}
+ */
+export const toCsv = (objArray) => {
+  if (objArray.length === 0) {
+    return '';
+  }
+
+  const keys = Object.keys(objArray[0]).sort();
+  const csValues = objArray
+    .map(obj => stringify(keys.map(key => obj[key])))
+    .join('\n');
+
+  return `${stringify(keys)}\n${csValues}`;
+};

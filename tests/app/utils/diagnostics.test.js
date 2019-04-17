@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const {
   getSnapshot,
+  toCsv,
 } = require('./diagnostics.common.js');
 
 const TEST_BODIES = [
@@ -211,6 +212,18 @@ describe('Diagnostics module', () => {
         averageSpeed: 9,
         averageMoteSpeed: 15,
       });
+    });
+  });
+
+  describe('toCsv', () => {
+    it('should convert an array of objects into a CVS string', () => {
+      const objects = [
+        { foo: 1, bar: 2, baz: 'qux' },
+        { foo: 3, bar: 4, baz: 'quux' },
+        { foo: 5, bar: 6, baz: 'quuz' },
+      ];
+
+      expect(toCsv(objects)).to.equal('"bar","baz","foo"\n2,"qux",1\n4,"quux",3\n6,"quuz",5');
     });
   });
 });
