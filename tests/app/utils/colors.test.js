@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const {
   hslToString,
+  rgbToHue,
 } = require('./colors.common.js');
 
 describe('Color utils', () => {
@@ -34,6 +35,25 @@ describe('Color utils', () => {
 
     it('should round alphas over 1 down to 1', () => {
       expect(hslToString({ h: 90, s: 25, l: 75, a: 17 })).to.equal('hsla(90,25%,75%,1)');
+    });
+  });
+
+  describe('rgbToHue', () => {
+    it('should convert an rgb object to a hue value', () => {
+      expect(rgbToHue({ r: 255, g: 0, b: 0 })).to.equal(0);
+      expect(rgbToHue({ r: 0, g: 255, b: 0 })).to.equal(120);
+      expect(rgbToHue({ r: 0, g: 0, b: 255 })).to.equal(240);
+
+      expect(rgbToHue({ r: 255, g: 255, b: 0 })).to.equal(60);
+      expect(rgbToHue({ r: 0, g: 255, b: 255 })).to.equal(180);
+      expect(rgbToHue({ r: 255, g: 0, b: 255 })).to.equal(300);
+
+      expect(rgbToHue({ r: 255, g: 255, b: 255 })).to.equal(0);
+      expect(rgbToHue({ r: 0, g: 0, b: 0 })).to.equal(0);
+      expect(rgbToHue({ r: 128, g: 128, b: 128 })).to.equal(0);
+
+      expect(rgbToHue({ r: 128, g: 255, b: 0 })).to.equal(90);
+      expect(rgbToHue({ r: 240, g: 8, b: 167 })).to.equal(319);
     });
   });
 });
