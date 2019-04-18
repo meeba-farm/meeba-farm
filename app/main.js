@@ -150,6 +150,10 @@ MeebaFarm.snapshots = {
   getRaw() {
     return snapshots;
   },
+
+  now() {
+    return getSnapshot(performance.now(), MeebaFarm.bodies);
+  },
 };
 
 
