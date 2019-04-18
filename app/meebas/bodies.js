@@ -86,11 +86,7 @@ addUpdateListener(() => {
   dynamic.moteMaxSpeed = Math.ceil(2 * core.energy / dynamic.moteMass * fixed.moteSpeedAdjustment);
   dynamic.moteBorderRight = core.width - fixed.moteRadius;
   dynamic.moteBorderBottom = core.height - fixed.moteRadius;
-
-  const tankSizeAdjustment = core.width * core.height / 2073600;
-  dynamic.maxSpawningEnergy = Math.ceil(
-    2 * core.energy * fixed.spawningEnergyAdjustment * tankSizeAdjustment,
-  );
+  dynamic.maxSpawningEnergy = Math.ceil(2 * core.energy * fixed.spawningEnergyAdjustment);
 });
 
 /**

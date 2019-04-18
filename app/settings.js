@@ -131,7 +131,7 @@ export const settings = {
     moteRadius: 5,
     moteCalorieAdjustment: 2,
     moteSpeedAdjustment: 0.2,
-    spawningEnergyAdjustment: 20,
+    spawningEnergyAdjustment: 5,
   },
   genome: {
     averageGeneCount: 48,
