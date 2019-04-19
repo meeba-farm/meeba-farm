@@ -37,7 +37,7 @@ const sum = (arr, getValue) => arr.reduce((total, item) => total + getValue(item
  * @param {function(T): number} getValue
  * @returns {number}
  */
-const avg = (arr, getValue) => sum(arr, getValue) / arr.length;
+const avg = (arr, getValue) => (arr.length === 0 ? 0 : sum(arr, getValue) / arr.length);
 
 /**
  * @param {Body} body
@@ -53,7 +53,10 @@ const isMeebaOrMote = body => (body.dna ? 'meebas' : 'motes');
  * @returns {Snapshot}
  */
 export const getSnapshot = (timestamp, bodies) => {
-  const { meebas, motes } = groupBy(bodies, isMeebaOrMote);
+  const {
+    meebas = /** @type {Body[]} */ ([]),
+    motes = /** @type {Body[]} */ ([]),
+  } = groupBy(bodies, isMeebaOrMote);
   const spikes = flatten(meebas.map(meeba => meeba.spikes));
 
   return {

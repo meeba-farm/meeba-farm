@@ -213,6 +213,22 @@ describe('Diagnostics module', () => {
         averageMoteSpeed: 15,
       });
     });
+
+    it('should generate a report with an empty set of bodies', () => {
+      expect(getSnapshot(0, [])).to.deep.equal({
+        timestamp: 0,
+        meebas: 0,
+        motes: 0,
+        spikes: 0,
+        calories: 0,
+        averageSize: 0,
+        averageSpikes: 0,
+        averageSpikeLength: 0,
+        averageUpkeep: 0,
+        averageSpeed: 0,
+        averageMoteSpeed: 0,
+      });
+    });
   });
 
   describe('toCsv', () => {
