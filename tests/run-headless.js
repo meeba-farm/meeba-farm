@@ -93,7 +93,7 @@ const writeReport = (path, snapshots) => {
   writeFileSync(resolve(REPORT_DIR, path), report);
 };
 
-const run = (width, height, framerate, duration) => {
+const run = (duration, width, height, framerate) => {
   const start = Date.now();
   const frameDuration = 1 / framerate * SEC;
 
@@ -171,9 +171,20 @@ const run = (width, height, framerate, duration) => {
   console.log();
 };
 
-// Run tests at a variety of screen sizes and framerates
-run(1000, 1000, 15, 1 * HR);
-run(1000, 1000, 144, 10 * MIN);
-run(600, 800, 60, 2 * HR);
-run(1920, 1080, 60, 30 * MIN);
-run(1000, 1000, 60, 4 * HR);
+// Run one test if provided command line args, otherwise run a variety
+
+if (process.argv[2] !== undefined) {
+  const [
+    hours,
+    width = 1000,
+    height = 1000,
+    framerate = 60,
+  ] = process.argv.slice(2).map(Number);
+  run(hours * HR, width, height, framerate);
+} else {
+  run(1 * HR, 1000, 1000, 15);
+  run(30 * MIN, 1000, 1000, 144);
+  run(1 * HR, 600, 800, 60);
+  run(30 * MIN, 1920, 1080, 60);
+  run(8 * HR, 1000, 1000, 60);
+}
