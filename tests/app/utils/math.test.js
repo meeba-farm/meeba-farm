@@ -7,6 +7,7 @@ const {
   sqr,
   dotProduct,
   roundRange,
+  normalize,
   roundAngle,
   sin,
   cos,
@@ -52,6 +53,24 @@ describe('Math utils', () => {
     it('should return the maximum if the number is above it', () => {
       expect(roundRange(1000, -200, -100)).to.equal(-100);
       expect(roundRange(5.00001, -5, 5)).to.equal(5);
+    });
+  });
+
+  describe('normalize', () => {
+    it('should return the percentage a number is between a min and max', () => {
+      expect(normalize(50, 0, 100)).to.equal(0.5);
+      expect(normalize(20, 20, 2000)).to.equal(0);
+      expect(normalize(255, 0, 255)).to.equal(1);
+      expect(normalize(75, -100, 100)).to.equal(0.875);
+      expect(normalize(2001, 1000, 11000)).to.equal(0.1001);
+    });
+
+    it('should return zero if the number is below the minimum', () => {
+      expect(normalize(-101, 0, 100)).to.equal(0);
+    });
+
+    it('should return one if the number is above the maximum', () => {
+      expect(normalize(10001, 0, 100)).to.equal(1);
     });
   });
 
