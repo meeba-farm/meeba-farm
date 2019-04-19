@@ -6,6 +6,7 @@ const {
   PI_2,
   sqr,
   dotProduct,
+  roundRange,
   roundAngle,
   sin,
   cos,
@@ -34,6 +35,23 @@ describe('Math utils', () => {
       expect(dotProduct([2, 3], [4, 5])).to.equal(23);
       expect(dotProduct([4, 2, 0], [7, 1, 3])).to.equal(30);
       expect(dotProduct([-1, 0], [5, 2])).to.equal(-5);
+    });
+  });
+
+  describe('roundRange', () => {
+    it('should should leave the number unchanged if within the range', () => {
+      expect(roundRange(1234, 0, 10000)).to.equal(1234);
+      expect(roundRange(1.337, 1.2, 1.4)).to.equal(1.337);
+    });
+
+    it('should return the minimum if the number is below it', () => {
+      expect(roundRange(-100, 0, 100)).to.equal(0);
+      expect(roundRange(1.9999, 2, 3)).to.equal(2);
+    });
+
+    it('should return the maximum if the number is above it', () => {
+      expect(roundRange(1000, -200, -100)).to.equal(-100);
+      expect(roundRange(5.00001, -5, 5)).to.equal(5);
     });
   });
 

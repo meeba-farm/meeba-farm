@@ -68,6 +68,26 @@ export const roundAngle = (turns) => {
 };
 
 /**
+ * Rounds a number to be no less or more than a min and max
+ *
+ * @param {number} num
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+export const roundRange = (num, min, max) => {
+  if (num < min) {
+    return min;
+  }
+
+  if (num > max) {
+    return max;
+  }
+
+  return num;
+};
+
+/**
  * Creates a trig function based on a lookup table, accepting an angle in "turns"
  *
  * @param {number[]} lut - A lookup table for a particular trig function
