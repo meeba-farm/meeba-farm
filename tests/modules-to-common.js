@@ -30,9 +30,6 @@ const toCommon = (es6) => {
 
   return `/** GENERATED FILE: DO NOT EDIT **/
 'use strict';
-if (typeof window === 'undefined') {
-  var window = global;
-}
 
 ${body}
 
