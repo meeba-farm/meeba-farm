@@ -41,9 +41,19 @@ const avg = (arr, getValue) => (arr.length === 0 ? 0 : sum(arr, getValue) / arr.
 
 /**
  * @param {Body} body
- * @returns {'meebas'|'motes'}
+ * @returns {'meebas'|'motes'|'corpses'}
  */
-const isMeebaOrMote = body => (body.dna ? 'meebas' : 'motes');
+const getBodyCategory = (body) => {
+  if (!body.dna) {
+    return 'motes';
+  }
+
+  if (body.vitals.isDead) {
+    return 'corpses';
+  }
+
+  return 'meebas';
+};
 
 /**
  * Generate a report about the current state of the simulation
@@ -56,7 +66,7 @@ export const getSnapshot = (timestamp, bodies) => {
   const {
     meebas = /** @type {Body[]} */ ([]),
     motes = /** @type {Body[]} */ ([]),
-  } = groupBy(bodies, isMeebaOrMote);
+  } = groupBy(bodies, getBodyCategory);
   const spikes = flatten(meebas.map(meeba => meeba.spikes));
 
   return {
