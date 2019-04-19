@@ -6,6 +6,7 @@
   "scripts": {
     "start": "http-server -p 3384",
     "test": "npm run lint && npm run type-check && npm run unit-tests",
+    "headless": "node tests/modules-to-common.js && node tests/run-headless.js",
     "lint": "eslint app/ tests/",
     "type-check": "tsc --allowJs --checkJs --noEmit --strict --target ES2017 app/*.js",
     "unit-tests": "mocha --require tests/modules-to-common.js \"tests/main.js\" \"tests/**/*.test.js\""

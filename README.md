@@ -175,6 +175,38 @@ To run _just_ the unit tests use:
 npm run unit-tests
 ```
 
+### Headless Simulation
+
+To better evaluate the health of the simulation under default settings there it
+is possible to run Meeba Farm in a "headless" mode. This will run the
+simulation with a Node CLI and generate logs and CSV files with information
+about the meeba population. To run the default headless simulation, use:
+
+```bash
+npm run headless
+```
+
+This will run five tests at a variety of tank sizes, framerates, and duration
+of simulated time. You can use command line arguments to run one test with
+specific parameters:
+
+```bash
+npm run headless -- duration [width=1000] [height=1000] [framerate=60]
+```
+
+Replace the above parameters with a specific number. Note that duration must be
+specificied in _hours_ not milliseconds. For example:
+
+```bash
+npm run headless -- 24 1920 1080
+```
+
+The above would run for 24 hours of simulated time in a tank that was
+1920x1080.
+
+_Note: All CSV reports are stored in the [tests/reports/](./tests/reports)
+directory._
+
 ## Contributing
 
 I always welcome contributions, and I love well formed PRs even more. A
