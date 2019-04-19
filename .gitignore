@@ -3,6 +3,7 @@ node_modules/
 
 # Generated files
 tests/**/*.common.js
+tests/reports/*.csv
 
 # OS X
 .DS_Store

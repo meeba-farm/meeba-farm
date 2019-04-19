@@ -3,17 +3,11 @@
 /* eslint-disable no-underscore-dangle */
 const chai = require('chai');
 const { seedPrng } = require('./app/utils/math.common.js');
+const { stubWindow } = require('./utils/browser-interop.js');
 
 const FLOAT_TOLERANCE = 1e-12;
 
-// Basic window stub
-global.atob = () => 'foo';
-global.btoa = () => 'foo';
-global.localStorage = {
-  getItem: () => 'foo',
-  setItem: () => {},
-  removeItem: () => {},
-};
+stubWindow();
 
 // Seed PRNG with a random string
 seedPrng(Math.random().toString(36).slice(2));

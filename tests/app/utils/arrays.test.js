@@ -131,6 +131,15 @@ describe('Array utils', () => {
       expect(grouped.quux[0]).to.equal(ungrouped[1]);
       expect(grouped.qux[1]).to.equal(ungrouped[2]);
     });
+
+    it('should group array items by index', () => {
+      const grouped = groupBy(['a', 'b', 'c', 'd'], (_, i) => (i % 2 === 0 ? 'evens' : 'odds'));
+
+      expect(grouped).to.deep.equal({
+        evens: ['a', 'c'],
+        odds: ['b', 'd'],
+      });
+    });
   });
 
   describe('concatBytes', () => {

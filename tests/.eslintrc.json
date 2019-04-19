@@ -6,6 +6,7 @@
         "sourceType": "script"
     },
     "rules": {
+        "no-console": "off",
         "no-unused-expressions": "off",
         "import/no-unresolved": "off"
     }

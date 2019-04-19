@@ -131,7 +131,7 @@ export const settings = {
     moteRadius: 5,
     moteCalorieAdjustment: 2,
     moteSpeedAdjustment: 0.2,
-    spawningEnergyAdjustment: 20,
+    spawningEnergyAdjustment: 5,
   },
   genome: {
     averageGeneCount: 48,
@@ -157,19 +157,19 @@ export const settings = {
     spikeHighlightTime: 167,
   },
   spikes: {
-    baseSpikeDrain: 10000,
-    drainLengthExponent: 1.2,
+    baseSpikeDrain: 100000,
+    drainLengthExponent: 1.8,
     spikeWidth: 6,
   },
   vitals: {
     percentDiesAt: 0.5,
     percentSpawnsAt: 2,
-    baseUpkeepAdjustment: 1,
+    baseUpkeepAdjustment: 0.8,
     massCalorieExponent: 0.66, // Idealized Kleiber's law
-    spikeCountExponent: 1.6,
-    upkeepPerLength: 8,
+    spikeCountExponent: 1.7,
+    upkeepPerLength: 16,
     upkeepPerMass: 1,
-    upkeepPerSpike: 16,
+    upkeepPerSpike: 32,
   },
 };
 
