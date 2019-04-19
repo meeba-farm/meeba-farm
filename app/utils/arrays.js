@@ -67,11 +67,14 @@ export const groupBy = (arr, groupingFn) => {
   /** @type {Object<string, array>} */
   const grouped = {};
 
-  for (const item of arr) {
-    const index = groupingFn(item);
+  for (let i = 0; i < arr.length; i += 1) {
+    const item = arr[i];
+    const index = groupingFn(item, i, arr);
+
     if (!grouped[index]) {
       grouped[index] = [];
     }
+
     grouped[index].push(item);
   }
 
