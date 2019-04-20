@@ -19,6 +19,7 @@ import {
   getGap,
   isShorter,
   isCloser,
+  normalize,
   rand,
   randInt,
 } from './utils/math.js';
@@ -295,11 +296,6 @@ const getCalorieUpkeeper = (delay) => (body) => {
  * @returns {function(Body): void} - mutates any deactivating spikes
  */
 const getVitalChecker = (bodies) => (body) => {
-  // Until more complex color handling is implemented, just turn dead meebas black
-  if (body.vitals.isDead) {
-    body.fill = 'black';
-  }
-
   if (body.vitals.calories <= 0) {
     body.isInactive = true;
   }
@@ -313,6 +309,16 @@ const getVitalChecker = (bodies) => (body) => {
 
     body.isInactive = true;
   }
+};
+
+/**
+ * Adjusts the saturation of a body based on its current calories
+ *
+ * @param {Body} body
+ */
+const adjustSaturation = (body) => {
+  const { calories, diesAt, spawnsAt } = body.vitals;
+  body.fill.s = Math.floor(normalize(calories, diesAt, spawnsAt) * 100);
 };
 
 /**
@@ -382,6 +388,7 @@ export const simulateFrame = (bodies, start, stop) => {
   bodies.forEach(moveBody);
   bodies.forEach(upkeepCalories);
   bodies.forEach(checkVitals);
+  bodies.forEach(adjustSaturation);
 
   const newMotes = bodies.length < bodyLimit ? getNewMotes(delay) : [];
 

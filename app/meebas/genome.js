@@ -12,6 +12,9 @@ import {
   concatBytes,
 } from '../utils/arrays.js';
 import {
+  rgbToHue,
+} from '../utils/colors.js';
+import {
   pipe,
 } from '../utils/functions.js';
 import {
@@ -25,6 +28,7 @@ import {
  * @typedef Commands
  * @prop {number} size - the size/area of the meeba
  * @prop {SpikeCommand[]} spikes - the spikes to attach to the meeba
+ * @prop {number} hue - the hue of the meeba from 0 to 360
  */
 
 /**
@@ -57,7 +61,7 @@ import {
  * @prop {number} chanceDropGene
  * @prop {number} chanceRepeatGene
  * @prop {number} chanceTransposeGene
- * @prop {{byte: number, maxRoll: number}[]} controlByteChances
+ * @prop {{byte: number, maxRoll: number}[]} controlByteRolls
  */
 
 const { core, genome: fixed } = settings;
@@ -75,13 +79,28 @@ addUpdateListener(() => {
   dynamic.chanceRepeatGene = fixed.baseChanceRepeatGene * volatilityAdjustment;
   dynamic.chanceTransposeGene = fixed.baseChanceTransposeGene * volatilityAdjustment;
 
-  // Get control bytes in order with the maximum 0 - 1 "roll" that will select them
-  const { percentSpikeGenes, percentSizeGenes } = fixed;
-  const ratioToOne = 1 / (percentSizeGenes + percentSpikeGenes);
-  dynamic.controlByteChances = [
-    { byte: 0xF0, maxRoll: percentSizeGenes * ratioToOne },
-    { byte: 0xF1, maxRoll: 1 },
+  const {
+    percentSpikeGenes,
+    percentSizeGenes,
+    percentRedGenes,
+    percentGreenGenes,
+    percentBlueGenes,
+  } = fixed;
+  const BYTES = [
+    { byte: 0xF0, chance: percentSizeGenes },
+    { byte: 0xF1, chance: percentSpikeGenes },
+    { byte: 0xF2, chance: percentRedGenes },
+    { byte: 0xF3, chance: percentGreenGenes },
+    { byte: 0xF4, chance: percentBlueGenes },
   ];
+  const ratioToOne = 1 / BYTES.reduce((sum, { chance }) => sum + chance, 0);
+
+  // Too clever by half, but will get us an array with "rolls" from 0 - 1
+  dynamic.controlByteRolls = BYTES.reduce((rolls, { byte, chance }, i) => {
+    const maxRoll = chance * ratioToOne + rolls[i].maxRoll;
+    rolls.push({ byte, maxRoll });
+    return rolls;
+  }, [{ byte: 0, maxRoll: 0 }]).slice(1);
 });
 
 /**
@@ -90,10 +109,10 @@ addUpdateListener(() => {
  * @returns {number}
  */
 const randControlByte = () => {
-  const { controlByteChances } = dynamic;
+  const { controlByteRolls } = dynamic;
   const roll = rand();
-  const matchingByte = controlByteChances.find(({ maxRoll }) => roll < maxRoll)
-    || controlByteChances[controlByteChances.length - 1]; // Make TypeScript happy
+  const matchingByte = controlByteRolls.find(({ maxRoll }) => roll < maxRoll)
+    || controlByteRolls[controlByteRolls.length - 1]; // Make TypeScript happy
   return matchingByte.byte;
 };
 
@@ -150,12 +169,15 @@ const toGenes = genome => findControlIndexes(genome)
   }));
 
 /**
- * Read a size gene, returning the number of pixels in size it produces
+ * Count up the bits of all genes that match a certain type
  *
- * @param {Gene} gene - the size gene
- * @returns {number} - the amount of size this gene contributes
+ * @param {number} typeByte
+ * @param {Gene[]} genes
+ * @returns {number}
  */
-const readSizeGene = ({ bytes }) => Math.floor(countBits(bytes) / fixed.bitsPerMass);
+const countTypeBits = (typeByte, genes) => genes
+  .filter(({ type }) => type === typeByte)
+  .reduce((sum, { bytes }) => sum + countBits(bytes), 0);
 
 /**
  * Read a spike gene, returning the basic instructions for building a spike object
@@ -178,15 +200,19 @@ const readSpikeGene = ({ location, bytes }) => ({
 export const readGenome = (genome) => {
   const genes = toGenes(genome);
 
-  const size = genes
-    .filter(({ type }) => type === 0xF0)
-    .reduce((sum, gene) => sum + readSizeGene(gene), 0);
+  const size = Math.floor(countTypeBits(0xF0, genes) / fixed.bitsPerMass);
 
   const spikes = genes
     .filter(({ type }) => type === 0xF1)
     .map(readSpikeGene);
 
-  return { size, spikes };
+  const hue = rgbToHue({
+    r: countTypeBits(0xF2, genes),
+    g: countTypeBits(0xF3, genes),
+    b: countTypeBits(0xF4, genes),
+  });
+
+  return { size, spikes, hue };
 };
 
 /**

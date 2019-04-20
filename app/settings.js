@@ -23,7 +23,9 @@ import {
  * @typedef BodiesModuleSettings
  * @prop {number} initialEnergyAdjustment
  * @prop {number} minRadius
- * @prop {string} moteColor
+ * @prop {number} meebaLightness
+ * @prop {number} moteHue
+ * @prop {number} moteLightness
  * @prop {number} moteRadius
  * @prop {number} moteCalorieAdjustment
  * @prop {number} moteSpeedAdjustment
@@ -45,6 +47,9 @@ import {
  * @prop {number} bitsPerSpikeLength
  * @prop {number} percentSizeGenes
  * @prop {number} percentSpikeGenes
+ * @prop {number} percentRedGenes
+ * @prop {number} percentGreenGenes
+ * @prop {number} percentBlueGenes
  */
 
 /**
@@ -127,7 +132,9 @@ export const settings = {
   bodies: {
     initialEnergyAdjustment: 10,
     minRadius: 10,
-    moteColor: '#792',
+    meebaLightness: 45,
+    moteHue: 77,
+    moteLightness: 33,
     moteRadius: 5,
     moteCalorieAdjustment: 2,
     moteSpeedAdjustment: 0.2,
@@ -145,8 +152,11 @@ export const settings = {
     baseChanceTransposeGene: 0.06,
     bitsPerMass: 1,
     bitsPerSpikeLength: 2,
-    percentSizeGenes: 0.95,
+    percentSizeGenes: 0.8,
     percentSpikeGenes: 0.05,
+    percentRedGenes: 0.05,
+    percentGreenGenes: 0.05,
+    percentBlueGenes: 0.05,
   },
   settings: {
     baseMoteSpawn: 32,

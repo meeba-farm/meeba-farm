@@ -104,6 +104,48 @@ describe('View methods', () => {
         { length: 1, angle: 0.6 },
       ]);
     });
+
+    it('should parse instructions for meeba hue', () => {
+      const { hue: hue1 } = readGenome(Uint8Array.from([
+        0b11110010,
+        0b10101010,
+      ]));
+
+      const { hue: hue2 } = readGenome(Uint8Array.from([
+        0b11110011,
+        0b11000000,
+        0b11110100,
+        0b01010101,
+      ]));
+
+      const { hue: hue3 } = readGenome(Uint8Array.from([
+        0b11110010,
+        0b00101010,
+        0b10000010,
+        0b11110011,
+        0b01111111,
+        0b00000001,
+        0b11110100,
+        0b00000011,
+      ]));
+
+      const { hue: hue4 } = readGenome(Uint8Array.from([
+        0b11110100,
+        0b00000000,
+        0b10000010,
+        0b11110011,
+        0b10000000,
+        0b11110010,
+        0b01111111,
+        0b11110100,
+        0b00000001,
+      ]));
+
+      expect(hue1).to.equal(0);
+      expect(hue2).to.equal(210);
+      expect(hue3).to.equal(90);
+      expect(hue4).to.equal(340);
+    });
   });
 
   describe('replicateGenome', () => {

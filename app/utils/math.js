@@ -68,6 +68,36 @@ export const roundAngle = (turns) => {
 };
 
 /**
+ * Rounds a number to be no less or more than a min and max
+ *
+ * @param {number} num
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+export const roundRange = (num, min, max) => {
+  if (num < min) {
+    return min;
+  }
+
+  if (num > max) {
+    return max;
+  }
+
+  return num;
+};
+
+/**
+ * Normalize a number to be a percentage between a certain min and max
+ *
+ * @param {number} num
+ * @param {number} min
+ * @param {number} max
+ * @returns {number} - percentage from 0.0 to 1.0
+ */
+export const normalize = (num, min, max) => (roundRange(num, min, max) - min) / (max - min);
+
+/**
  * Creates a trig function based on a lookup table, accepting an angle in "turns"
  *
  * @param {number[]} lut - A lookup table for a particular trig function
