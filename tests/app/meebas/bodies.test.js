@@ -15,7 +15,11 @@ const getCircleArea = radius => Math.floor(Math.PI * radius * radius);
 
 const expectIsValidNewBody = (body) => {
   expect(body.dna).to.match(/^[0-9A-F]*$/);
-  expect(body.fill).to.exist;
+  expect(body.fill).to.be.an('object');
+  expect(body.fill.h).to.be.within(0, 360);
+  expect(body.fill.s).to.be.within(0, 100);
+  expect(body.fill.l).to.be.within(0, 100);
+
 
   expect(body.radius).to.be.a('number').greaterThan(0);
   expect(body.mass).to.be.within(getCircleArea(body.radius), getCircleArea(body.radius + 1));

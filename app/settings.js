@@ -24,7 +24,8 @@ import {
  * @prop {number} initialEnergyAdjustment
  * @prop {number} minRadius
  * @prop {number} meebaLightness
- * @prop {string} moteColor
+ * @prop {number} moteHue
+ * @prop {number} moteLightness
  * @prop {number} moteRadius
  * @prop {number} moteCalorieAdjustment
  * @prop {number} moteSpeedAdjustment
@@ -132,7 +133,8 @@ export const settings = {
     initialEnergyAdjustment: 10,
     minRadius: 10,
     meebaLightness: 45,
-    moteColor: '#792',
+    moteHue: 77,
+    moteLightness: 33,
     moteRadius: 5,
     moteCalorieAdjustment: 2,
     moteSpeedAdjustment: 0.2,

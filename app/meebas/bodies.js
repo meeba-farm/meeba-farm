@@ -49,7 +49,7 @@ import {
  *
  * @typedef Body
  * @prop {string} dna - a hex-string genome
- * @prop {string|HSL} fill - a valid color string
+ * @prop {HSL} fill - a valid color string
  * @prop {number} x - horizontal location
  * @prop {number} y - vertical location
  * @prop {number} mass - measurement of size/mass
@@ -179,10 +179,15 @@ export const replicateParent = (parent, angle) => {
  */
 export const spawnMote = () => {
   const { moteRadius } = fixed;
+  const { moteStartingCalories } = dynamic;
 
   return {
     dna: '',
-    fill: fixed.moteColor,
+    fill: {
+      h: fixed.moteHue,
+      s: 100,
+      l: fixed.moteLightness,
+    },
     x: randInt(moteRadius, dynamic.moteBorderRight),
     y: randInt(moteRadius, dynamic.moteBorderBottom),
     mass: dynamic.moteMass,
@@ -192,10 +197,10 @@ export const spawnMote = () => {
       speed: randInt(0, dynamic.moteMaxSpeed),
     },
     vitals: {
-      calories: dynamic.moteStartingCalories,
+      calories: moteStartingCalories,
       upkeep: 0,
       isDead: false,
-      spawnsAt: Number.MAX_SAFE_INTEGER,
+      spawnsAt: moteStartingCalories + 1,
       diesAt: 0,
     },
     spikes: [],
