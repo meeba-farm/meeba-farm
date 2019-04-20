@@ -37,6 +37,10 @@ import {
  */
 
 /**
+ * @typedef {import('../utils/colors.js').HSL} HSL
+ */
+
+/**
  * @typedef {import('../utils/physics.js').Velocity} Velocity
  */
 
@@ -45,7 +49,7 @@ import {
  *
  * @typedef Body
  * @prop {string} dna - a hex-string genome
- * @prop {string} fill - a valid color string
+ * @prop {string|HSL} fill - a valid color string
  * @prop {number} x - horizontal location
  * @prop {number} y - vertical location
  * @prop {number} mass - measurement of size/mass
@@ -73,8 +77,6 @@ import {
  * @prop {number} moteBorderBottom
  * @prop {number} maxSpawningEnergy
  */
-
-const COLOR_RANGE = 256 * 256 * 256;
 
 const { core, bodies: fixed } = settings;
 const dynamic = /** @type DynamicBodySettings */ ({});
@@ -106,7 +108,11 @@ const initBody = (dna) => {
 
   return {
     dna: toHex(dna),
-    fill: 'black',
+    fill: {
+      h: dnaCommands.hue,
+      s: 100,
+      l: fixed.meebaLightness,
+    },
     x: 0,
     y: 0,
     mass,
@@ -133,7 +139,6 @@ const initBody = (dna) => {
 export const getRandomBody = () => {
   const body = initBody(createGenome());
 
-  body.fill = `#${randInt(0, COLOR_RANGE).toString(16).padStart(6, '0')}`;
   body.x = randInt(body.radius, core.width - body.radius);
   body.y = randInt(body.radius, core.height - body.radius);
   body.velocity.angle = rand();
@@ -152,7 +157,6 @@ export const getRandomBody = () => {
 export const replicateParent = (parent, angle) => {
   const dna = replicateGenome(toBytes(parent.dna));
   const body = initBody(dna);
-  body.fill = parent.fill;
 
   setCalories(body.vitals, Math.floor(parent.vitals.calories / 2));
 

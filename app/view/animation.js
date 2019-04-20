@@ -2,7 +2,12 @@ import {
   flatten,
   groupBy,
 } from '../utils/arrays.js';
-import { PI_2 } from '../utils/math.js';
+import {
+  hslToString,
+} from '../utils/colors.js';
+import {
+  PI_2,
+} from '../utils/math.js';
 
 /**
  * @typedef {import('../simulation.js').Body} Body
@@ -62,7 +67,7 @@ const getTriangleOutliner = (ctx) => ({ x1, y1, x2, y2, x3, y3 }) => {
  * @param {Drawable} drawable
  * @returns {string}
  */
-const getFill = drawable => drawable.fill;
+const getFill = ({ fill }) => (typeof fill === 'string' ? fill : hslToString(fill));
 
 /**
  * Gets a function to outline and fill drawable objects, will iterate through

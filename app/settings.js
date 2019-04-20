@@ -23,6 +23,7 @@ import {
  * @typedef BodiesModuleSettings
  * @prop {number} initialEnergyAdjustment
  * @prop {number} minRadius
+ * @prop {number} meebaLightness
  * @prop {string} moteColor
  * @prop {number} moteRadius
  * @prop {number} moteCalorieAdjustment
@@ -130,6 +131,7 @@ export const settings = {
   bodies: {
     initialEnergyAdjustment: 10,
     minRadius: 10,
+    meebaLightness: 45,
     moteColor: '#792',
     moteRadius: 5,
     moteCalorieAdjustment: 2,

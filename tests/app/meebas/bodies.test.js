@@ -15,7 +15,7 @@ const getCircleArea = radius => Math.floor(Math.PI * radius * radius);
 
 const expectIsValidNewBody = (body) => {
   expect(body.dna).to.match(/^[0-9A-F]*$/);
-  expect(body.fill).to.be.a('string');
+  expect(body.fill).to.exist;
 
   expect(body.radius).to.be.a('number').greaterThan(0);
   expect(body.mass).to.be.within(getCircleArea(body.radius), getCircleArea(body.radius + 1));
@@ -60,12 +60,10 @@ describe('Body methods', () => {
   describe('replicateParent', () => {
     it('should create a body based on a parent and angle', () => {
       const parent = getRandomBody();
-      parent.fill = '#f00ba6';
       parent.velocity.speed = 123;
       const child = replicateParent(parent, 0.25);
 
       expectIsValidNewBody(child);
-      expect(child.fill).to.equal('#f00ba6');
       expect(child.velocity.angle).to.equal(0.25);
       expect(child.velocity.speed).to.be.at.least(123);
     });
