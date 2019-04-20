@@ -12,17 +12,28 @@ describe('Color utils', () => {
       expect(hslToString({ h: 300, s: 8, l: 99 })).to.equal('hsl(300,8%,99%)');
     });
 
+    it('should drop hue information when fully desaturated', () => {
+      expect(hslToString({ h: 153, s: 0, l: 87 })).to.equal('hsl(0,0%,87%)');
+    });
+
+    it('should drop hue and saturation when fully lightened or darkened', () => {
+      expect(hslToString({ h: 217, s: 72, l: 0 })).to.equal('hsl(0,0%,0%)');
+      expect(hslToString({ h: 2, s: 2, l: 100 })).to.equal('hsl(0,0%,100%)');
+    });
+
     it('should wrap hue degrees at 360', () => {
-      expect(hslToString({ h: 720, s: 100, l: 0 })).to.equal('hsl(0,100%,0%)');
-      expect(hslToString({ h: -359, s: 100, l: 0 })).to.equal('hsl(1,100%,0%)');
+      expect(hslToString({ h: 720, s: 100, l: 50 })).to.equal('hsl(0,100%,50%)');
+      expect(hslToString({ h: -359, s: 100, l: 50 })).to.equal('hsl(1,100%,50%)');
     });
 
     it('should round saturation/lightness over 100 down to 100', () => {
-      expect(hslToString({ h: 132, s: 999, l: Infinity })).to.equal('hsl(132,100%,100%)');
+      expect(hslToString({ h: 132, s: 999, l: 75 })).to.equal('hsl(132,100%,75%)');
+      expect(hslToString({ h: 132, s: 50, l: Infinity })).to.equal('hsl(0,0%,100%)');
     });
 
     it('should round negative saturation/lightness up to 0', () => {
-      expect(hslToString({ h: 232, s: -Infinity, l: -0.01 })).to.equal('hsl(232,0%,0%)');
+      expect(hslToString({ h: 232, s: -Infinity, l: 45 })).to.equal('hsl(0,0%,45%)');
+      expect(hslToString({ h: 254, s: 90, l: -0.01 })).to.equal('hsl(0,0%,0%)');
     });
 
     it('should convert an hsla object to a CSS color string', () => {

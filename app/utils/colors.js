@@ -42,9 +42,9 @@ const wrapNumber = (num, size) => {
  * @returns {string}
  */
 export const hslToString = (hsl) => {
-  const h = wrapNumber(hsl.h, 360);
-  const s = roundRange(hsl.s, 0, 100);
   const l = roundRange(hsl.l, 0, 100);
+  const s = (l === 0 || l === 100) ? 0 : roundRange(hsl.s, 0, 100);
+  const h = s === 0 ? 0 : wrapNumber(hsl.h, 360);
 
   if (hasProp(hsl, 'a')) {
     const a = roundRange(hsl.a, 0, 1);
