@@ -45,6 +45,9 @@ import {
  * @prop {number} bitsPerSpikeLength
  * @prop {number} percentSizeGenes
  * @prop {number} percentSpikeGenes
+ * @prop {number} percentRedGenes
+ * @prop {number} percentGreenGenes
+ * @prop {number} percentBlueGenes
  */
 
 /**
@@ -145,8 +148,11 @@ export const settings = {
     baseChanceTransposeGene: 0.06,
     bitsPerMass: 1,
     bitsPerSpikeLength: 2,
-    percentSizeGenes: 0.95,
+    percentSizeGenes: 0.8,
     percentSpikeGenes: 0.05,
+    percentRedGenes: 0.05,
+    percentGreenGenes: 0.05,
+    percentBlueGenes: 0.05,
   },
   settings: {
     baseMoteSpawn: 32,
