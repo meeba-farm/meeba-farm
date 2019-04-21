@@ -24,6 +24,9 @@ import {
   randInt,
 } from './utils/math.js';
 import {
+  getTweener,
+} from './utils/objects.js';
+import {
   toVector,
   bounceX,
   bounceY,
@@ -228,8 +231,10 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
     const isSpikeOverlapping = getSpikeOverlapChecker(body, other);
     for (const spike of body.spikes) {
       if (isSpikeOverlapping(spike)) {
-        spike.fill = 'red';
-        spike.meta.deactivateTime = tick + fixed.spikeHighlightTime;
+        const { fill } = spike;
+        fill.l = 50;
+        const lightnessTween = getTweener(fill, { l: 0 }, tick, fixed.spikeHighlightTime);
+        body.meta.tweens.push(lightnessTween);
 
         const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
         body.vitals.calories += drainAmount;
@@ -257,22 +262,6 @@ const getBodyInteractor = (bodies, delay, tick) => (body) => {
     if (canInteract(body, other)) {
       collideBodies(body, other);
       activateSpikes(body, other);
-    }
-  }
-};
-
-/**
- * Gets a function which deactivates a body's spikes if their activation time as expired
- *
- * @param {number} tick - the current timestamp
- * @returns {function(Body): void} - mutates any deactivating spikes
- */
-const getSpikeDeactivator = (tick) => (body) => {
-  for (const spike of body.spikes) {
-    const { deactivateTime } = spike.meta;
-    if (deactivateTime !== null && deactivateTime < tick) {
-      spike.fill = 'black';
-      spike.meta.deactivateTime = null;
     }
   }
 };
@@ -339,6 +328,17 @@ const getNewMotes = (delay) => {
 };
 
 /**
+ * Gets a function which will run a body's tweening functions and remove them if they are done
+ *
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): void} - the new motes
+ */
+const getTweenRunner = (tick) => ({ meta }) => {
+  // Run tweens and remove if done
+  meta.tweens = meta.tweens.filter(tween => !tween(tick));
+};
+
+/**
  * Takes an array of bodies and teleports them randomly until none overlap
  *
  * @param {Body[]} bodies - mutated!
@@ -377,18 +377,18 @@ export const simulateFrame = (bodies, start, stop) => {
   const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
   const interactBodies = getBodyInteractor(bodies, delay, stop);
-  const deactivateSpikes = getSpikeDeactivator(stop);
   const upkeepCalories = getCalorieUpkeeper(delay);
   const checkVitals = getVitalChecker(bodies);
+  const runTweens = getTweenRunner(stop);
 
   bodies.forEach(calcMove);
   bodies.forEach(bounceWall);
   bodies.forEach(interactBodies);
-  bodies.forEach(deactivateSpikes);
   bodies.forEach(moveBody);
   bodies.forEach(upkeepCalories);
   bodies.forEach(checkVitals);
   bodies.forEach(adjustSaturation);
+  bodies.forEach(runTweens);
 
   const newMotes = bodies.length < bodyLimit ? getNewMotes(delay) : [];
 

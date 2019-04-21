@@ -41,6 +41,10 @@ import {
  */
 
 /**
+ * @typedef {import('../utils/objects.js').Tweener} Tweener
+ */
+
+/**
  * @typedef {import('../utils/physics.js').Velocity} Velocity
  */
 
@@ -61,6 +65,7 @@ import {
  *   @prop {number} meta.nextX - body's next horizontal location
  *   @prop {number} meta.nextY - body's next vertical location
  *   @prop {Body|null} meta.lastCollisionBody - last body collided with
+ *   @prop {Tweener[]} meta.tweens - tweenning functions to be run each frame
  * @prop {boolean} [isInactive] - the body should be removed from the simulation
  */
 
@@ -127,6 +132,7 @@ const initBody = (dna) => {
       nextX: 0,
       nextY: 0,
       lastCollisionBody: null,
+      tweens: [],
     },
   };
 };
@@ -208,6 +214,7 @@ export const spawnMote = () => {
       nextX: 0,
       nextY: 0,
       lastCollisionBody: null,
+      tweens: [],
     },
   };
 };

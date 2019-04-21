@@ -164,7 +164,7 @@ export const settings = {
   },
   simulation: {
     maxBodies: 1000,
-    spikeHighlightTime: 167,
+    spikeHighlightTime: 333,
   },
   spikes: {
     baseSpikeDrain: 100000,
