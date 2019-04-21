@@ -41,6 +41,10 @@ import {
  */
 
 /**
+ * @typedef {import('../utils/objects.js').Tweener} Tweener
+ */
+
+/**
  * @typedef {import('../utils/physics.js').Velocity} Velocity
  */
 

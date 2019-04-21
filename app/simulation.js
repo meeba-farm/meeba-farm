@@ -24,6 +24,9 @@ import {
   randInt,
 } from './utils/math.js';
 import {
+  getTweener,
+} from './utils/objects.js';
+import {
   toVector,
   bounceX,
   bounceY,
@@ -43,6 +46,10 @@ import {
  */
 
 /**
+ * @typedef {import('./utils/objects.js').Tweener} Tweener
+ */
+
+/**
  * @typedef {import('./utils/physics.js').Velocity} Velocity
  */
 
@@ -57,6 +64,9 @@ addUpdateListener(() => {
   const maxMotes = Math.ceil((core.width / moteRadius / 2) * (core.height / moteRadius / 2));
   bodyLimit = Math.min(fixed.maxBodies, maxMotes);
 });
+
+/** @type {Tweener[]} */
+let tweens = [];
 
 /**
  * Gets a function to calculate the next location of a body
@@ -228,8 +238,10 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
     const isSpikeOverlapping = getSpikeOverlapChecker(body, other);
     for (const spike of body.spikes) {
       if (isSpikeOverlapping(spike)) {
-        spike.fill = 'red';
-        spike.meta.deactivateTime = tick + fixed.spikeHighlightTime;
+        const { fill } = spike;
+        fill.l = 50;
+        const lightnessTween = getTweener(fill, { l: 0 }, tick, fixed.spikeHighlightTime);
+        tweens.push(lightnessTween);
 
         const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
         body.vitals.calories += drainAmount;
@@ -257,22 +269,6 @@ const getBodyInteractor = (bodies, delay, tick) => (body) => {
     if (canInteract(body, other)) {
       collideBodies(body, other);
       activateSpikes(body, other);
-    }
-  }
-};
-
-/**
- * Gets a function which deactivates a body's spikes if their activation time as expired
- *
- * @param {number} tick - the current timestamp
- * @returns {function(Body): void} - mutates any deactivating spikes
- */
-const getSpikeDeactivator = (tick) => (body) => {
-  for (const spike of body.spikes) {
-    const { deactivateTime } = spike.meta;
-    if (deactivateTime !== null && deactivateTime < tick) {
-      spike.fill = 'black';
-      spike.meta.deactivateTime = null;
     }
   }
 };
@@ -377,18 +373,19 @@ export const simulateFrame = (bodies, start, stop) => {
   const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
   const interactBodies = getBodyInteractor(bodies, delay, stop);
-  const deactivateSpikes = getSpikeDeactivator(stop);
   const upkeepCalories = getCalorieUpkeeper(delay);
   const checkVitals = getVitalChecker(bodies);
 
   bodies.forEach(calcMove);
   bodies.forEach(bounceWall);
   bodies.forEach(interactBodies);
-  bodies.forEach(deactivateSpikes);
   bodies.forEach(moveBody);
   bodies.forEach(upkeepCalories);
   bodies.forEach(checkVitals);
   bodies.forEach(adjustSaturation);
+
+  // Run tweens and remove if done
+  tweens = tweens.filter(tween => tween(stop));
 
   const newMotes = bodies.length < bodyLimit ? getNewMotes(delay) : [];
 

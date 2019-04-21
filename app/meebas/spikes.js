@@ -9,10 +9,14 @@ import {
 } from '../utils/math.js';
 
 /**
+ * @typedef {import('../utils/colors.js').HSL} HSL
+ */
+
+/**
  * A spike/triangle attached to a body/circle
  *
  * @typedef Spike
- * @prop {string} fill - this color of the spike
+ * @prop {HSL} fill - the color of the spike
  * @prop {number} length - the length of the spike
  * @prop {number} drain - how many calories drained per second
  * @prop {number} x1 - x coordinate of spike's tip
@@ -28,8 +32,6 @@ import {
  *   @prop {number} offset.y2
  *   @prop {number} offset.x3
  *   @prop {number} offset.y3
- * @prop {object} meta - simulation specific properties
- *   @prop {number|null} meta.deactivateTime
  */
 
 /**
@@ -79,7 +81,11 @@ export const spawnSpike = (radius, angle, length) => {
   const offsetAngle = asin(dynamic.halfWidth / radius);
 
   return {
-    fill: 'black',
+    fill: {
+      h: 0,
+      s: 100,
+      l: 0,
+    },
     length,
     drain: Math.ceil(dynamic.adjustedDrain / (length ** fixed.drainLengthExponent)),
     // Absolute coordinates will be set the first time the spike moves
@@ -96,9 +102,6 @@ export const spawnSpike = (radius, angle, length) => {
       y2: getYOffset(angle - offsetAngle, radius - 1),
       x3: getXOffset(angle + offsetAngle, radius - 1),
       y3: getYOffset(angle + offsetAngle, radius - 1),
-    },
-    meta: {
-      deactivateTime: null,
     },
   };
 };
