@@ -9,6 +9,7 @@ const {
   setNested,
   listKeys,
   listValues,
+  getTweener,
 } = require('./objects.common.js');
 
 describe('Object utils', () => {
@@ -204,6 +205,104 @@ describe('Object utils', () => {
       });
 
       expect(keys).to.deep.equal([{}, undefined, 7]);
+    });
+  });
+
+  describe('getTweener', () => {
+    it('should take an object, a transform, a start, a duration, and return a function', () => {
+      const target = { foo: 1, bar: 2 };
+      expect(getTweener(target, { foo: 5 }, 1000, 100)).to.be.a('function');
+    });
+
+    it('should mutate the object with the returned tween function', () => {
+      const target = { foo: 1, bar: 2 };
+      const tween = getTweener(target, { foo: 5 }, 1000, 100);
+
+      tween(1100);
+
+      expect(target.foo).to.equal(5);
+    });
+
+    it('should apply partial transforms to numbers', () => {
+      const target = { foo: 1, bar: 2 };
+      const tween = getTweener(target, { foo: 5 }, 1000, 100);
+
+      tween(1050);
+
+      expect(target.foo).to.equal(3);
+    });
+
+    it('should accept multiple transform properties', () => {
+      const target = { foo: 1, bar: 2 };
+      const tween = getTweener(target, { foo: 5, bar: -8 }, 1000, 100);
+
+      tween(1050);
+
+      expect(target.foo).to.equal(3);
+      expect(target.bar).to.equal(-3);
+    });
+
+    it('should transform multiple times until the duration is complete', () => {
+      const target = { foo: 1, bar: 2 };
+      const tween = getTweener(target, { foo: 5 }, 1000, 100);
+
+      tween(1025);
+      expect(target.foo).to.equal(2);
+
+      tween(1050);
+      expect(target.foo).to.equal(3);
+
+      tween(1075);
+      expect(target.foo).to.equal(4);
+
+      tween(1100);
+      expect(target.foo).to.equal(5);
+    });
+
+    it('should modify booleans, strings, and objects only once the duration has elapsed', () => {
+      const obj1 = { foo: 1 };
+      const obj2 = { foo: 2 };
+
+      const target = { foo: true, bar: 'qux', baz: obj1 };
+      const tween = getTweener(target, { foo: false, bar: 'quux', baz: obj2 }, 1000, 100);
+
+      tween(1050);
+      expect(target.foo).to.equal(true);
+      expect(target.bar).to.equal('qux');
+      expect(target.baz).to.equal(obj1);
+
+      tween(1100);
+      expect(target.foo).to.equal(false);
+      expect(target.bar).to.equal('quux');
+      expect(target.baz).to.equal(obj2);
+    });
+
+    it('should not apply further transforms after reaching the duration', () => {
+      const target = { foo: 1, bar: 2 };
+      const tween = getTweener(target, { foo: 5 }, 1000, 100);
+
+      tween(1500);
+      expect(target.foo).to.equal(5);
+
+      tween(2000);
+      expect(target.foo).to.equal(5);
+
+      tween(1050);
+      expect(target.foo).to.equal(5);
+    });
+
+    it('should return false if the transform is not complete', () => {
+      const target = { foo: 1, bar: 2 };
+      const tween = getTweener(target, { foo: 5 }, 1000, 100);
+
+      expect(tween(1050)).to.equal(false);
+    });
+
+    it('should return true if the transform is complete', () => {
+      const target = { foo: 1, bar: 2 };
+      const tween = getTweener(target, { foo: 5 }, 1000, 100);
+
+      expect(tween(1100)).to.equal(true);
     });
   });
 });
