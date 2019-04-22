@@ -14,6 +14,7 @@ import {
 } from './meebas/vitals.js';
 import {
   range,
+  flatten,
 } from './utils/arrays.js';
 import {
   getGap,
@@ -286,25 +287,21 @@ const getCalorieUpkeeper = (delay) => (body) => {
 };
 
 /**
- * Checks life-cycle status of each body, killing, deactivating, or spawning as needed
+ * Checks spawn status of each body, returning new meebas to add to the simulation
  *
- * @param {Body[]} bodies - full array of bodies (including inactive)
- * @returns {function(Body): void} - mutates any deactivating spikes
+ * @param {Body} body - the potential parent meeba
+ * @returns {Body[]}
  */
-const getVitalChecker = (bodies) => (body) => {
-  if (body.vitals.calories <= 0) {
-    body.isInactive = true;
-  }
-
+const spawnChildren = (body) => {
   if (body.vitals.calories >= body.vitals.spawnsAt) {
     const child1 = replicateParent(body, body.velocity.angle + 0.125);
     const child2 = replicateParent(body, body.velocity.angle - 0.125);
+    body.vitals.calories = 0;
 
-    bodies.push(child1);
-    bodies.push(child2);
-
-    body.isInactive = true;
+    return [child1, child2];
   }
+
+  return [];
 };
 
 /**
@@ -374,22 +371,22 @@ export const simulateFrame = (bodies, start, stop) => {
   const bounceWall = getWallBouncer(delay);
   const interactBodies = getBodyInteractor(bodies, delay, stop);
   const upkeepCalories = getCalorieUpkeeper(delay);
-  const checkVitals = getVitalChecker(bodies);
 
   bodies.forEach(calcMove);
   bodies.forEach(bounceWall);
   bodies.forEach(interactBodies);
   bodies.forEach(moveBody);
   bodies.forEach(upkeepCalories);
-  bodies.forEach(checkVitals);
   bodies.forEach(adjustSaturation);
+  bodies.forEach(checkDeath);
 
   // Run tweens and remove if done
   tweens = tweens.filter(tween => tween(stop));
 
   const newMotes = bodies.length < bodyLimit ? getNewMotes(delay) : [];
+  const newChildren = flatten(bodies.map(spawnChildren));
 
   return bodies
-    .filter(body => !body.isInactive)
-    .concat(newMotes);
+    .filter(body => body.vitals.calories > 0)
+    .concat(newMotes, newChildren);
 };

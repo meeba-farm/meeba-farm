@@ -65,7 +65,6 @@ import {
  *   @prop {number} meta.nextX - body's next horizontal location
  *   @prop {number} meta.nextY - body's next vertical location
  *   @prop {Body|null} meta.lastCollisionBody - last body collided with
- * @prop {boolean} [isInactive] - the body should be removed from the simulation
  */
 
 /**
