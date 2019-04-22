@@ -13,7 +13,6 @@ import {
 } from './spikes.js';
 import {
   initVitals,
-  setCalories,
 } from './vitals.js';
 import {
   toBytes,
@@ -160,8 +159,7 @@ export const getRandomBody = () => {
 export const replicateParent = (parent, angle) => {
   const dna = replicateGenome(toBytes(parent.dna));
   const body = initBody(dna);
-
-  setCalories(body.vitals, Math.floor(parent.vitals.calories / 2));
+  body.vitals.calories = Math.floor(parent.vitals.calories / 2);
 
   const relativeLocation = toVector({ angle, speed: 2 * body.radius });
   body.x = parent.x + relativeLocation.x;

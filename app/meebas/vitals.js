@@ -81,19 +81,8 @@ export const initVitals = (mass, spikes) => {
 };
 
 /**
- * Explicitly set the calories on a meeba's vitals, setting isDead as needed
- *
- * @param {Vitals} vitals - the vitals to update; mutated!
- * @param {number} calories - the new calorie level
- */
-export const setCalories = (vitals, calories) => {
-  vitals.calories = calories;
-  vitals.isDead = calories < vitals.diesAt;
-};
-
-/**
- * Removes calories from the meeba, setting isDead as needed. Returns the
- * actual calories drained, which may be less than the intended amount
+ * Removes calories from the meeba, returning the actual calories drained,
+ * which may be less than the intended amount
  *
  * @param {Vitals} vitals - the vitals of the meeba to drain calories from; mutated!
  * @param {number} drain - the amount to drain
@@ -102,10 +91,6 @@ export const setCalories = (vitals, calories) => {
 export const drainCalories = (vitals, drain) => {
   const actualDrain = vitals.calories > drain ? drain : vitals.calories;
   vitals.calories -= actualDrain;
-
-  if (vitals.calories < vitals.diesAt) {
-    vitals.isDead = true;
-  }
 
   return actualDrain;
 };

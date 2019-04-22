@@ -287,6 +287,17 @@ const getCalorieUpkeeper = (delay) => (body) => {
 };
 
 /**
+ * Checks if a body should be dead, and marks it as such if it is
+ *
+ * @param {Body} body - mutated!
+ */
+const checkDeath = ({ vitals }) => {
+  if (!vitals.isDead && vitals.calories < vitals.diesAt) {
+    vitals.isDead = true;
+  }
+};
+
+/**
  * Checks spawn status of each body, returning new meebas to add to the simulation
  *
  * @param {Body} body - the potential parent meeba
