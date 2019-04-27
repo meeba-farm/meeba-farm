@@ -54,16 +54,29 @@ import {
  * @typedef {import('./utils/physics.js').Velocity} Velocity
  */
 
+/**
+ * Dynamically calculated simulation settings
+ *
+ * @typedef DynamicSimulationSettings
+ * @prop {number} bodyLimit
+ * @prop {number} minSpikeFadeTime
+ * @prop {number} maxSpikeFadeTime
+ * @prop {number} maxSpikeFadeDistance
+ */
+
 const MAX_TIME_PER_FRAME = 0.1;
 const MAX_SEPARATION_ATTEMPTS = 10;
 
 const { core, bodies: bodySettings, simulation: fixed } = settings;
-
-let bodyLimit = 0;
+const dynamic = /** @type {DynamicSimulationSettings} */ ({});
 addUpdateListener(() => {
   const { moteRadius } = bodySettings;
   const maxMotes = Math.ceil((core.width / moteRadius / 2) * (core.height / moteRadius / 2));
-  bodyLimit = Math.min(fixed.maxBodies, maxMotes);
+  dynamic.bodyLimit = Math.min(fixed.maxBodies, maxMotes);
+
+  dynamic.minSpikeFadeTime = Math.floor(0.5 * fixed.averageSpikeFadeTime);
+  dynamic.maxSpikeFadeTime = Math.floor(1.5 * fixed.averageSpikeFadeTime);
+  dynamic.maxSpikeFadeDistance = 2 * fixed.averageSpikeFadeDistance;
 });
 
 /** @type {Tweener[]} */
@@ -287,13 +300,55 @@ const getCalorieUpkeeper = (delay) => (body) => {
 };
 
 /**
- * Checks if a body should be dead, and marks it as such if it is
+ * Gets a function to add fade out tweens to a spike
  *
- * @param {Body} body - mutated!
+ * @param {number} tick - the current timestamp
+ * @param {Velocity} velocity - the original velocity of the spike's body
+ * @returns {function(Spike): void} - mutates calories
  */
-const checkDeath = ({ vitals }) => {
+const getSpikeFader = (tick, velocity) => {
+  const originalVector = toVector(velocity);
+
+  return (spike) => {
+    const { angle, fill } = spike;
+    const fadeTime = randInt(dynamic.minSpikeFadeTime, dynamic.maxSpikeFadeTime);
+
+    fill.a = 1;
+    tweens.push(getTweener(fill, { a: 0 }, tick, fadeTime));
+
+    const speed = Math.floor(1000 * randInt(0, dynamic.maxSpikeFadeDistance) / fadeTime);
+    const spikeVector = toVector({ angle, speed });
+    const deltaX = originalVector.x + spikeVector.x;
+    const deltaY = originalVector.y + spikeVector.y;
+
+    tweens.push(getTweener(spike, {
+      x1: spike.x1 + deltaX,
+      y1: spike.y1 + deltaY,
+      x2: spike.x2 + deltaX,
+      y2: spike.y2 + deltaY,
+      x3: spike.x3 + deltaX,
+      y3: spike.y3 + deltaY,
+    }, tick, fadeTime));
+  };
+};
+
+/**
+ * Gets a function which will checks if a body should be dead, if so
+ * marks it as such and adds death tweens
+ *
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): void}
+ */
+const getDeathChecker = (tick) => (body) => {
+  const { vitals, velocity, spikes } = body;
   if (!vitals.isDead && vitals.calories < vitals.diesAt) {
     vitals.isDead = true;
+
+    const fadeSpike = getSpikeFader(tick, velocity);
+    spikes.forEach(fadeSpike);
+
+    // Remove spikes after last one has faded
+    tweens.push(getTweener(body, { spikes: [] }, tick, dynamic.maxSpikeFadeTime));
   }
 };
 
@@ -382,6 +437,7 @@ export const simulateFrame = (bodies, start, stop) => {
   const bounceWall = getWallBouncer(delay);
   const interactBodies = getBodyInteractor(bodies, delay, stop);
   const upkeepCalories = getCalorieUpkeeper(delay);
+  const checkDeath = getDeathChecker(stop);
 
   bodies.forEach(calcMove);
   bodies.forEach(bounceWall);
@@ -394,7 +450,7 @@ export const simulateFrame = (bodies, start, stop) => {
   // Run tweens and remove if done
   tweens = tweens.filter(tween => tween(stop));
 
-  const newMotes = bodies.length < bodyLimit ? getNewMotes(delay) : [];
+  const newMotes = bodies.length < dynamic.bodyLimit ? getNewMotes(delay) : [];
   const newChildren = flatten(bodies.map(spawnChildren));
 
   return bodies

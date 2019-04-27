@@ -18,6 +18,7 @@ import {
  * @typedef Spike
  * @prop {HSL} fill - the color of the spike
  * @prop {number} length - the length of the spike
+ * @prop {number} angle - the angle of the spike
  * @prop {number} drain - how many calories drained per second
  * @prop {number} x1 - x coordinate of spike's tip
  * @prop {number} y1 - y coordinate of spike's tip
@@ -87,6 +88,7 @@ export const spawnSpike = (radius, angle, length) => {
       l: 0,
     },
     length,
+    angle,
     drain: Math.ceil(dynamic.adjustedDrain / (length ** fixed.drainLengthExponent)),
     // Absolute coordinates will be set the first time the spike moves
     x1: 0,
