@@ -376,8 +376,8 @@ const spawnChildren = (body) => {
  * @param {Body} body
  */
 const adjustSaturation = (body) => {
-  const { calories, diesAt, spawnsAt } = body.vitals;
-  body.fill.s = Math.floor(normalize(calories, diesAt, spawnsAt) * 100);
+  const { calories, spawnsAt } = body.vitals;
+  body.fill.s = Math.floor(normalize(calories, 0, spawnsAt) * 100);
 };
 
 /**
