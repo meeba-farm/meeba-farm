@@ -134,8 +134,7 @@ const getWallBouncer = (delay) => (body) => {
 };
 
 /**
- * Checks if two bodies can possibly interact by checking they are not the same object, and then
- * comparing their distance to the sum of their radii plus the primary's longest spike
+ * Checks if a body is close enough to another that a spike drain or collision are possible
  *
  * Note that this checks based on the bodies' next location. This could lead to some
  * odd behavior if bodies are currently overlapping, but their next location is not
@@ -144,11 +143,7 @@ const getWallBouncer = (delay) => (body) => {
  * @param {Body} other
  * @returns {boolean}
  */
-const canInteract = (body, other) => {
-  if (body === other) {
-    return false;
-  }
-
+const bodyInRange = (body, other) => {
   const spikeLength = body.spikes.length > 0
     ? body.spikes[0].length
     : 0;
@@ -169,7 +164,7 @@ const canInteract = (body, other) => {
  * @param {Body} body2
  * @returns {boolean}
  */
-const isOverlapping = (body1, body2) => isShorter({
+const bodiesDoOverlap = (body1, body2) => isShorter({
   x1: body1.x,
   y1: body1.y,
   x2: body2.x,
@@ -183,7 +178,7 @@ const isOverlapping = (body1, body2) => isShorter({
  * @param {Body} body2
  * @returns {boolean}
  */
-const willOverlap = (body1, body2) => isShorter({
+const bodiesWillOverlap = (body1, body2) => isShorter({
   x1: body1.meta.nextX,
   y1: body1.meta.nextY,
   x2: body2.meta.nextX,
@@ -228,7 +223,7 @@ const getBodyCollider = (delay) => (body1, body2) => {
   const justCollided = body1.meta.lastCollisionBody === body2
     && body2.meta.lastCollisionBody === body1;
   const shouldCollide = !justCollided
-    && (willOverlap(body1, body2) || isOverlapping(body1, body2));
+    && (bodiesWillOverlap(body1, body2) || bodiesDoOverlap(body1, body2));
 
   if (shouldCollide) {
     collide(body1, body2);
@@ -276,13 +271,14 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
  * @returns {function(Body): void} - mutates bodies as needed
  */
 const getBodyInteractor = (bodies, delay, tick) => (body) => {
-  const collideBodies = getBodyCollider(delay);
-  const activateSpikes = getSpikeActivator(delay, tick);
+  const collideIfValid = getBodyCollider(delay);
+  const activateSpikesIfValid = getSpikeActivator(delay, tick);
 
   for (const other of bodies) {
-    if (canInteract(body, other)) {
-      collideBodies(body, other);
-      activateSpikes(body, other);
+    // Anything in this loop is O(n^2), bail as soon as possible
+    if (body !== other && bodyInRange(body, other)) {
+      collideIfValid(body, other);
+      activateSpikesIfValid(body, other);
     }
   }
 };
@@ -412,7 +408,7 @@ export const separateBodies = (bodies) => {
 
     for (const body of bodies) {
       for (const other of bodies) {
-        if (body !== other && isOverlapping(body, other)) {
+        if (body !== other && bodiesDoOverlap(body, other)) {
           overlapsFound = true;
           body.x = randInt(body.radius, core.width - body.radius);
           body.y = randInt(body.radius, core.height - body.radius);
