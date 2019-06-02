@@ -32,8 +32,6 @@ const expectIsValidNewBody = (body) => {
   expect(body.velocity.speed).to.be.a('number');
 
   expect(body.spikes).to.be.an('array');
-  expect(body.meta.nextX).to.be.a('number');
-  expect(body.meta.nextY).to.be.a('number');
   expect(body.meta.lastCollisionBody).to.equal(null);
 };
 

@@ -19,6 +19,7 @@ import {
 import {
   isShorter,
   isCloser,
+  snapCircleToEdge,
 } from './utils/geometry.js';
 import {
   normalize,
@@ -67,7 +68,6 @@ import {
  */
 
 const MAX_TIME_PER_FRAME = 0.1;
-const MAX_SEPARATION_ATTEMPTS = 10;
 
 const { core, bodies: bodySettings, simulation: fixed } = settings;
 const dynamic = /** @type {DynamicSimulationSettings} */ ({});
@@ -85,61 +85,45 @@ addUpdateListener(() => {
 let tweens = [];
 
 /**
- * Gets a function to calculate the next location of a body
+ * Gets a function to move a body to its next location based on its velocity
  *
  * @param {number} delay - time passed since last move in seconds
- * @returns {function(Body): void} - mutates the nextX and nextY of a body
+ * @returns {function(Body): void} - mutates the x/y a body
  */
-const getMoveCalculator = (delay) => (body) => {
+const getBodyMover = (delay) => (body) => {
   const { x, y } = toVector(body.velocity);
-  body.meta.nextX = body.x + x * delay;
-  body.meta.nextY = body.y + y * delay;
-};
-
-/**
- * Updates the x/y of a body based on its previously calculated nextX/nextY
- *
- * @param {Body} body - mutated!
- */
-const moveBody = (body) => {
-  body.x = body.meta.nextX;
-  body.y = body.meta.nextY;
+  body.x += x * delay;
+  body.y += y * delay;
 
   const moveSpike = getSpikeMover(body.x, body.y);
   body.spikes.forEach(moveSpike);
 };
 
 /**
- * Gets a function to determine if a body should bounce off a wall,
- * and then mutate its velocity appropriately
+ * Checks if a body is past a wall of the tank, and bounces it if so
  *
- * @param {number} delay - time passed since last move in seconds
- * @returns {function(Body): void} - mutates the velocity of the body if needed
+ * @param {Body} body - mutated!
  */
-const getWallBouncer = (delay) => (body) => {
-  const { radius, velocity: { angle }, meta: { nextX, nextY } } = body;
+const bounceWallIfPast = (body) => {
+  const { x, y, radius, velocity: { angle }, meta } = body;
 
-  if (getGap(0, angle) < 0.25 && nextX > core.width - radius) {
+  if (getGap(0, angle) < 0.25 && x > core.width - radius) {
     bounceX(body);
-  } else if (getGap(0.25, angle) < 0.25 && nextY < radius) {
+  } else if (getGap(0.25, angle) < 0.25 && y < radius) {
     bounceY(body);
-  } else if (getGap(0.5, angle) < 0.25 && nextX < radius) {
+  } else if (getGap(0.5, angle) < 0.25 && x < radius) {
     bounceX(body);
-  } else if (getGap(0.75, angle) < 0.25 && nextY > core.height - radius) {
+  } else if (getGap(0.75, angle) < 0.25 && y > core.height - radius) {
     bounceY(body);
   } else {
     return;
   }
 
-  getMoveCalculator(delay)(body);
-  body.meta.lastCollisionBody = null;
+  meta.lastCollisionBody = null;
 };
 
 /**
  * Checks if a body is close enough to another that a spike drain or collision are possible
- *
- * Note that this checks based on the bodies' next location. This could lead to some
- * odd behavior if bodies are currently overlapping, but their next location is not
  *
  * @param {Body} body - the primary body
  * @param {Body} other
@@ -151,10 +135,10 @@ const bodyInRange = (body, other) => {
     : 0;
 
   return isShorter({
-    x1: body.meta.nextX,
-    y1: body.meta.nextY,
-    x2: other.meta.nextX,
-    y2: other.meta.nextY,
+    x1: body.x,
+    y1: body.y,
+    x2: other.x,
+    y2: other.y,
   }, body.radius + other.radius + spikeLength);
 };
 
@@ -171,20 +155,6 @@ const bodiesDoOverlap = (body1, body2) => isShorter({
   y1: body1.y,
   x2: body2.x,
   y2: body2.y,
-}, body1.radius + body2.radius);
-
-/**
- * Checks if two bodies *will* overlap based on their next positions
- *
- * @param {Body} body1
- * @param {Body} body2
- * @returns {boolean}
- */
-const bodiesWillOverlap = (body1, body2) => isShorter({
-  x1: body1.meta.nextX,
-  y1: body1.meta.nextY,
-  x2: body2.meta.nextX,
-  y2: body2.meta.nextY,
 }, body1.radius + body2.radius);
 
 /**
@@ -218,19 +188,22 @@ const getSpikeOverlapChecker = (body, other) => (spike) => {
  * Gets a function to check if two bodies should collide, and mutates
  * their position and velocity as needed
  *
- * @param {number} delay - time passed since last move in seconds
- * @returns {function(Body, Body): void} - mutates the bodies as needed
+ * @param {Body} body1 - mutated!
+ * @param {Body} body2 - mutated!
  */
-const getBodyCollider = (delay) => (body1, body2) => {
+const collideIfOverlapping = (body1, body2) => {
   const justCollided = body1.meta.lastCollisionBody === body2
     && body2.meta.lastCollisionBody === body1;
-  const shouldCollide = !justCollided
-    && (bodiesWillOverlap(body1, body2) || bodiesDoOverlap(body1, body2));
 
-  if (shouldCollide) {
+  if (!justCollided && bodiesDoOverlap(body1, body2)) {
+    // Move smaller body outside larger body
+    if (body1.radius > body2.radius) {
+      snapCircleToEdge(body1, body2);
+    } else {
+      snapCircleToEdge(body2, body1);
+    }
+
     collide(body1, body2);
-    getMoveCalculator(delay)(body1);
-    getMoveCalculator(delay)(body2);
     body1.meta.lastCollisionBody = body2;
     body2.meta.lastCollisionBody = body1;
   }
@@ -274,15 +247,13 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
  */
 const getBodyInteractor = (bodies, delay, tick) => {
   const interactiveBodies = bodies.filter(({ meta }) => meta.canInteract);
+  const activateSpikesIfValid = getSpikeActivator(delay, tick);
 
   return (body) => {
-    const collideIfValid = getBodyCollider(delay);
-    const activateSpikesIfValid = getSpikeActivator(delay, tick);
-
     for (const other of interactiveBodies) {
       // Anything in this loop is O(n^2), bail as soon as possible
       if (body !== other && bodyInRange(body, other)) {
-        collideIfValid(body, other);
+        collideIfOverlapping(body, other);
         activateSpikesIfValid(body, other);
       }
     }
@@ -428,31 +399,6 @@ const getNewMotes = (delay) => {
 };
 
 /**
- * Takes an array of bodies and teleports them randomly until none overlap
- *
- * @param {Body[]} bodies - mutated!
- */
-export const separateBodies = (bodies) => {
-  let attempts = 0;
-  let overlapsFound = true;
-
-  while (attempts < MAX_SEPARATION_ATTEMPTS && overlapsFound) {
-    attempts += 1;
-    overlapsFound = false;
-
-    for (const body of bodies) {
-      for (const other of bodies) {
-        if (body !== other && bodiesDoOverlap(body, other)) {
-          overlapsFound = true;
-          body.x = randInt(body.radius, core.width - body.radius);
-          body.y = randInt(body.radius, core.height - body.radius);
-        }
-      }
-    }
-  }
-};
-
-/**
  * Gets a function to calculate a "frame" of the simulation
  *
  * @param {Body[]} bodies - all the bodies to simulate
@@ -463,16 +409,14 @@ export const separateBodies = (bodies) => {
 export const simulateFrame = (bodies, start, stop) => {
   const delay = Math.min((stop - start) / 1000, MAX_TIME_PER_FRAME);
 
-  const calcMove = getMoveCalculator(delay);
-  const bounceWall = getWallBouncer(delay);
   const interactBodies = getBodyInteractor(bodies, delay, stop);
+  const moveBody = getBodyMover(delay);
   const upkeepCalories = getCalorieUpkeeper(delay);
   const checkDeath = getDeathChecker(stop);
   const checkRemoval = getRemovalChecker(stop);
   const spawnChildren = getChildSpawner(stop);
 
-  bodies.forEach(calcMove);
-  bodies.forEach(bounceWall);
+  bodies.forEach(bounceWallIfPast);
   bodies.forEach(interactBodies);
   bodies.forEach(moveBody);
   bodies.forEach(upkeepCalories);
