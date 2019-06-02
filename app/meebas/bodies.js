@@ -57,7 +57,6 @@ import {
  * @prop {Vitals} vitals - life-cycle properties of the body
  * @prop {Spike[]} spikes - the spikes of the meeba
  * @prop {object} meta - extra properties specific to the simulation
- *   @prop {Body|null} meta.lastCollisionBody - last body collided with
  *   @prop {boolean} meta.canInteract - able to interact with other bodies
  *   @prop {boolean} meta.isSimulated - is a part of the simulation
  */
@@ -122,7 +121,6 @@ const initBody = (dna) => {
     vitals: initVitals(mass, spikes),
     spikes,
     meta: {
-      lastCollisionBody: null,
       canInteract: true,
       isSimulated: true,
     },
@@ -199,7 +197,6 @@ export const spawnMote = () => {
     },
     spikes: [],
     meta: {
-      lastCollisionBody: null,
       canInteract: true,
       isSimulated: true,
     },

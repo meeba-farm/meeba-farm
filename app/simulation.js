@@ -68,6 +68,7 @@ import {
  */
 
 const MAX_TIME_PER_FRAME = 0.1;
+const SNAP_GAP = 0.1;
 
 const { core, bodies: bodySettings, simulation: fixed } = settings;
 const dynamic = /** @type {DynamicSimulationSettings} */ ({});
@@ -105,7 +106,7 @@ const getBodyMover = (delay) => (body) => {
  * @param {Body} body - mutated!
  */
 const bounceWallIfPast = (body) => {
-  const { x, y, radius, velocity: { angle }, meta } = body;
+  const { x, y, radius, velocity: { angle } } = body;
 
   if (getGap(0, angle) < 0.25 && x > core.width - radius) {
     bounceX(body);
@@ -115,11 +116,7 @@ const bounceWallIfPast = (body) => {
     bounceX(body);
   } else if (getGap(0.75, angle) < 0.25 && y > core.height - radius) {
     bounceY(body);
-  } else {
-    return;
   }
-
-  meta.lastCollisionBody = null;
 };
 
 /**
@@ -192,20 +189,15 @@ const getSpikeOverlapChecker = (body, other) => (spike) => {
  * @param {Body} body2 - mutated!
  */
 const collideIfOverlapping = (body1, body2) => {
-  const justCollided = body1.meta.lastCollisionBody === body2
-    && body2.meta.lastCollisionBody === body1;
-
-  if (!justCollided && bodiesDoOverlap(body1, body2)) {
+  if (bodiesDoOverlap(body1, body2)) {
     // Move smaller body outside larger body
     if (body1.radius > body2.radius) {
-      snapCircleToEdge(body1, body2);
+      snapCircleToEdge(body1, body2, SNAP_GAP);
     } else {
-      snapCircleToEdge(body2, body1);
+      snapCircleToEdge(body2, body1, SNAP_GAP);
     }
 
     collide(body1, body2);
-    body1.meta.lastCollisionBody = body2;
-    body2.meta.lastCollisionBody = body1;
   }
 };
 

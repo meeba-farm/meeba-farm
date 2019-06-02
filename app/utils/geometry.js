@@ -79,19 +79,22 @@ export const isCloser = ({ x, y }, { x1, y1, x2, y2 }, distance) => {
 };
 
 /**
- * Moves a second circle so it touches the edge of a target circle
+ * Moves a second circle so it touches the edge of a target circle,
+ * optionally leaving a gap between
  *
  * @param {Circle} target - base circle, unmoved
  * @param {Circle} other - moved circle, mutated!
+ * @param {number} [gap] - number of pixels to leave between, defaults to 0
+ *
  */
-export const snapCircleToEdge = ({ x, y, radius }, other) => {
+export const snapCircleToEdge = ({ x, y, radius }, other, gap = 0) => {
   const { angle } = toVelocity({
     x: x - other.x,
     y: y - other.y,
   });
   const separation = toVector({
     angle,
-    speed: radius + other.radius,
+    speed: radius + other.radius + gap,
   });
 
   other.x = x - separation.x;

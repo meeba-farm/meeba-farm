@@ -64,6 +64,16 @@ describe('Geometry utils', () => {
       expect(other).to.deep.equal({ x: 10, y: 23, radius: 5 });
     });
 
+    it('should optionally leave a gap between the circles', () => {
+      const target = { x: 10, y: 10, radius: 8 };
+      const other = { x: 10, y: 20, radius: 5 };
+
+      snapCircleToEdge(target, other, 1);
+
+      expect(target).to.deep.equal({ x: 10, y: 10, radius: 8 });
+      expect(other).to.deep.equal({ x: 10, y: 24, radius: 5 });
+    });
+
     it('should move a circle which does not overlap', () => {
       const target = { x: 10, y: 10, radius: 8 };
       const other = { x: 10, y: 50, radius: 5 };
