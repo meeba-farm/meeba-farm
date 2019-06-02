@@ -1,4 +1,5 @@
 import { sqr, dotProduct } from './math.js';
+import { toVector, toVelocity } from './physics.js';
 
 /**
  * A point defined by an x/y coordinate
@@ -16,6 +17,15 @@ import { sqr, dotProduct } from './math.js';
  * @prop {number} y1
  * @prop {number} x2
  * @prop {number} y2
+ */
+
+/**
+ * A circle defined by an x/y center point and a radius
+ *
+ * @typedef Circle
+ * @prop {number} x
+ * @prop {number} y
+ * @prop {number} radius
  */
 
 /**
@@ -66,4 +76,24 @@ export const isCloser = ({ x, y }, { x1, y1, x2, y2 }, distance) => {
     x2: closestX,
     y2: closestY,
   }, distance);
+};
+
+/**
+ * Moves a second circle so it touches the edge of a target circle
+ *
+ * @param {Circle} target - base circle, unmoved
+ * @param {Circle} other - moved circle, mutated!
+ */
+export const snapCircleToEdge = ({ x, y, radius }, other) => {
+  const { angle } = toVelocity({
+    x: x - other.x,
+    y: y - other.y,
+  });
+  const separation = toVector({
+    angle,
+    speed: radius + other.radius,
+  });
+
+  other.x = x - separation.x;
+  other.y = y - separation.y;
 };

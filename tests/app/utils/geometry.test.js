@@ -4,6 +4,7 @@ const { expect } = require('chai');
 const {
   isShorter,
   isCloser,
+  snapCircleToEdge,
 } = require('./geometry.common.js');
 
 describe('Geometry utils', () => {
@@ -49,6 +50,42 @@ describe('Geometry utils', () => {
     it('should compare the shortest distance when the line has a length of zero', () => {
       expect(isCloser({ x: 95, y: 95 }, { x1: 100, y1: 100, x2: 100, y2: 100 }, 7.08)).to.be.true;
       expect(isCloser({ x: 95, y: 95 }, { x1: 100, y1: 100, x2: 100, y2: 100 }, 7.06)).to.be.false;
+    });
+  });
+
+  describe('snapCircleToEdge', () => {
+    it('should move a circle that overlaps with target circle', () => {
+      const target = { x: 10, y: 10, radius: 8 };
+      const other = { x: 10, y: 20, radius: 5 };
+
+      snapCircleToEdge(target, other);
+
+      expect(target).to.deep.equal({ x: 10, y: 10, radius: 8 });
+      expect(other).to.deep.equal({ x: 10, y: 23, radius: 5 });
+    });
+
+    it('should move a circle which does not overlap', () => {
+      const target = { x: 10, y: 10, radius: 8 };
+      const other = { x: 10, y: 50, radius: 5 };
+
+      snapCircleToEdge(target, other);
+
+      expect(target).to.deep.equal({ x: 10, y: 10, radius: 8 });
+      expect(other).to.deep.equal({ x: 10, y: 23, radius: 5 });
+    });
+
+    it('should handle overlaps on diagonals', () => {
+      const target = { x: 31.4, y: 42, radius: 13 };
+      const other = { x: 36.7, y: 39, radius: 7.2 };
+
+      snapCircleToEdge(target, other);
+
+      expect(target).to.deep.equal({ x: 31.4, y: 42, radius: 13 });
+      expect(other).to.deep.equal({
+        x: 49.03651856404946,
+        y: 32.1514867650016,
+        radius: 7.2,
+      });
     });
   });
 });
