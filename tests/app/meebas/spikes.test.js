@@ -23,7 +23,10 @@ describe('Spike methods', () => {
       const spike = spawnSpike(91, 0.875, 50);
 
       expect(spike.length).to.equal(50);
-      expect(spike.fill).to.be.a('string');
+      expect(spike.fill).to.be.an('object');
+      expect(spike.fill.h).to.be.within(0, 360);
+      expect(spike.fill.s).to.be.within(0, 100);
+      expect(spike.fill.l).to.be.within(0, 100);
 
       expect(spike.x1).to.be.a('number');
       expect(spike.y1).to.be.a('number');

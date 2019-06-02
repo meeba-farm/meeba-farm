@@ -46,8 +46,8 @@ export const hslToString = (hsl) => {
   const s = (l === 0 || l === 100) ? 0 : roundRange(hsl.s, 0, 100);
   const h = s === 0 ? 0 : wrapNumber(hsl.h, 360);
 
-  if (hasProp(hsl, 'a')) {
-    const a = roundRange(hsl.a, 0, 1);
+  if (hasProp(hsl, 'a') && hsl.a < 1) {
+    const a = hsl.a < 0 ? 0 : hsl.a;
     return `hsla(${h},${s}%,${l}%,${a})`;
   }
 

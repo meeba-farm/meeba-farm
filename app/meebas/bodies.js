@@ -9,11 +9,9 @@ import {
 } from './genome.js';
 import {
   spawnSpike,
-  getSpikeMover,
 } from './spikes.js';
 import {
   initVitals,
-  setCalories,
 } from './vitals.js';
 import {
   toBytes,
@@ -24,9 +22,6 @@ import {
   rand,
   randInt,
 } from '../utils/math.js';
-import {
-  toVector,
-} from '../utils/physics.js';
 
 /**
  * @typedef {import('./spikes.js').Spike} Spike
@@ -38,6 +33,10 @@ import {
 
 /**
  * @typedef {import('../utils/colors.js').HSL} HSL
+ */
+
+/**
+ * @typedef {import('../utils/objects.js').Tweener} Tweener
  */
 
 /**
@@ -61,7 +60,8 @@ import {
  *   @prop {number} meta.nextX - body's next horizontal location
  *   @prop {number} meta.nextY - body's next vertical location
  *   @prop {Body|null} meta.lastCollisionBody - last body collided with
- * @prop {boolean} [isInactive] - the body should be removed from the simulation
+ *   @prop {boolean} meta.canInteract - able to interact with other bodies
+ *   @prop {boolean} meta.isSimulated - is a part of the simulation
  */
 
 /**
@@ -127,6 +127,8 @@ const initBody = (dna) => {
       nextX: 0,
       nextY: 0,
       lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   };
 };
@@ -158,15 +160,11 @@ export const replicateParent = (parent, angle) => {
   const dna = replicateGenome(toBytes(parent.dna));
   const body = initBody(dna);
 
-  setCalories(body.vitals, Math.floor(parent.vitals.calories / 2));
-
-  const relativeLocation = toVector({ angle, speed: 2 * body.radius });
-  body.x = parent.x + relativeLocation.x;
-  body.y = parent.y + relativeLocation.y;
+  body.x = parent.x;
+  body.y = parent.y;
   body.velocity.angle = angle;
   body.velocity.speed = parent.velocity.speed + randInt(0, dynamic.maxSpawningEnergy / body.mass);
-
-  body.spikes.forEach(getSpikeMover(body.x, body.y));
+  body.vitals.calories = Math.floor(parent.vitals.calories / 2);
 
   return body;
 };
@@ -208,6 +206,8 @@ export const spawnMote = () => {
       nextX: 0,
       nextY: 0,
       lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   };
 };

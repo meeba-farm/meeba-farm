@@ -62,6 +62,11 @@ import {
  * @typedef SimulationModuleSettings
  * @prop {number} maxBodies
  * @prop {number} spikeHighlightTime
+ * @prop {number} averageSpikeFadeTime
+ * @prop {number} averageSpikeFadeDistance
+ * @prop {number} bodyRemovalFadeTime
+ * @prop {number} bodySpawnFadeTime
+ * @prop {number} bodySpawnInactiveTime
  */
 
 /**
@@ -164,7 +169,12 @@ export const settings = {
   },
   simulation: {
     maxBodies: 1000,
-    spikeHighlightTime: 167,
+    spikeHighlightTime: 333,
+    averageSpikeFadeTime: 1750,
+    averageSpikeFadeDistance: 50,
+    bodyRemovalFadeTime: 333,
+    bodySpawnFadeTime: 500,
+    bodySpawnInactiveTime: 2000,
   },
   spikes: {
     baseSpikeDrain: 100000,

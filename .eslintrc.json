@@ -28,6 +28,7 @@
                 "message": "`with` is disallowed in strict mode because it makes code impossible to predict and optimize."
             }
         ],
+        "no-unused-vars": ["error", { "argsIgnorePattern": "_+" }],
         "object-curly-newline": ["error",  { "consistent": true }],
         "spellcheck/spell-checker": ["error", {
             "skipIfMatch": [
@@ -47,6 +48,7 @@
                 "attrs",
                 "baz",
                 "bdd",
+                "booleans",
                 "calc",
                 "chai",
                 "collider",
@@ -63,6 +65,7 @@
                 "drawable",
                 "drawables",
                 "extname",
+                "fader",
                 "fn",
                 "framerate",
                 "framerates",
@@ -95,10 +98,13 @@
                 "rgb",
                 "rgba",
                 "sqr",
+                "spawner",
                 "stdin",
                 "stdout",
                 "textarea",
                 "timestamp",
+                "tweener",
+                "tweens",
                 "typeof",
                 "uint",
                 "un",

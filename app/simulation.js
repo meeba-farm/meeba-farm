@@ -14,6 +14,7 @@ import {
 } from './meebas/vitals.js';
 import {
   range,
+  flatten,
 } from './utils/arrays.js';
 import {
   getGap,
@@ -23,6 +24,9 @@ import {
   rand,
   randInt,
 } from './utils/math.js';
+import {
+  getTweener,
+} from './utils/objects.js';
 import {
   toVector,
   bounceX,
@@ -43,20 +47,40 @@ import {
  */
 
 /**
+ * @typedef {import('./utils/objects.js').Tweener} Tweener
+ */
+
+/**
  * @typedef {import('./utils/physics.js').Velocity} Velocity
+ */
+
+/**
+ * Dynamically calculated simulation settings
+ *
+ * @typedef DynamicSimulationSettings
+ * @prop {number} bodyLimit
+ * @prop {number} minSpikeFadeTime
+ * @prop {number} maxSpikeFadeTime
+ * @prop {number} maxSpikeFadeDistance
  */
 
 const MAX_TIME_PER_FRAME = 0.1;
 const MAX_SEPARATION_ATTEMPTS = 10;
 
 const { core, bodies: bodySettings, simulation: fixed } = settings;
-
-let bodyLimit = 0;
+const dynamic = /** @type {DynamicSimulationSettings} */ ({});
 addUpdateListener(() => {
   const { moteRadius } = bodySettings;
   const maxMotes = Math.ceil((core.width / moteRadius / 2) * (core.height / moteRadius / 2));
-  bodyLimit = Math.min(fixed.maxBodies, maxMotes);
+  dynamic.bodyLimit = Math.min(fixed.maxBodies, maxMotes);
+
+  dynamic.minSpikeFadeTime = Math.floor(0.5 * fixed.averageSpikeFadeTime);
+  dynamic.maxSpikeFadeTime = Math.floor(1.5 * fixed.averageSpikeFadeTime);
+  dynamic.maxSpikeFadeDistance = 2 * fixed.averageSpikeFadeDistance;
 });
+
+/** @type {Tweener[]} */
+let tweens = [];
 
 /**
  * Gets a function to calculate the next location of a body
@@ -110,8 +134,7 @@ const getWallBouncer = (delay) => (body) => {
 };
 
 /**
- * Checks if two bodies can possibly interact by checking they are not the same object, and then
- * comparing their distance to the sum of their radii plus the primary's longest spike
+ * Checks if a body is close enough to another that a spike drain or collision are possible
  *
  * Note that this checks based on the bodies' next location. This could lead to some
  * odd behavior if bodies are currently overlapping, but their next location is not
@@ -120,11 +143,7 @@ const getWallBouncer = (delay) => (body) => {
  * @param {Body} other
  * @returns {boolean}
  */
-const canInteract = (body, other) => {
-  if (body === other) {
-    return false;
-  }
-
+const bodyInRange = (body, other) => {
   const spikeLength = body.spikes.length > 0
     ? body.spikes[0].length
     : 0;
@@ -145,7 +164,7 @@ const canInteract = (body, other) => {
  * @param {Body} body2
  * @returns {boolean}
  */
-const isOverlapping = (body1, body2) => isShorter({
+const bodiesDoOverlap = (body1, body2) => isShorter({
   x1: body1.x,
   y1: body1.y,
   x2: body2.x,
@@ -159,7 +178,7 @@ const isOverlapping = (body1, body2) => isShorter({
  * @param {Body} body2
  * @returns {boolean}
  */
-const willOverlap = (body1, body2) => isShorter({
+const bodiesWillOverlap = (body1, body2) => isShorter({
   x1: body1.meta.nextX,
   y1: body1.meta.nextY,
   x2: body2.meta.nextX,
@@ -204,7 +223,7 @@ const getBodyCollider = (delay) => (body1, body2) => {
   const justCollided = body1.meta.lastCollisionBody === body2
     && body2.meta.lastCollisionBody === body1;
   const shouldCollide = !justCollided
-    && (willOverlap(body1, body2) || isOverlapping(body1, body2));
+    && (bodiesWillOverlap(body1, body2) || bodiesDoOverlap(body1, body2));
 
   if (shouldCollide) {
     collide(body1, body2);
@@ -228,8 +247,10 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
     const isSpikeOverlapping = getSpikeOverlapChecker(body, other);
     for (const spike of body.spikes) {
       if (isSpikeOverlapping(spike)) {
-        spike.fill = 'red';
-        spike.meta.deactivateTime = tick + fixed.spikeHighlightTime;
+        const { fill } = spike;
+        fill.l = 50;
+        const lightnessTween = getTweener(fill, { l: 0 }, tick, fixed.spikeHighlightTime);
+        tweens.push(lightnessTween);
 
         const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
         body.vitals.calories += drainAmount;
@@ -249,32 +270,21 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
  * @param {number} tick - the current timestamp
  * @returns {function(Body): void} - mutates bodies as needed
  */
-const getBodyInteractor = (bodies, delay, tick) => (body) => {
-  const collideBodies = getBodyCollider(delay);
-  const activateSpikes = getSpikeActivator(delay, tick);
+const getBodyInteractor = (bodies, delay, tick) => {
+  const interactiveBodies = bodies.filter(({ meta }) => meta.canInteract);
 
-  for (const other of bodies) {
-    if (canInteract(body, other)) {
-      collideBodies(body, other);
-      activateSpikes(body, other);
-    }
-  }
-};
+  return (body) => {
+    const collideIfValid = getBodyCollider(delay);
+    const activateSpikesIfValid = getSpikeActivator(delay, tick);
 
-/**
- * Gets a function which deactivates a body's spikes if their activation time as expired
- *
- * @param {number} tick - the current timestamp
- * @returns {function(Body): void} - mutates any deactivating spikes
- */
-const getSpikeDeactivator = (tick) => (body) => {
-  for (const spike of body.spikes) {
-    const { deactivateTime } = spike.meta;
-    if (deactivateTime !== null && deactivateTime < tick) {
-      spike.fill = 'black';
-      spike.meta.deactivateTime = null;
+    for (const other of interactiveBodies) {
+      // Anything in this loop is O(n^2), bail as soon as possible
+      if (body !== other && bodyInRange(body, other)) {
+        collideIfValid(body, other);
+        activateSpikesIfValid(body, other);
+      }
     }
-  }
+  };
 };
 
 /**
@@ -290,25 +300,102 @@ const getCalorieUpkeeper = (delay) => (body) => {
 };
 
 /**
- * Checks life-cycle status of each body, killing, deactivating, or spawning as needed
+ * Gets a function to add fade out tweens to a spike
  *
- * @param {Body[]} bodies - full array of bodies (including inactive)
- * @returns {function(Body): void} - mutates any deactivating spikes
+ * @param {number} tick - the current timestamp
+ * @param {Velocity} velocity - the original velocity of the spike's body
+ * @returns {function(Spike): void} - mutates calories
  */
-const getVitalChecker = (bodies) => (body) => {
-  if (body.vitals.calories <= 0) {
-    body.isInactive = true;
+const getSpikeFader = (tick, velocity) => {
+  const originalVector = toVector(velocity);
+
+  return (spike) => {
+    const { angle, fill } = spike;
+    const fadeTime = randInt(dynamic.minSpikeFadeTime, dynamic.maxSpikeFadeTime);
+
+    fill.a = 1;
+    tweens.push(getTweener(fill, { a: 0 }, tick, fadeTime));
+
+    const speed = Math.floor(1000 * randInt(0, dynamic.maxSpikeFadeDistance) / fadeTime);
+    const spikeVector = toVector({ angle, speed });
+    const deltaX = originalVector.x + spikeVector.x;
+    const deltaY = originalVector.y + spikeVector.y;
+
+    tweens.push(getTweener(spike, {
+      x1: spike.x1 + deltaX,
+      y1: spike.y1 + deltaY,
+      x2: spike.x2 + deltaX,
+      y2: spike.y2 + deltaY,
+      x3: spike.x3 + deltaX,
+      y3: spike.y3 + deltaY,
+    }, tick, fadeTime));
+  };
+};
+
+/**
+ * Gets a function which will checks if a body should be dead, if so
+ * marks it as such and adds death tweens
+ *
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): void}
+ */
+const getDeathChecker = (tick) => (body) => {
+  const { vitals, velocity, spikes } = body;
+  if (!vitals.isDead && vitals.calories < vitals.diesAt) {
+    vitals.isDead = true;
+
+    const fadeSpike = getSpikeFader(tick, velocity);
+    spikes.forEach(fadeSpike);
+
+    // Remove spikes after last one has faded
+    tweens.push(getTweener(body, { spikes: [] }, tick, dynamic.maxSpikeFadeTime));
+  }
+};
+
+/**
+ * Gets a function which will checks if a body should be removed, if so
+ * adds removal tweens which will eventually mark the body to be removed
+ *
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): void}
+ */
+const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
+  if (meta.canInteract && vitals.calories <= 0) {
+    meta.canInteract = false;
+
+    fill.a = 1;
+    tweens.push(getTweener(fill, { a: 0 }, tick, fixed.bodyRemovalFadeTime));
+    tweens.push(getTweener(meta, { isSimulated: false }, tick, dynamic.maxSpikeFadeTime));
+  }
+};
+
+/**
+ * Gets a function to check if a body should spawn children. Will return the children
+ * to add to the simulation if any
+ *
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): Body[]}
+ */
+const getChildSpawner = (tick) => (body) => {
+  if (body.vitals.calories < body.vitals.spawnsAt) {
+    return [];
   }
 
-  if (body.vitals.calories >= body.vitals.spawnsAt) {
-    const child1 = replicateParent(body, body.velocity.angle + 0.125);
-    const child2 = replicateParent(body, body.velocity.angle - 0.125);
+  body.meta.isSimulated = false;
+  const children = [
+    replicateParent(body, body.velocity.angle + 0.125),
+    replicateParent(body, body.velocity.angle - 0.125),
+  ];
 
-    bodies.push(child1);
-    bodies.push(child2);
+  for (const { fill, meta } of children) {
+    fill.a = 0.2;
+    tweens.push(getTweener(fill, { a: 1 }, tick, fixed.bodySpawnFadeTime));
 
-    body.isInactive = true;
+    meta.canInteract = false;
+    tweens.push(getTweener(meta, { canInteract: true }, tick, fixed.bodySpawnInactiveTime));
   }
+
+  return children;
 };
 
 /**
@@ -317,8 +404,8 @@ const getVitalChecker = (bodies) => (body) => {
  * @param {Body} body
  */
 const adjustSaturation = (body) => {
-  const { calories, diesAt, spawnsAt } = body.vitals;
-  body.fill.s = Math.floor(normalize(calories, diesAt, spawnsAt) * 100);
+  const { calories, spawnsAt } = body.vitals;
+  body.fill.s = Math.floor(normalize(calories, 0, spawnsAt) * 100);
 };
 
 /**
@@ -353,7 +440,7 @@ export const separateBodies = (bodies) => {
 
     for (const body of bodies) {
       for (const other of bodies) {
-        if (body !== other && isOverlapping(body, other)) {
+        if (body !== other && bodiesDoOverlap(body, other)) {
           overlapsFound = true;
           body.x = randInt(body.radius, core.width - body.radius);
           body.y = randInt(body.radius, core.height - body.radius);
@@ -377,22 +464,27 @@ export const simulateFrame = (bodies, start, stop) => {
   const calcMove = getMoveCalculator(delay);
   const bounceWall = getWallBouncer(delay);
   const interactBodies = getBodyInteractor(bodies, delay, stop);
-  const deactivateSpikes = getSpikeDeactivator(stop);
   const upkeepCalories = getCalorieUpkeeper(delay);
-  const checkVitals = getVitalChecker(bodies);
+  const checkDeath = getDeathChecker(stop);
+  const checkRemoval = getRemovalChecker(stop);
+  const spawnChildren = getChildSpawner(stop);
 
   bodies.forEach(calcMove);
   bodies.forEach(bounceWall);
   bodies.forEach(interactBodies);
-  bodies.forEach(deactivateSpikes);
   bodies.forEach(moveBody);
   bodies.forEach(upkeepCalories);
-  bodies.forEach(checkVitals);
   bodies.forEach(adjustSaturation);
+  bodies.forEach(checkDeath);
+  bodies.forEach(checkRemoval);
 
-  const newMotes = bodies.length < bodyLimit ? getNewMotes(delay) : [];
+  // Run tweens and remove if done
+  tweens = tweens.filter(tween => tween(stop));
+
+  const newMotes = bodies.length < dynamic.bodyLimit ? getNewMotes(delay) : [];
+  const newChildren = flatten(bodies.map(spawnChildren));
 
   return bodies
-    .filter(body => !body.isInactive)
-    .concat(newMotes);
+    .filter(({ meta }) => meta.isSimulated)
+    .concat(newMotes, newChildren);
 };

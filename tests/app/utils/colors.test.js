@@ -16,6 +16,10 @@ describe('Color utils', () => {
       expect(hslToString({ h: 153, s: 0, l: 87 })).to.equal('hsl(0,0%,87%)');
     });
 
+    it('should drop explicit alpha when set to 1', () => {
+      expect(hslToString({ h: 120, s: 100, l: 50, a: 1 })).to.equal('hsl(120,100%,50%)');
+    });
+
     it('should drop hue and saturation when fully lightened or darkened', () => {
       expect(hslToString({ h: 217, s: 72, l: 0 })).to.equal('hsl(0,0%,0%)');
       expect(hslToString({ h: 2, s: 2, l: 100 })).to.equal('hsl(0,0%,100%)');
@@ -45,7 +49,7 @@ describe('Color utils', () => {
     });
 
     it('should round alphas over 1 down to 1', () => {
-      expect(hslToString({ h: 90, s: 25, l: 75, a: 17 })).to.equal('hsla(90,25%,75%,1)');
+      expect(hslToString({ h: 90, s: 25, l: 75, a: 17 })).to.equal('hsl(90,25%,75%)');
     });
   });
 
