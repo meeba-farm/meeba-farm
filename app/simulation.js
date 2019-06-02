@@ -17,10 +17,12 @@ import {
   flatten,
 } from './utils/arrays.js';
 import {
-  getGap,
   isShorter,
   isCloser,
+} from './utils/geometry.js';
+import {
   normalize,
+  getGap,
   rand,
   randInt,
 } from './utils/math.js';
