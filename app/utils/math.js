@@ -13,24 +13,6 @@ const LOOKUP_TABLES = {
 };
 
 /**
- * A point defined by an x/y coordinate
- *
- * @typedef Point
- * @prop {number} x
- * @prop {number} y
- */
-
-/**
- * A line segment defined by a pair of x/y coordinates
- *
- * @typedef Line
- * @prop {number} x1
- * @prop {number} y1
- * @prop {number} x2
- * @prop {number} y2
- */
-
-/**
  * Convenience function to square a number
  *
  * @param {number} n
@@ -48,24 +30,6 @@ export const sqr = n => n * n;
 export const dotProduct = (set1, set2) => set1
   .map((n1, i) => n1 * set2[i])
   .reduce((sum, n) => sum + n);
-
-/**
- * Normalize an angle in turns, rounding it to be between 0 and 1
- *
- * 1 turn = 360°, 2π, one full rotation; 1.5 turns = 180°, 1π, 0.5 turns
- *
- * @param {number} turns - a floating point count of rotations
- * @returns {number} - the same angle normalized between 0 and 1
- */
-export const roundAngle = (turns) => {
-  if (turns >= 1) {
-    return turns % 1;
-  }
-  if (turns < 0) {
-    return turns + Math.ceil(Math.abs(turns));
-  }
-  return turns;
-};
 
 /**
  * Rounds a number to be no less or more than a min and max
@@ -96,6 +60,37 @@ export const roundRange = (num, min, max) => {
  * @returns {number} - percentage from 0.0 to 1.0
  */
 export const normalize = (num, min, max) => (roundRange(num, min, max) - min) / (max - min);
+
+
+/**
+ * Normalize an angle in turns, rounding it to be between 0 and 1
+ *
+ * 1 turn = 360°, 2π, one full rotation; 1.5 turns = 180°, 1π, 0.5 turns
+ *
+ * @param {number} turns - a floating point count of rotations
+ * @returns {number} - the same angle normalized between 0 and 1
+ */
+export const roundAngle = (turns) => {
+  if (turns >= 1) {
+    return turns % 1;
+  }
+  if (turns < 0) {
+    return turns + Math.ceil(Math.abs(turns));
+  }
+  return turns;
+};
+
+/**
+ * Returns the size of the gap between two angles in turns
+ *
+ * @param {number} angle1
+ * @param {number} angle2
+ * @returns {number} - the difference between the two angles
+ */
+export const getGap = (angle1, angle2) => {
+  const gap = Math.abs(roundAngle(angle1) - roundAngle(angle2));
+  return gap <= 0.5 ? gap : 1 - gap;
+};
 
 /**
  * Creates a trig function based on a lookup table, accepting an angle in "turns"
@@ -148,68 +143,6 @@ export const asin = getInverseTrigFn(LOOKUP_TABLES.ASIN);
  * @returns {number} - angle in turns
  */
 export const acos = getInverseTrigFn(LOOKUP_TABLES.ACOS);
-
-/**
- * Efficiently checks if a line is shorter than a distance (no sqrt)
- *
- * @param {Line} line
- * @param {number} distance
- * @returns {boolean}
- */
-export const isShorter = ({ x1, y1, x2, y2 }, distance) => (
-  sqr(x1 - x2) + sqr(y1 - y2) < sqr(distance)
-);
-
-/**
- * Checks if a point is closer to a line segment than a certain distance (no sqrt),
- * adapted from this StackOverflow answer: https://stackoverflow.com/a/6853926/4284401
- *
- * @param {Point} point
- * @param {Line} line
- * @param {number} distance
- * @returns {boolean}
- */
-export const isCloser = ({ x, y }, { x1, y1, x2, y2 }, distance) => {
-  const xLength = x2 - x1;
-  const yLength = y2 - y1;
-
-  const lengthSquared = dotProduct([xLength, yLength], [xLength, yLength]);
-  const projection = lengthSquared > 0
-    ? dotProduct([x - x1, y - y1], [xLength, yLength]) / lengthSquared
-    : -1;
-
-  let closestX;
-  let closestY;
-  if (projection < 0) {
-    closestX = x1;
-    closestY = y1;
-  } else if (projection > 1) {
-    closestX = x2;
-    closestY = y2;
-  } else {
-    closestX = x1 + projection * xLength;
-    closestY = y1 + projection * yLength;
-  }
-
-  return isShorter({
-    x1: x,
-    y1: y,
-    x2: closestX,
-    y2: closestY,
-  }, distance);
-};
-
-/**
- * Returns the size of the gap between two angles in turns
- *
- * @param {number} angle1
- * @param {number} angle2
- * @returns {number} - the difference between the two angles
- */
-export const getGap = (angle1, angle2) => {
-  const gap = Math.abs(roundAngle(angle1) - roundAngle(angle2));
-  return gap <= 0.5 ? gap : 1 - gap;
-};
 
 /**
  * A simple pseudo-random number generator which takes a base36 seed

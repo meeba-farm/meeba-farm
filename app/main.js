@@ -10,7 +10,6 @@ import {
   restoreDefaultSettings,
 } from './settings.js';
 import {
-  separateBodies,
   simulateFrame,
 } from './simulation.js';
 import {
@@ -126,7 +125,6 @@ MeebaFarm.reset = () => {
   console.log('Starting simulation with seed:', core.seed);
   seedPrng(core.seed);
   MeebaFarm.bodies = range(core.startingMeebaCount).map(getRandomBody);
-  separateBodies(MeebaFarm.bodies);
 };
 
 MeebaFarm.snapshots = {
