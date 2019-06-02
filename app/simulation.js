@@ -270,17 +270,21 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
  * @param {number} tick - the current timestamp
  * @returns {function(Body): void} - mutates bodies as needed
  */
-const getBodyInteractor = (bodies, delay, tick) => (body) => {
-  const collideIfValid = getBodyCollider(delay);
-  const activateSpikesIfValid = getSpikeActivator(delay, tick);
+const getBodyInteractor = (bodies, delay, tick) => {
+  const interactiveBodies = bodies.filter(({ meta }) => meta.canInteract);
 
-  for (const other of bodies) {
-    // Anything in this loop is O(n^2), bail as soon as possible
-    if (body !== other && bodyInRange(body, other)) {
-      collideIfValid(body, other);
-      activateSpikesIfValid(body, other);
+  return (body) => {
+    const collideIfValid = getBodyCollider(delay);
+    const activateSpikesIfValid = getSpikeActivator(delay, tick);
+
+    for (const other of interactiveBodies) {
+      // Anything in this loop is O(n^2), bail as soon as possible
+      if (body !== other && bodyInRange(body, other)) {
+        collideIfValid(body, other);
+        activateSpikesIfValid(body, other);
+      }
     }
-  }
+  };
 };
 
 /**
@@ -349,6 +353,23 @@ const getDeathChecker = (tick) => (body) => {
 };
 
 /**
+ * Gets a function which will checks if a body should be removed, if so
+ * adds removal tweens which will eventually mark the body to be removed
+ *
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): void}
+ */
+const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
+  if (meta.canInteract && vitals.calories <= 0) {
+    meta.canInteract = false;
+
+    fill.a = 1;
+    tweens.push(getTweener(fill, { a: 0 }, tick, fixed.bodyRemovalFadeTime));
+    tweens.push(getTweener(meta, { isSimulated: false }, tick, dynamic.maxSpikeFadeTime));
+  }
+};
+
+/**
  * Checks spawn status of each body, returning new meebas to add to the simulation
  *
  * @param {Body} body - the potential parent meeba
@@ -358,7 +379,7 @@ const spawnChildren = (body) => {
   if (body.vitals.calories >= body.vitals.spawnsAt) {
     const child1 = replicateParent(body, body.velocity.angle + 0.125);
     const child2 = replicateParent(body, body.velocity.angle - 0.125);
-    body.vitals.calories = 0;
+    body.meta.isSimulated = false;
 
     return [child1, child2];
   }
@@ -434,6 +455,7 @@ export const simulateFrame = (bodies, start, stop) => {
   const interactBodies = getBodyInteractor(bodies, delay, stop);
   const upkeepCalories = getCalorieUpkeeper(delay);
   const checkDeath = getDeathChecker(stop);
+  const checkRemoval = getRemovalChecker(stop);
 
   bodies.forEach(calcMove);
   bodies.forEach(bounceWall);
@@ -442,6 +464,7 @@ export const simulateFrame = (bodies, start, stop) => {
   bodies.forEach(upkeepCalories);
   bodies.forEach(adjustSaturation);
   bodies.forEach(checkDeath);
+  bodies.forEach(checkRemoval);
 
   // Run tweens and remove if done
   tweens = tweens.filter(tween => tween(stop));
@@ -450,6 +473,6 @@ export const simulateFrame = (bodies, start, stop) => {
   const newChildren = flatten(bodies.map(spawnChildren));
 
   return bodies
-    .filter(body => body.vitals.calories > 0)
+    .filter(({ meta }) => meta.isSimulated)
     .concat(newMotes, newChildren);
 };

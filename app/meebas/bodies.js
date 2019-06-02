@@ -64,6 +64,8 @@ import {
  *   @prop {number} meta.nextX - body's next horizontal location
  *   @prop {number} meta.nextY - body's next vertical location
  *   @prop {Body|null} meta.lastCollisionBody - last body collided with
+ *   @prop {boolean} meta.canInteract - able to interact with other bodies
+ *   @prop {boolean} meta.isSimulated - is a part of the simulation
  */
 
 /**
@@ -129,6 +131,8 @@ const initBody = (dna) => {
       nextX: 0,
       nextY: 0,
       lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   };
 };
@@ -209,6 +213,8 @@ export const spawnMote = () => {
       nextX: 0,
       nextY: 0,
       lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   };
 };
