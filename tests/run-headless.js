@@ -11,7 +11,6 @@ const {
   restoreDefaultSettings,
 } = require('./app/settings.common.js');
 const {
-  separateBodies,
   simulateFrame,
 } = require('./app/simulation.common.js');
 const {
@@ -111,7 +110,6 @@ const run = (duration, width, height, framerate) => {
 
   const snapshots = [];
   let bodies = range(settings.core.startingMeebaCount).map(getRandomBody);
-  separateBodies(bodies);
 
   let time = 0;
   let nextSnapshot = 0;
