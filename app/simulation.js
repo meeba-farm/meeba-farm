@@ -370,21 +370,32 @@ const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
 };
 
 /**
- * Checks spawn status of each body, returning new meebas to add to the simulation
+ * Gets a function to check if a body should spawn children. Will return the children
+ * to add to the simulation if any
  *
- * @param {Body} body - the potential parent meeba
- * @returns {Body[]}
+ * @param {number} tick - the current timestamp
+ * @returns {function(Body): Body[]}
  */
-const spawnChildren = (body) => {
-  if (body.vitals.calories >= body.vitals.spawnsAt) {
-    const child1 = replicateParent(body, body.velocity.angle + 0.125);
-    const child2 = replicateParent(body, body.velocity.angle - 0.125);
-    body.meta.isSimulated = false;
-
-    return [child1, child2];
+const getChildSpawner = (tick) => (body) => {
+  if (body.vitals.calories < body.vitals.spawnsAt) {
+    return [];
   }
 
-  return [];
+  body.meta.isSimulated = false;
+  const children = [
+    replicateParent(body, body.velocity.angle + 0.125),
+    replicateParent(body, body.velocity.angle - 0.125),
+  ];
+
+  for (const { fill, meta } of children) {
+    fill.a = 0.2;
+    tweens.push(getTweener(fill, { a: 1 }, tick, fixed.bodySpawnFadeTime));
+
+    meta.canInteract = false;
+    tweens.push(getTweener(meta, { canInteract: true }, tick, fixed.bodySpawnInactiveTime));
+  }
+
+  return children;
 };
 
 /**
@@ -456,6 +467,7 @@ export const simulateFrame = (bodies, start, stop) => {
   const upkeepCalories = getCalorieUpkeeper(delay);
   const checkDeath = getDeathChecker(stop);
   const checkRemoval = getRemovalChecker(stop);
+  const spawnChildren = getChildSpawner(stop);
 
   bodies.forEach(calcMove);
   bodies.forEach(bounceWall);

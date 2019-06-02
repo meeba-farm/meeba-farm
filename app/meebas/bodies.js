@@ -9,7 +9,6 @@ import {
 } from './genome.js';
 import {
   spawnSpike,
-  getSpikeMover,
 } from './spikes.js';
 import {
   initVitals,
@@ -23,9 +22,6 @@ import {
   rand,
   randInt,
 } from '../utils/math.js';
-import {
-  toVector,
-} from '../utils/physics.js';
 
 /**
  * @typedef {import('./spikes.js').Spike} Spike
@@ -163,15 +159,12 @@ export const getRandomBody = () => {
 export const replicateParent = (parent, angle) => {
   const dna = replicateGenome(toBytes(parent.dna));
   const body = initBody(dna);
-  body.vitals.calories = Math.floor(parent.vitals.calories / 2);
 
-  const relativeLocation = toVector({ angle, speed: 2 * body.radius });
-  body.x = parent.x + relativeLocation.x;
-  body.y = parent.y + relativeLocation.y;
+  body.x = parent.x;
+  body.y = parent.y;
   body.velocity.angle = angle;
   body.velocity.speed = parent.velocity.speed + randInt(0, dynamic.maxSpawningEnergy / body.mass);
-
-  body.spikes.forEach(getSpikeMover(body.x, body.y));
+  body.vitals.calories = Math.floor(parent.vitals.calories / 2);
 
   return body;
 };
