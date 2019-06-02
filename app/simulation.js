@@ -180,7 +180,6 @@ const getSpikeOverlapChecker = (body, other) => (spike) => {
   }, other.radius);
 };
 
-
 /**
  * Gets a function to check if two bodies should collide, and mutates
  * their position and velocity as needed
@@ -242,11 +241,13 @@ const getBodyInteractor = (bodies, delay, tick) => {
   const activateSpikesIfValid = getSpikeActivator(delay, tick);
 
   return (body) => {
-    for (const other of interactiveBodies) {
-      // Anything in this loop is O(n^2), bail as soon as possible
-      if (body !== other && bodyInRange(body, other)) {
-        collideIfOverlapping(body, other);
-        activateSpikesIfValid(body, other);
+    if (body.meta.canInteract) {
+      for (const other of interactiveBodies) {
+        // Anything in this loop is O(n^2), bail as soon as possible
+        if (body !== other && bodyInRange(body, other)) {
+          collideIfOverlapping(body, other);
+          activateSpikesIfValid(body, other);
+        }
       }
     }
   };
