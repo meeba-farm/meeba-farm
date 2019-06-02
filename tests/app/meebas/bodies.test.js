@@ -33,6 +33,8 @@ const expectIsValidNewBody = (body) => {
 
   expect(body.spikes).to.be.an('array');
   expect(body.meta.lastCollisionBody).to.equal(null);
+  expect(body.meta.canInteract).to.be.true;
+  expect(body.meta.isSimulated).to.be.true;
 };
 
 describe('Body methods', () => {
