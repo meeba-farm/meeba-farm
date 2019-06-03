@@ -8,8 +8,12 @@ const {
 
 const TEST_BODIES = [
   {
-    dna: 'F09849F044CF070278DDBE530A4F1D9D9166666',
-    fill: '#6b6e90',
+    dna: 'F07849F044CF070278DDBE530A4F1D9D9166666',
+    fill: {
+      h: 0,
+      s: 60,
+      l: 50,
+    },
     x: 100,
     y: 200,
     radius: 20,
@@ -28,7 +32,12 @@ const TEST_BODIES = [
     spikes: [
       {
         drain: 200,
-        fill: 'black',
+        fill: {
+          h: 0,
+          s: 100,
+          l: 0,
+        },
+        angle: 0,
         length: 20,
         x1: 100,
         y1: 154,
@@ -44,18 +53,20 @@ const TEST_BODIES = [
           x3: -3,
           y3: -22,
         },
-        meta: { deactivateTime: null },
       },
     ],
     meta: {
-      nextX: 100,
-      nextY: 200,
-      lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   },
   {
     dna: '',
-    fill: '#792',
+    fill: {
+      h: 77,
+      s: 40,
+      l: 50,
+    },
     x: 200,
     y: 100,
     radius: 5,
@@ -65,22 +76,25 @@ const TEST_BODIES = [
       speed: 5,
     },
     vitals: {
-      calories: 158,
+      calories: 63,
       upkeep: 0,
       diesAt: 0,
-      spawnsAt: 9007199254740991,
+      spawnsAt: 159,
       isDead: false,
     },
     spikes: [],
     meta: {
-      nextX: 200,
-      nextY: 100,
-      lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   },
   {
-    dna: 'F09849F244CF070278DDBE530A4F1D9D9166666F1D9D91',
-    fill: '#bb6e00',
+    dna: 'F08849F244CF070278DDBE530A4F1D9D9166666F1D9D91',
+    fill: {
+      h: 120,
+      s: 80,
+      l: 50,
+    },
     x: 200,
     y: 300,
     radius: 10,
@@ -99,7 +113,12 @@ const TEST_BODIES = [
     spikes: [
       {
         drain: 200,
-        fill: 'black',
+        fill: {
+          h: 0,
+          s: 100,
+          l: 0,
+        },
+        angle: 0.25,
         length: 8,
         x1: 200,
         y1: 277,
@@ -115,11 +134,15 @@ const TEST_BODIES = [
           x3: -3,
           y3: -11,
         },
-        meta: { deactivateTime: null },
       },
       {
         drain: 200,
-        fill: 'black',
+        fill: {
+          h: 0,
+          s: 100,
+          l: 0,
+        },
+        angle: 0.5,
         length: 20,
         x1: 200,
         y1: 254,
@@ -135,18 +158,20 @@ const TEST_BODIES = [
           x3: -3,
           y3: -22,
         },
-        meta: { deactivateTime: null },
       },
     ],
     meta: {
-      nextX: 200,
-      nextY: 300,
-      lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   },
   {
     dna: '',
-    fill: '#792',
+    fill: {
+      h: 77,
+      s: 99,
+      l: 50,
+    },
     x: 300,
     y: 200,
     radius: 5,
@@ -159,19 +184,22 @@ const TEST_BODIES = [
       calories: 158,
       upkeep: 0,
       diesAt: 0,
-      spawnsAt: 9007199254740991,
+      spawnsAt: 159,
       isDead: false,
     },
     spikes: [],
     meta: {
-      nextX: 300,
-      nextY: 200,
-      lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   },
   {
     dna: '',
-    fill: '#792',
+    fill: {
+      h: 77,
+      s: 99,
+      l: 50,
+    },
     x: 200,
     y: 200,
     radius: 5,
@@ -184,14 +212,13 @@ const TEST_BODIES = [
       calories: 158,
       upkeep: 0,
       diesAt: 0,
-      spawnsAt: 9007199254740991,
+      spawnsAt: 159,
       isDead: false,
     },
     spikes: [],
     meta: {
-      nextX: 200,
-      nextY: 200,
-      lastCollisionBody: null,
+      canInteract: true,
+      isSimulated: true,
     },
   },
 ];
@@ -203,8 +230,8 @@ describe('Diagnostics module', () => {
         timestamp: 123.45,
         meebas: 2,
         motes: 3,
+        calories: 2379,
         spikes: 3,
-        calories: 2474,
         averageSize: 785,
         averageSpikes: 1.5,
         averageSpikeLength: 16,
@@ -232,7 +259,7 @@ describe('Diagnostics module', () => {
   });
 
   describe('toCsv', () => {
-    it('should convert an array of objects into a CVS string', () => {
+    it('should convert an array of objects into a CSV string', () => {
       const objects = [
         { foo: 1, bar: 2, baz: 'qux' },
         { foo: 3, bar: 4, baz: 'quux' },
