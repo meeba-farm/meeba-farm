@@ -166,6 +166,59 @@ const TEST_BODIES = [
     },
   },
   {
+    dna: 'F09849F244CF070278DDBE530A4F1D9D9166666F1D9D91',
+    fill: {
+      h: 240,
+      s: 29,
+      l: 50,
+    },
+    x: 300,
+    y: 200,
+    radius: 13,
+    mass: 533,
+    velocity: {
+      angle: 0.35,
+      speed: 6,
+    },
+    vitals: {
+      calories: 313,
+      upkeep: 30,
+      diesAt: 266,
+      spawnsAt: 1066,
+      isDead: false,
+    },
+    spikes: [
+      {
+        drain: 200,
+        fill: {
+          h: 0,
+          s: 100,
+          l: 0,
+        },
+        angle: 0.5,
+        length: 12,
+        x1: 275,
+        y1: 300,
+        x2: 288,
+        y2: 303,
+        x3: 288,
+        y3: 297,
+        offset: {
+          x1: -25,
+          y1: 0,
+          x2: -12,
+          y2: 3,
+          x3: -12,
+          y3: -3,
+        },
+      },
+    ],
+    meta: {
+      canInteract: true,
+      isSimulated: true,
+    },
+  },
+  {
     dna: '',
     fill: {
       h: 77,
@@ -228,16 +281,39 @@ describe('Diagnostics module', () => {
     it('should generate a report summarizing the current state of the simulation', () => {
       expect(getSnapshot(123.45, TEST_BODIES)).to.deep.equal({
         timestamp: 123.45,
-        meebas: 2,
+        meebas: 3,
         motes: 3,
-        calories: 2379,
-        spikes: 3,
-        averageSize: 785,
-        averageSpikes: 1.5,
-        averageSpikeLength: 16,
-        averageUpkeep: 36,
-        averageSpeed: 9,
-        averageMoteSpeed: 15,
+        calories: 2692,
+        size: {
+          min: 314,
+          max: 1256,
+          mode: 533,
+          mean: 701,
+        },
+        spikeCount: {
+          min: 1,
+          max: 2,
+          mode: 1,
+          mean: 1.3333333333333333,
+        },
+        spikeLength: {
+          min: 8,
+          max: 20,
+          mode: 12,
+          mean: 15,
+        },
+        upkeep: {
+          min: 24,
+          max: 48,
+          mode: 30,
+          mean: 34,
+        },
+        speed: {
+          min: 6,
+          max: 12,
+          mode: 6,
+          mean: 8,
+        },
       });
     });
 
@@ -246,14 +322,12 @@ describe('Diagnostics module', () => {
         timestamp: 0,
         meebas: 0,
         motes: 0,
-        spikes: 0,
-        calories: 0,
-        averageSize: 0,
-        averageSpikes: 0,
-        averageSpikeLength: 0,
-        averageUpkeep: 0,
-        averageSpeed: 0,
-        averageMoteSpeed: 0,
+        calories: NaN,
+        size: { min: NaN, max: NaN, mode: NaN, mean: NaN },
+        spikeCount: { min: NaN, max: NaN, mode: NaN, mean: NaN },
+        spikeLength: { min: NaN, max: NaN, mode: NaN, mean: NaN },
+        upkeep: { min: NaN, max: NaN, mode: NaN, mean: NaN },
+        speed: { min: NaN, max: NaN, mode: NaN, mean: NaN },
       });
     });
   });
