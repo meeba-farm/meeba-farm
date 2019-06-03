@@ -21,15 +21,64 @@ const LOOKUP_TABLES = {
 export const sqr = n => n * n;
 
 /**
+ * @param {function(number[]): number} fn
+ * @returns {function(number[]): number}
+ */
+const nanEmpties = (fn) => (nums) => (nums.length === 0 ? NaN : fn(nums));
+
+/**
+ * Returns the sum of an array of numbers
+ *
+ * @param {number[]} nums
+ * @returns {number}
+ */
+export const sum = nanEmpties(nums => nums.reduce((s, n) => s + n));
+
+/**
+ * Returns the least in an array of numbers
+ *
+ * @param {number[]} nums
+ * @returns {number}
+ */
+export const minimum = nanEmpties(nums => nums.reduce((min, n) => (min < n ? min : n)));
+
+/**
+ * Returns the most in an array of numbers
+ *
+ * @param {number[]} nums
+ * @returns {number}
+ */
+export const maximum = nanEmpties(nums => nums.reduce((max, n) => (max > n ? max : n)));
+
+/**
+ * Returns the average of an array of numbers
+ *
+ * @param {number[]} nums
+ * @returns {number}
+ */
+export const mean = nums => sum(nums) / nums.length;
+
+/**
+ * Returns the middle value in an array of numbers
+ *
+ * @param {number[]} nums
+ * @returns {number}
+ */
+export const mode = nanEmpties(
+  nums => nums.slice().sort((a, b) => a - b)[Math.floor((nums.length - 1) / 2)],
+);
+
+/**
  * Returns the sum of the products of two sets of numbers
  *
  * @param {number[]} set1
  * @param {number[]} set2
  * @returns {number}
  */
-export const dotProduct = (set1, set2) => set1
-  .map((n1, i) => n1 * set2[i])
-  .reduce((sum, n) => sum + n);
+export const dotProduct = (set1, set2) => {
+  const products = set1.map((n1, i) => n1 * set2[i]);
+  return sum(products);
+};
 
 /**
  * Rounds a number to be no less or more than a min and max

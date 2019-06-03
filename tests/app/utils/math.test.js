@@ -5,6 +5,11 @@ const { range } = require('./arrays.common.js');
 const {
   PI_2,
   sqr,
+  sum,
+  minimum,
+  maximum,
+  mean,
+  mode,
   dotProduct,
   roundRange,
   normalize,
@@ -37,6 +42,102 @@ describe('Math utils', () => {
       expect(sqr(-1)).to.equal(1);
 
       expect(sqr(0.123)).to.be.veryCloseTo(0.015129);
+    });
+  });
+
+  describe('sum', () => {
+    it('should return the sum of an array of numbers', () => {
+      expect(sum([1, 2, 3, 4])).to.equal(10);
+      expect(sum([4, 1, 3, 2])).to.equal(10);
+      expect(sum([1])).to.equal(1);
+      expect(sum([5, 3.1, 178, -5, 8])).to.equal(189.1);
+    });
+
+    it('should return NaN if passed an empty array', () => {
+      expect(sum([])).to.be.NaN;
+    });
+
+    it('should not mutate the passed array', () => {
+      const numbers = [4, 1, 3, 2];
+      sum(numbers);
+      expect(numbers).to.deep.equal([4, 1, 3, 2]);
+    });
+  });
+
+  describe('minimum', () => {
+    it('should return the least of an array of numbers', () => {
+      expect(minimum([1, 2, 3, 4])).to.equal(1);
+      expect(minimum([4, 1, 3, 2])).to.equal(1);
+      expect(minimum([1])).to.equal(1);
+      expect(minimum([5, 3.1, 178, -5, 8])).to.equal(-5);
+    });
+
+    it('should return NaN if passed an empty array', () => {
+      expect(minimum([])).to.be.NaN;
+    });
+
+    it('should not mutate the passed array', () => {
+      const numbers = [4, 1, 3, 2];
+      minimum(numbers);
+      expect(numbers).to.deep.equal([4, 1, 3, 2]);
+    });
+  });
+
+  describe('maximum', () => {
+    it('should return the highest of an array of numbers', () => {
+      expect(maximum([1, 2, 3, 4])).to.equal(4);
+      expect(maximum([4, 1, 3, 2])).to.equal(4);
+      expect(maximum([1])).to.equal(1);
+      expect(maximum([5, 3.1, 178, -5, 8])).to.equal(178);
+    });
+
+    it('should return NaN if passed an empty array', () => {
+      expect(maximum([])).to.be.NaN;
+    });
+
+    it('should not mutate the passed array', () => {
+      const numbers = [4, 1, 3, 2];
+      maximum(numbers);
+      expect(numbers).to.deep.equal([4, 1, 3, 2]);
+    });
+  });
+
+  describe('mean', () => {
+    it('should return the average of an array of numbers', () => {
+      expect(mean([1, 2, 3, 4])).to.equal(2.5);
+      expect(mean([4, 1, 3, 2])).to.equal(2.5);
+      expect(mean([1])).to.equal(1);
+      expect(mean([5, 3.1, 178, -5, 8])).to.equal(37.82);
+    });
+
+    it('should return NaN if passed an empty array', () => {
+      expect(mean([])).to.be.NaN;
+    });
+
+    it('should not mutate the passed array', () => {
+      const numbers = [4, 1, 3, 2];
+      mean(numbers);
+      expect(numbers).to.deep.equal([4, 1, 3, 2]);
+    });
+  });
+
+  describe('mode', () => {
+    it('should return the middle value in an array of numbers', () => {
+      expect(mode([1, 2, 4])).to.equal(2);
+      expect(mode([4, 1, 2])).to.equal(2);
+      expect(mode([1, 2, 3, 4])).to.equal(2);
+      expect(mode([1])).to.equal(1);
+      expect(mode([5, 3.1, 178, -5, 8])).to.equal(5);
+    });
+
+    it('should return NaN if passed an empty array', () => {
+      expect(mode([])).to.be.NaN;
+    });
+
+    it('should not mutate the passed array', () => {
+      const numbers = [4, 1, 2];
+      mode(numbers);
+      expect(numbers).to.deep.equal([4, 1, 2]);
     });
   });
 
