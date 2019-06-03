@@ -109,6 +109,35 @@ export const listValues = (obj) => {
 };
 
 /**
+ * Converts an array of key/value pairs into an object
+ *
+ * @param {Array<[string, any]>} entries - array of key/value pairs
+ * @returns {Object<string, any>}
+ */
+export const fromEntries = (entries) => {
+  const obj = /** @type {Object<string, any>} */ ({});
+  for (const [key, val] of entries) {
+    obj[key] = val;
+  }
+  return obj;
+};
+
+/**
+ * Converts an array of keys and an array of values to an object
+ *
+ * @param {string[]} keys - array of keys
+ * @param {array} values - array of values
+ * @returns {Object<string, any>}
+ */
+export const fromLists = (keys, values) => {
+  const obj = /** @type {Object<string, any>} */ ({});
+  for (let i = 0; i < keys.length; i += 1) {
+    obj[keys[i]] = values[i];
+  }
+  return obj;
+};
+
+/**
  * Returns a function which will mutate an object's properties over time
  *
  * @param {Object<string, any>} target - the object to mutate
