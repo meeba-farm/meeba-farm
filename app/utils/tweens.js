@@ -1,6 +1,16 @@
 import {
+  pipe,
+} from './functions.js';
+import {
   roundRange,
 } from './math.js';
+
+/**
+ * @callback Easer
+ *
+ * @param {number} delta - current delta from 0 to 1
+ * @returns {number} - adjusted delta, still between 0 to 1
+ */
 
 /**
  * @callback Tweener
@@ -10,15 +20,44 @@ import {
  */
 
 /**
+ * Identity function, creates the default linear ease
+ *
+ * @param {number} delta - current delta from 0 to 1
+ * @returns {number}
+ */
+export const easeLinear = delta => delta;
+
+/**
+ * Creates an "ease in", where change begins slowly before catching up
+ *
+ * Credit to @edelventhal for the easing logic: github.com/edelventhal
+ *
+ * @param {number} delta - current delta from 0 to 1
+ * @returns {number}
+ */
+export const easeIn = delta => delta * delta;
+
+/**
+ * Creates an "ease out", where change starts quickly and then slows before end
+ *
+ * Credit to @edelventhal for the easing logic: github.com/edelventhal
+ *
+ * @param {number} delta - current delta from 0 to 1
+ * @returns {number}
+ */
+export const easeOut = delta => -delta * (delta - 2);
+
+/**
  * Returns a function which will mutate an object's properties over time
  *
  * @param {Object<string, any>} target - the object to mutate
  * @param {Object<string, any>} transform - the new properties and values
  * @param {number} start - the starting point, for example a timestamp
  * @param {number} duration - the length of the tween
+ * @param {Easer} [ease] - a function to ease the delta, defaults to linear
  * @returns {Tweener} tween - progressively applies transforms
  */
-export const getTweener = (target, transform, start, duration) => {
+export const getTweener = (target, transform, start, duration, ease = easeLinear) => {
   let targetRef = /** @type {Object<string, any>|null} */ (target);
   const transforms = Object.entries(transform);
 
@@ -37,7 +76,11 @@ export const getTweener = (target, transform, start, duration) => {
     }
 
     // Tween numbers
-    const delta = roundRange((current - start) / duration, 0, 1);
+    const delta = pipe((current - start) / duration)
+      .into(roundRange, 0, 1)
+      .into(ease)
+      .done();
+
     for (const { key, original, diff } of numbers) {
       targetRef[key] = original + delta * diff;
     }

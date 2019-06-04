@@ -2,10 +2,55 @@
 
 const { expect } = require('chai');
 const {
+  easeLinear,
+  easeIn,
+  easeOut,
   getTweener,
 } = require('./tweens.common.js');
 
 describe('Tweening utils', () => {
+  describe('easeLinear', () => {
+    it('should return 0 when passed 0', () => {
+      expect(easeLinear(0)).to.equal(0);
+    });
+
+    it('should return 1 when passed 1', () => {
+      expect(easeLinear(1)).to.equal(1);
+    });
+
+    it('should return 0.5 when passed 0.5', () => {
+      expect(easeLinear(0.5)).to.equal(0.5);
+    });
+  });
+
+  describe('easeIn', () => {
+    it('should return 0 when passed 0', () => {
+      expect(easeIn(0)).to.equal(0);
+    });
+
+    it('should return 1 when passed 1', () => {
+      expect(easeIn(1)).to.equal(1);
+    });
+
+    it('should return less than 0.5 when passed 0.5', () => {
+      expect(easeIn(0.5)).to.be.lessThan(0.5);
+    });
+  });
+
+  describe('easeOut', () => {
+    it('should return 0 when passed 0', () => {
+      expect(easeOut(0)).to.equal(0);
+    });
+
+    it('should return 1 when passed 1', () => {
+      expect(easeOut(1)).to.equal(1);
+    });
+
+    it('should return greater than 0.5 when passed 0.5', () => {
+      expect(easeOut(0.5)).to.be.greaterThan(0.5);
+    });
+  });
+
   describe('getTweener', () => {
     it('should take an object, a transform, a start, a duration, and return a function', () => {
       const target = { foo: 1, bar: 2 };
@@ -95,6 +140,20 @@ describe('Tweening utils', () => {
       const tween = getTweener(target, { foo: 5 }, 1000, 100);
 
       expect(tween(1100)).to.equal(false);
+    });
+
+    it('should optionally take an easing function', () => {
+      const target = { foo: 1, bar: 2 };
+      const tween = getTweener(target, { foo: 5 }, 1000, 100, easeOut);
+
+      tween(1000);
+      expect(target.foo).to.equal(1);
+
+      tween(1050);
+      expect(target.foo).to.be.greaterThan(3);
+
+      tween(1100);
+      expect(target.foo).to.equal(5);
     });
   });
 });
