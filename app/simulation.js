@@ -29,7 +29,7 @@ import {
 } from './utils/math.js';
 import {
   getTweener,
-} from './utils/objects.js';
+} from './utils/tweens.js';
 import {
   toVector,
   bounceX,
@@ -50,7 +50,7 @@ import {
  */
 
 /**
- * @typedef {import('./utils/objects.js').Tweener} Tweener
+ * @typedef {import('./utils/tweens.js').Tweener} Tweener
  */
 
 /**
