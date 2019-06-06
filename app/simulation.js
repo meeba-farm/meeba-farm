@@ -28,8 +28,10 @@ import {
   randInt,
 } from './utils/math.js';
 import {
+  easeIn,
+  easeOut,
   getTweener,
-} from './utils/objects.js';
+} from './utils/tweens.js';
 import {
   toVector,
   bounceX,
@@ -50,7 +52,7 @@ import {
  */
 
 /**
- * @typedef {import('./utils/objects.js').Tweener} Tweener
+ * @typedef {import('./utils/tweens.js').Tweener} Tweener
  */
 
 /**
@@ -280,7 +282,7 @@ const getSpikeFader = (tick, velocity) => {
     const fadeTime = randInt(dynamic.minSpikeFadeTime, dynamic.maxSpikeFadeTime);
 
     fill.a = 1;
-    tweens.push(getTweener(fill, { a: 0 }, tick, fadeTime));
+    tweens.push(getTweener(fill, { a: 0 }, tick, fadeTime, easeIn));
 
     const speed = Math.floor(1000 * randInt(0, dynamic.maxSpikeFadeDistance) / fadeTime);
     const spikeVector = toVector({ angle, speed });
@@ -294,7 +296,7 @@ const getSpikeFader = (tick, velocity) => {
       y2: spike.y2 + deltaY,
       x3: spike.x3 + deltaX,
       y3: spike.y3 + deltaY,
-    }, tick, fadeTime));
+    }, tick, fadeTime, easeOut));
   };
 };
 
@@ -354,8 +356,8 @@ const getChildSpawner = (tick) => (body) => {
   ];
 
   for (const { fill, meta } of children) {
-    fill.a = 0.2;
-    tweens.push(getTweener(fill, { a: 1 }, tick, fixed.bodySpawnFadeTime));
+    fill.a = 0;
+    tweens.push(getTweener(fill, { a: 1 }, tick, fixed.bodySpawnInactiveTime, easeOut));
 
     meta.canInteract = false;
     tweens.push(getTweener(meta, { canInteract: true }, tick, fixed.bodySpawnInactiveTime));
