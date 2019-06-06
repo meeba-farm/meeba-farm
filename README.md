@@ -21,6 +21,7 @@ evolve into new and different species better suited to their environment.
         - [Linter](#linter)
         - [Type Checker](#type-checker)
         - [Unit Tests](#unit-tests)
+        - [Headless Simulation](#headless-simulation)
 - [Contributing](#contributing)
 - [License](#license)
 - [Attribution](#attribution)
@@ -177,32 +178,32 @@ npm run unit-tests
 
 ### Headless Simulation
 
-To better evaluate the health of the simulation under default settings there it
-is possible to run Meeba Farm in a "headless" mode. This will run the
-simulation with a Node CLI and generate logs and CSV files with information
-about the meeba population. To run the default headless simulation, use:
+To better evaluate the health of the simulation under default settings, it is
+possible to run Meeba Farm in "headless" mode. This will run the simulation
+with a Node CLI and generate logs and CSV files with information about the
+meeba population. To run the default headless simulation, use:
 
 ```bash
 npm run headless
 ```
 
 This will run five tests at a variety of tank sizes, framerates, and duration
-of simulated time. You can use command line arguments to run one test with
+of simulated time. You can also use command line arguments to run one test with
 specific parameters:
 
 ```bash
 npm run headless -- duration [width=1000] [height=1000] [framerate=60]
 ```
 
-Replace the above parameters with a specific number. Note that duration must be
-specificied in _hours_ not milliseconds. For example:
+Replace one or more of the above parameters with a specific number. Note that
+the duration must be specified in _hours_ not milliseconds. For example:
 
 ```bash
 npm run headless -- 24 1920 1080
 ```
 
 The above would run for 24 hours of simulated time in a tank that was
-1920x1080.
+1920x1080, running at the default of 60fps.
 
 _Note: All CSV reports are stored in the [tests/reports/](./tests/reports)
 directory._

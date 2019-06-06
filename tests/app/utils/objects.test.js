@@ -9,6 +9,8 @@ const {
   setNested,
   listKeys,
   listValues,
+  fromEntries,
+  fromLists,
   getTweener,
 } = require('./objects.common.js');
 
@@ -205,6 +207,48 @@ describe('Object utils', () => {
       });
 
       expect(keys).to.deep.equal([{}, undefined, 7]);
+    });
+  });
+
+  describe('fromEntries', () => {
+    it('should convert an array of key value pairs to an object', () => {
+      expect(fromEntries([['foo', false], ['bar', 7], ['baz', ['corge']]])).to.deep.equal({
+        foo: false,
+        bar: 7,
+        baz: ['corge'],
+      });
+    });
+
+    it('should set a value to undefined when is missing', () => {
+      expect(fromEntries([['foo']])).to.deep.equal({
+        foo: undefined,
+      });
+    });
+
+    it('should throw when passed an invalid entry', () => {
+      expect(() => fromEntries([null])).to.throw;
+    });
+  });
+
+  describe('fromLists', () => {
+    it('should convert an array of keys and an array of values to an object', () => {
+      expect(fromLists(['foo', 'bar', 'baz'], [false, 7, ['corge']])).to.deep.equal({
+        foo: false,
+        bar: 7,
+        baz: ['corge'],
+      });
+    });
+
+    it('should set a value to undefined when value is missing', () => {
+      expect(fromLists(['foo'], [])).to.deep.equal({
+        foo: undefined,
+      });
+    });
+
+    it('should skip values when key is missing', () => {
+      expect(fromLists(['foo'], ['bar', 'baz'])).to.deep.equal({
+        foo: 'bar',
+      });
     });
   });
 

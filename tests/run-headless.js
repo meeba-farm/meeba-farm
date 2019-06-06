@@ -11,7 +11,6 @@ const {
   restoreDefaultSettings,
 } = require('./app/settings.common.js');
 const {
-  separateBodies,
   simulateFrame,
 } = require('./app/simulation.common.js');
 const {
@@ -28,6 +27,11 @@ const {
 const {
   seedPrng,
 } = require('./app/utils/math.common.js');
+const {
+  listKeys,
+  listValues,
+  fromLists,
+} = require('./app/utils/objects.common.js');
 
 const SEC = 1000;
 const MIN = 60 * SEC;
@@ -79,17 +83,49 @@ const logFormatted = (...args) => {
   console.log(formatString, ...messages);
 };
 
-const logSnapshot = (snapshot) => {
-  for (const [key, value] of Object.entries(snapshot)) {
-    const roundedValue = Math.floor(value * 1000) / 1000;
-    logFormatted(`${key}: `, [], roundedValue, ['dim']);
+const logKeyVal = (key, val) => logFormatted(`${key}: `, [], val, ['dim']);
+
+const truncate = val => Math.floor(val * 100) / 100;
+const logTruncated = (key, val) => logKeyVal(key, truncate(val));
+const padTruncated = (val, size) => String(truncate(val)).padStart(size, ' ');
+
+const logSnapshot = ({ timestamp, meebas, motes, calories, ...propStats }) => {
+  logTruncated('timestamp', timestamp);
+  logTruncated('meebas', meebas);
+  logTruncated('motes', motes);
+  logTruncated('calories', calories);
+
+  logFormatted('-------------+---------+---------+---------+---------', []);
+  logFormatted('Prop Stats   |   min   |   max   |   mean  |   mode  ', []);
+  logFormatted('-------------+---------+---------+---------+---------', []);
+
+  for (const [prop, stats] of Object.entries(propStats)) {
+    logFormatted(
+      prop.padEnd(12, ' '), [],
+      ' | ', [],
+      padTruncated(stats.min, 7), ['dim'],
+      ' | ', ['reset'],
+      padTruncated(stats.max, 7), ['dim'],
+      ' | ', ['reset'],
+      padTruncated(stats.mean, 7), ['dim'],
+      ' | ', ['reset'],
+      padTruncated(stats.mode, 7), ['dim'],
+    );
   }
 };
 
 const getReportPath = (...identifiers) => `headless-${identifiers.join('-')}.csv`;
 
+const flattenSnapshot = (snapshot) => {
+  // Get snapshot keys camelCased instead of dot-separated
+  const snapshotKeys = listKeys(snapshot)
+    .map(key => key.replace(/\.(.)/g, (_, first) => first.toUpperCase()));
+  const snapshotValues = listValues(snapshot);
+  return fromLists(snapshotKeys, snapshotValues);
+};
+
 const writeReport = (path, snapshots) => {
-  const report = toCsv(snapshots);
+  const report = toCsv(snapshots.map(flattenSnapshot));
   writeFileSync(resolve(REPORT_DIR, path), report);
 };
 
@@ -106,12 +142,11 @@ const run = (duration, width, height, framerate) => {
 
   const { seed } = settings.core;
   seedPrng(seed);
-  logFormatted('seed: ', [], seed, ['dim']);
+  logKeyVal('seed', seed);
   console.log();
 
   const snapshots = [];
   let bodies = range(settings.core.startingMeebaCount).map(getRandomBody);
-  separateBodies(bodies);
 
   let time = 0;
   let nextSnapshot = 0;

@@ -2,6 +2,22 @@ import {
   flatten,
   groupBy,
 } from './arrays.js';
+import {
+  sum,
+  minimum,
+  maximum,
+  mean,
+  mode,
+} from './math.js';
+
+/**
+ * @typedef PropertyStats
+ *
+ * @prop {number} min
+ * @prop {number} max
+ * @prop {number} mean
+ * @prop {number} mode
+ */
 
 /**
  * @typedef Snapshot
@@ -9,35 +25,17 @@ import {
  * @prop {number} timestamp
  * @prop {number} meebas
  * @prop {number} motes
- * @prop {number} spikes
  * @prop {number} calories
- * @prop {number} averageSize
- * @prop {number} averageSpikes
- * @prop {number} averageSpikeLength
- * @prop {number} averageUpkeep
- * @prop {number} averageSpeed
- * @prop {number} averageMoteSpeed
+ * @prop {PropertyStats} size
+ * @prop {PropertyStats} spikeCount
+ * @prop {PropertyStats} spikeLength
+ * @prop {PropertyStats} upkeep
+ * @prop {PropertyStats} speed
  */
 
 /**
  * @typedef {import('../simulation.js').Body} Body
  */
-
-/**
- * @template T
- * @param {T[]} arr
- * @param {function(T): number} getValue
- * @returns {number}
- */
-const sum = (arr, getValue) => arr.reduce((total, item) => total + getValue(item), 0);
-
-/**
- * @template T
- * @param {T[]} arr
- * @param {function(T): number} getValue
- * @returns {number}
- */
-const avg = (arr, getValue) => (arr.length === 0 ? 0 : sum(arr, getValue) / arr.length);
 
 /**
  * @param {Body} body
@@ -54,6 +52,17 @@ const getBodyCategory = (body) => {
 
   return 'meebas';
 };
+
+/**
+ * @param {number[]} values - the assorted values a particular property
+ * @returns {PropertyStats}
+ */
+const analyzeProperty = values => ({
+  min: minimum(values),
+  max: maximum(values),
+  mean: mean(values),
+  mode: mode(values),
+});
 
 /**
  * Generate a report about the current state of the simulation
@@ -73,14 +82,12 @@ export const getSnapshot = (timestamp, bodies) => {
     timestamp,
     meebas: meebas.length,
     motes: motes.length,
-    spikes: spikes.length,
-    calories: sum(bodies, body => body.vitals.calories),
-    averageSize: avg(meebas, meeba => meeba.mass),
-    averageSpikes: avg(meebas, meeba => meeba.spikes.length),
-    averageSpikeLength: avg(spikes, spike => spike.length),
-    averageUpkeep: avg(meebas, meeba => meeba.vitals.upkeep),
-    averageSpeed: avg(meebas, meeba => meeba.velocity.speed),
-    averageMoteSpeed: avg(motes, mote => mote.velocity.speed),
+    calories: sum(bodies.map(body => body.vitals.calories)),
+    size: analyzeProperty(meebas.map(meeba => meeba.mass)),
+    spikeCount: analyzeProperty(meebas.map(meeba => meeba.spikes.length)),
+    spikeLength: analyzeProperty(spikes.map(spike => spike.length)),
+    upkeep: analyzeProperty(meebas.map(meeba => meeba.vitals.upkeep)),
+    speed: analyzeProperty(meebas.map(meeba => meeba.velocity.speed)),
   };
 };
 

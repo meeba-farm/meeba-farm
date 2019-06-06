@@ -136,18 +136,18 @@ export const settings = {
   },
   bodies: {
     initialEnergyAdjustment: 10,
-    minRadius: 10,
+    minRadius: 8,
     meebaLightness: 45,
     moteHue: 77,
     moteLightness: 33,
     moteRadius: 5,
     moteCalorieAdjustment: 2,
     moteSpeedAdjustment: 0.2,
-    spawningEnergyAdjustment: 5,
+    spawningEnergyAdjustment: 4,
   },
   genome: {
     averageGeneCount: 48,
-    averageGeneSize: 6,
+    averageGeneSize: 8,
     baseChanceMutateBit: 0.0005,
     baseChanceDropByte: 0.008,
     baseChanceRepeatByte: 0.008,
@@ -164,7 +164,7 @@ export const settings = {
     percentBlueGenes: 0.05,
   },
   settings: {
-    baseMoteSpawn: 32,
+    baseMoteSpawn: 36,
     baseStartingMeebas: 100,
   },
   simulation: {
@@ -177,16 +177,16 @@ export const settings = {
     bodySpawnInactiveTime: 2000,
   },
   spikes: {
-    baseSpikeDrain: 100000,
-    drainLengthExponent: 1.8,
+    baseSpikeDrain: 160000,
+    drainLengthExponent: 1.75,
     spikeWidth: 6,
   },
   vitals: {
     percentDiesAt: 0.5,
     percentSpawnsAt: 2,
-    baseUpkeepAdjustment: 0.8,
-    massCalorieExponent: 0.66, // Idealized Kleiber's law
-    spikeCountExponent: 1.7,
+    baseUpkeepAdjustment: 8,
+    massCalorieExponent: 0.9,
+    spikeCountExponent: 1.5,
     upkeepPerLength: 16,
     upkeepPerMass: 1,
     upkeepPerSpike: 32,
