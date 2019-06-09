@@ -65,7 +65,6 @@ import {
  * @prop {number} averageSpikeFadeTime
  * @prop {number} averageSpikeFadeDistance
  * @prop {number} bodyRemovalFadeTime
- * @prop {number} bodySpawnFadeTime
  * @prop {number} bodySpawnInactiveTime
  */
 
