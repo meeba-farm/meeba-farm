@@ -216,9 +216,12 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
     for (const spike of body.spikes) {
       if (isSpikeOverlapping(spike)) {
         const { fill } = spike;
+
         fill.l = 50;
-        const lightnessTween = getTweener(fill, { l: 0 }, tick, fixed.spikeHighlightTime);
-        tweens.push(lightnessTween);
+        const highlightTween = getTweener(fill)
+          .addFrame(fixed.spikeHighlightTime, { l: 0 })
+          .start(tick);
+        tweens.push(highlightTween);
 
         const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
         body.vitals.calories += drainAmount;
@@ -282,21 +285,26 @@ const getSpikeFader = (tick, velocity) => {
     const fadeTime = randInt(dynamic.minSpikeFadeTime, dynamic.maxSpikeFadeTime);
 
     fill.a = 1;
-    tweens.push(getTweener(fill, { a: 0 }, tick, fadeTime, easeIn));
+    const fadeTween = getTweener(fill)
+      .addFrame(fadeTime, { a: 0 }, easeIn)
+      .start(tick);
 
     const speed = Math.floor(1000 * randInt(0, dynamic.maxSpikeFadeDistance) / fadeTime);
     const spikeVector = toVector({ angle, speed });
     const deltaX = originalVector.x + spikeVector.x;
     const deltaY = originalVector.y + spikeVector.y;
+    const driftTween = getTweener(spike)
+      .addFrame(fadeTime, {
+        x1: spike.x1 + deltaX,
+        y1: spike.y1 + deltaY,
+        x2: spike.x2 + deltaX,
+        y2: spike.y2 + deltaY,
+        x3: spike.x3 + deltaX,
+        y3: spike.y3 + deltaY,
+      }, easeOut)
+      .start(tick);
 
-    tweens.push(getTweener(spike, {
-      x1: spike.x1 + deltaX,
-      y1: spike.y1 + deltaY,
-      x2: spike.x2 + deltaX,
-      y2: spike.y2 + deltaY,
-      x3: spike.x3 + deltaX,
-      y3: spike.y3 + deltaY,
-    }, tick, fadeTime, easeOut));
+    tweens.push(fadeTween, driftTween);
   };
 };
 
@@ -315,8 +323,10 @@ const getDeathChecker = (tick) => (body) => {
     const fadeSpike = getSpikeFader(tick, velocity);
     spikes.forEach(fadeSpike);
 
-    // Remove spikes after last one has faded
-    tweens.push(getTweener(body, { spikes: [] }, tick, dynamic.maxSpikeFadeTime));
+    const removeSpikesTween = getTweener(body)
+      .addFrame(dynamic.maxSpikeFadeTime, { spikes: [] })
+      .start(tick);
+    tweens.push(removeSpikesTween);
   }
 };
 
@@ -332,8 +342,14 @@ const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
     meta.canInteract = false;
 
     fill.a = 1;
-    tweens.push(getTweener(fill, { a: 0 }, tick, fixed.bodyRemovalFadeTime));
-    tweens.push(getTweener(meta, { isSimulated: false }, tick, dynamic.maxSpikeFadeTime));
+    const fadeTween = getTweener(fill)
+      .addFrame(fixed.bodyRemovalFadeTime, { a: 0 })
+      .start(tick);
+    const removeTween = getTweener(meta)
+      .addFrame(dynamic.maxSpikeFadeTime, { isSimulated: false })
+      .start(tick);
+
+    tweens.push(fadeTween, removeTween);
   }
 };
 
@@ -357,10 +373,16 @@ const getChildSpawner = (tick) => (body) => {
 
   for (const { fill, meta } of children) {
     fill.a = 0;
-    tweens.push(getTweener(fill, { a: 1 }, tick, fixed.bodySpawnInactiveTime, easeOut));
+    const fadeInTween = getTweener(fill)
+      .addFrame(fixed.bodySpawnInactiveTime, { a: 1 }, easeOut)
+      .start(tick);
 
     meta.canInteract = false;
-    tweens.push(getTweener(meta, { canInteract: true }, tick, fixed.bodySpawnInactiveTime));
+    const interactTween = getTweener(meta)
+      .addFrame(fixed.bodySpawnInactiveTime, { canInteract: true })
+      .start(tick);
+
+    tweens.push(fadeInTween, interactTween);
   }
 
   return children;
