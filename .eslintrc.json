@@ -99,6 +99,7 @@
                 "renderer",
                 "rgb",
                 "rgba",
+                "sinon",
                 "sqr",
                 "spawner",
                 "stdin",

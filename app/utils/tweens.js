@@ -19,6 +19,17 @@ import {
  * @returns {boolean} more - whether or not there is more to transform
  */
 
+
+/**
+ * @callback PropTransformer
+ *
+ * @param {number} [delta] - current delta from 0 to 1
+ * @param {any} [base] - value of property as of the previous frame or start
+ * @param {string} [key] - key of the property
+ * @param {Object<string, any>} [target] - object being mutated
+ * @returns {any} the new value to set at that property
+ */
+
 /**
  * @typedef TweenBuilder
  *
@@ -51,21 +62,6 @@ import {
  */
 
 /**
- * @typedef NumberTransform
- *
- * @prop {string} key - the property to transform
- * @prop {number} original - the original value of the number
- * @prop {number} diff - the difference between the final value and the original
- */
-
-/**
- * @typedef OtherTransform
- *
- * @prop {string} key - the property to transform
- * @prop {any} final - the final value for the property
- */
-
-/**
  * Identity function, creates the default linear ease
  *
  * @param {number} delta - current delta from 0 to 1
@@ -94,47 +90,58 @@ export const easeIn = delta => delta * delta;
 export const easeOut = delta => -delta * (delta - 2);
 
 /**
- * Parses a transform object into individual property transforms, divided into numbers and others
+ * Takes the difference between the original and final value of a number and returns
+ * a transform function for it
  *
- * @param {Object<string, any>} target - the object being mutated
- * @param {Object<string, any>} transform - the transform object
- * @returns {{ numbers: NumberTransform[], others: OtherTransform[] }}
+ * @param {number} diff - amount to change the number
+ * @returns {PropTransformer}
  */
-const parseTransform = (target, transform) => {
-  const propTransforms = Object.entries(transform);
+export const getNumberTransformer = (diff) => (delta, base) => base + delta * diff;
 
-  const numbers = propTransforms
-    .filter(([_, value]) => typeof value === 'number')
-    .map(([key, final]) => {
-      const original = target[key];
-      return { key, original, diff: final - original };
-    });
-  const others = propTransforms
-    .filter(([_, value]) => typeof value !== 'number')
-    .map(([key, final]) => ({ key, final }));
+/**
+ * Takes a final value and returns a function which only returns the value after
+ * a delta of 1 is reached
+ *
+ * @param {any} final - value of the property at the end of the frame
+ * @returns {PropTransformer}
+ */
+export const getOnCompleteTransformer = (final) => (delta, base) => (delta < 1 ? base : final);
 
-  return { numbers, others };
+/**
+ * Builds a function which will set a property based the return value of a transform function
+ *
+ * @param {any} base - value of property as of the previous frame or start
+ * @param {string} key - key of the property
+ * @param {Object<string, any>} target - object being mutated
+ * @returns {function(PropTransformer): function(number): void}
+ */
+const getTransformCaller = (base, key, target) => (transform) => (delta) => {
+  target[key] = transform(delta, base, key, target);
 };
 
 /**
- * Apply mutations for transform properties based on a delta
+ * Parses a transform object into a series of functions, which when called with a
+ * delta will transform an individual property using enclosed values
  *
- * @param {Object<string, any>} target - the object to mutate
- * @param {NumberTransform[]} numbers - number properties to transform
- * @param {OtherTransform[]} others - other properties to transform
- * @param {number} delta - the degree of change, from 0 to 1
+ * @param {Object<string, any>} target - the object being mutated
+ * @param {Object<string, any>} transform - the transform object
+ * @returns {PropTransformer[]}
  */
-const tweenProps = (target, numbers, others, delta) => {
-  for (const { key, original, diff } of numbers) {
-    target[key] = original + delta * diff;
-  }
+const parseTransform = (target, transform) => Object.entries(transform)
+  .map(([key, prop]) => {
+    const base = target[key];
+    const callTransformer = getTransformCaller(base, key, target);
 
-  if (delta === 1) {
-    for (const { key, final } of others) {
-      target[key] = final;
+    if (typeof prop === 'function') {
+      return callTransformer(prop);
     }
-  }
-};
+
+    if (typeof prop === 'number') {
+      return callTransformer(getNumberTransformer(prop - base));
+    }
+
+    return callTransformer(getOnCompleteTransformer(prop));
+  });
 
 /**
  * Builds the final tween function from a target object, a series of key frames,
@@ -161,7 +168,7 @@ const buildTweener = (target, frames, firstStart) => {
 
   let start = firstStart;
   let { duration, transform, ease } = firstFrame;
-  let { numbers, others } = parseTransform(target, transform);
+  let propTransforms = parseTransform(target, transform);
 
   return /** @type {Tweener} */ function tween(current) {
     if (!targetRef) {
@@ -172,7 +179,10 @@ const buildTweener = (target, frames, firstStart) => {
       .into(roundRange, 0, 1)
       .into(ease)
       .done();
-    tweenProps(target, numbers, others, delta);
+
+    for (const transformEnclosedProp of propTransforms) {
+      transformEnclosedProp(delta);
+    }
 
     if (current < start + duration) {
       // More to go in the current frame
@@ -184,7 +194,7 @@ const buildTweener = (target, frames, firstStart) => {
       // Time for next frame, update closure variables and run again
       start += duration;
       ({ duration, transform, ease } = nextFrame);
-      ({ numbers, others } = parseTransform(targetRef, transform));
+      propTransforms = parseTransform(targetRef, transform);
       return tween(current);
     }
 
@@ -192,8 +202,7 @@ const buildTweener = (target, frames, firstStart) => {
     targetRef = null;
     transform = {};
     ease = easeLinear;
-    numbers = [];
-    others = [];
+    propTransforms = [];
 
     return false;
   };

@@ -5,6 +5,8 @@ const {
   easeLinear,
   easeIn,
   easeOut,
+  getNumberTransformer,
+  getOnCompleteTransformer,
   getTweener,
 } = require('./tweens.common.js');
 
@@ -50,6 +52,41 @@ describe('Tweening utils', () => {
       expect(easeOut(0.5)).to.be.greaterThan(0.5);
     });
   });
+
+  describe('getNumberTransformer', () => {
+    it('should take a numerical difference and return a function', () => {
+      expect(getNumberTransformer(4)).to.be.a('function');
+    });
+
+    it('should progressively add a difference based on a delta', () => {
+      const tweenFour = getNumberTransformer(4);
+
+      expect(tweenFour(0, 10)).to.equal(10);
+      expect(tweenFour(0.25, 10)).to.equal(11);
+      expect(tweenFour(0.5, 10)).to.equal(12);
+      expect(tweenFour(1, 10)).to.equal(14);
+    });
+  });
+
+  describe('getOnCompleteTransformer', () => {
+    it('should take a final value and return a function', () => {
+      expect(getOnCompleteTransformer('foo')).to.be.a('function');
+    });
+
+    it('should return the base value when the delta is less than one', () => {
+      const fooOnComplete = getOnCompleteTransformer('foo');
+
+      expect(fooOnComplete(0, 'bar')).to.equal('bar');
+      expect(fooOnComplete(0.25, 'bar')).to.equal('bar');
+      expect(fooOnComplete(0.5, 'bar')).to.equal('bar');
+    });
+
+    it('should return the final value when the delta is one', () => {
+      const fooOnComplete = getOnCompleteTransformer('foo');
+      expect(fooOnComplete(1, 'bar')).to.equal('foo');
+    });
+  });
+
 
   describe('getTweener', () => {
     describe('basic functionality', () => {
