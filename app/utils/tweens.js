@@ -153,7 +153,12 @@ const buildTweener = (target, frames, firstStart) => {
     throw new Error('Invalid tween function: must add at least one frame');
   }
 
-  let targetRef = /** @type {Object<string, any>|null} */ (target);
+  /**
+  * Enclosing a nullable reference to the target
+  * @type {Object<string, any>|null}
+  */
+  let targetRef = target;
+
   let start = firstStart;
   let { duration, transform, ease } = firstFrame;
   let { numbers, others } = parseTransform(target, transform);
@@ -175,17 +180,22 @@ const buildTweener = (target, frames, firstStart) => {
     }
 
     const nextFrame = frameStack.pop();
-    if (!nextFrame) {
-      // No more frames, toss target reference so it can be garbage collected
-      targetRef = null;
-      return false;
+    if (nextFrame) {
+      // Time for next frame, update closure variables and run again
+      start += duration;
+      ({ duration, transform, ease } = nextFrame);
+      ({ numbers, others } = parseTransform(targetRef, transform));
+      return tween(current);
     }
 
-    // Time for next frame, update closure variables and run again
-    start += duration;
-    ({ duration, transform, ease } = nextFrame);
-    ({ numbers, others } = parseTransform(targetRef, transform));
-    return tween(current);
+    // No more frames, clean up references so they can be garbage collected
+    targetRef = null;
+    transform = {};
+    ease = easeLinear;
+    numbers = [];
+    others = [];
+
+    return false;
   };
 };
 
