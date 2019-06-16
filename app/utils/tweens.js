@@ -1,9 +1,17 @@
 import {
+  flatMap,
+} from './arrays.js';
+import {
   pipe,
 } from './functions.js';
 import {
   roundRange,
 } from './math.js';
+import {
+  isObject,
+  getNested,
+  setNested,
+} from './objects.js';
 
 /**
  * @callback Easer
@@ -111,12 +119,15 @@ export const getOnCompleteTransformer = (final) => (delta, base) => (delta < 1 ?
  * Builds a function which will set a property based the return value of a transform function
  *
  * @param {any} base - value of property as of the previous frame or start
- * @param {string} key - key of the property
+ * @param {string[]} path - path of the nested property in the target
  * @param {Object<string, any>} target - object being mutated
  * @returns {function(PropTransformer): function(number): void}
  */
-const getTransformCaller = (base, key, target) => (transform) => (delta) => {
-  target[key] = transform(delta, base, key, target);
+const getTransformCaller = (base, path, target) => (transform) => (delta) => {
+  const key = path[path.length - 1];
+  const transformed = transform(delta, base, key, target);
+
+  setNested(target, path, transformed);
 };
 
 /**
@@ -125,12 +136,20 @@ const getTransformCaller = (base, key, target) => (transform) => (delta) => {
  *
  * @param {Object<string, any>} target - the object being mutated
  * @param {Object<string, any>} transform - the transform object
+ * @param {string[]} [parents] - keys of parent properties
  * @returns {PropTransformer[]}
  */
-const parseTransform = (target, transform) => Object.entries(transform)
-  .map(([key, prop]) => {
-    const base = target[key];
-    const callTransformer = getTransformCaller(base, key, target);
+const parseTransform = (target, transform, parents = []) => flatMap(
+  Object.entries(transform),
+  ([key, prop]) => {
+    const path = [...parents, key];
+
+    if (isObject(prop)) {
+      return parseTransform(target, prop, path);
+    }
+
+    const base = getNested(target, path);
+    const callTransformer = getTransformCaller(base, path, target);
 
     if (typeof prop === 'function') {
       return callTransformer(prop);
@@ -141,7 +160,9 @@ const parseTransform = (target, transform) => Object.entries(transform)
     }
 
     return callTransformer(getOnCompleteTransformer(prop));
-  });
+  },
+);
+
 
 /**
  * Builds the final tween function from a target object, a series of key frames,

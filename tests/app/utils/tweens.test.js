@@ -203,6 +203,20 @@ describe('Tweening utils', () => {
         expect(target.bar).to.equal(-2);
       });
 
+      it('should mutate nested properties', () => {
+        const nested = { baz: -1, qux: 0 };
+        const target = { foo: 1, bar: nested };
+        const tween = getTweener(target)
+          .addFrame(100, { bar: { qux: 100 } })
+          .start(1000);
+
+        tween(1100);
+        expect(target.foo).to.equal(1);
+        expect(target.bar).to.equal(nested);
+        expect(target.bar.baz).to.equal(-1);
+        expect(target.bar.qux).to.equal(100);
+      });
+
       it('should optionally add an easing function to a frame', () => {
         const target = { foo: 1 };
         const tween = getTweener(target)

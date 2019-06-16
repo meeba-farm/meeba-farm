@@ -30,6 +30,7 @@ import {
 import {
   easeIn,
   easeOut,
+  getOnCompleteTransformer,
   getTweener,
 } from './utils/tweens.js';
 import {
@@ -324,7 +325,7 @@ const getDeathChecker = (tick) => (body) => {
     spikes.forEach(fadeSpike);
 
     const removeSpikesTween = getTweener(body)
-      .addFrame(dynamic.maxSpikeFadeTime, { spikes: [] })
+      .addFrame(dynamic.maxSpikeFadeTime, { spikes: getOnCompleteTransformer([]) })
       .start(tick);
     tweens.push(removeSpikesTween);
   }
@@ -371,18 +372,18 @@ const getChildSpawner = (tick) => (body) => {
     replicateParent(body, body.velocity.angle - 0.125),
   ];
 
-  for (const { fill, meta } of children) {
-    fill.a = 0;
-    const fadeInTween = getTweener(fill)
-      .addFrame(fixed.bodySpawnInactiveTime, { a: 1 }, easeOut)
+  for (const child of children) {
+    child.fill.a = 0;
+    child.meta.canInteract = false;
+
+    const spawnTween = getTweener(child)
+      .addFrame(fixed.bodySpawnInactiveTime, {
+        fill: { a: 1 },
+        meta: { canInteract: true },
+      }, easeOut)
       .start(tick);
 
-    meta.canInteract = false;
-    const interactTween = getTweener(meta)
-      .addFrame(fixed.bodySpawnInactiveTime, { canInteract: true })
-      .start(tick);
-
-    tweens.push(fadeInTween, interactTween);
+    tweens.push(spawnTween);
   }
 
   return children;
