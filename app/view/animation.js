@@ -1,5 +1,5 @@
 import {
-  flatten,
+  flatMap,
   groupBy,
 } from '../utils/arrays.js';
 import {
@@ -104,7 +104,7 @@ export const getFrameRenderer = (view) => (bodies) => {
     throw new Error(`Unable to get 2d context for view: ${view}`);
   }
 
-  const spikes = flatten(bodies.map(body => body.spikes));
+  const spikes = flatMap(bodies, body => body.spikes);
   const fillOutlines = getOutlineFiller(ctx);
   ctx.clearRect(0, 0, view.width, view.height);
 

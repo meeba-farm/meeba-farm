@@ -14,7 +14,7 @@ import {
 } from './meebas/vitals.js';
 import {
   range,
-  flatten,
+  flatMap,
 } from './utils/arrays.js';
 import {
   isShorter,
@@ -445,7 +445,7 @@ export const simulateFrame = (bodies, start, stop) => {
   tweens = tweens.filter(tween => tween(stop));
 
   const newMotes = bodies.length < dynamic.bodyLimit ? getNewMotes(delay) : [];
-  const newChildren = flatten(bodies.map(spawnChildren));
+  const newChildren = flatMap(bodies, spawnChildren);
 
   return bodies
     .filter(({ meta }) => meta.isSimulated)

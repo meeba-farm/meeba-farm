@@ -1,5 +1,5 @@
 import {
-  flatten,
+  flatMap,
   groupBy,
 } from './arrays.js';
 import {
@@ -76,7 +76,7 @@ export const getSnapshot = (timestamp, bodies) => {
     meebas = /** @type {Body[]} */ ([]),
     motes = /** @type {Body[]} */ ([]),
   } = groupBy(bodies, getBodyCategory);
-  const spikes = flatten(meebas.map(meeba => meeba.spikes));
+  const spikes = flatMap(meebas, meeba => meeba.spikes);
 
   return {
     timestamp,
