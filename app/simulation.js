@@ -285,7 +285,6 @@ const getSpikeFader = (tick, velocity) => {
     const { angle, fill } = spike;
     const fadeTime = randInt(dynamic.minSpikeFadeTime, dynamic.maxSpikeFadeTime);
 
-    fill.a = 1;
     const fadeTween = getTweener(fill)
       .addFrame(fadeTime, { a: 0 }, easeIn)
       .start(tick);
@@ -342,7 +341,6 @@ const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
   if (meta.canInteract && vitals.calories <= 0) {
     meta.canInteract = false;
 
-    fill.a = 1;
     const fadeTween = getTweener(fill)
       .addFrame(fixed.bodyRemovalFadeTime, { a: 0 })
       .start(tick);

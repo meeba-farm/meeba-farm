@@ -86,6 +86,7 @@ export const spawnSpike = (radius, angle, length) => {
       h: 0,
       s: 100,
       l: 0,
+      a: 1,
     },
     length,
     angle,
