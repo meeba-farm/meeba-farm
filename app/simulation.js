@@ -284,10 +284,12 @@ const getSpikeFader = (tick, velocity) => {
   return (spike) => {
     const { angle, fill } = spike;
     const fadeTime = randInt(dynamic.minSpikeFadeTime, dynamic.maxSpikeFadeTime);
+    // Start spike fade with a random delay, but before body fades
+    const start = tick + randInt(0, fixed.bodyRemovalFadeTime);
 
     const fadeTween = getTweener(fill)
       .addFrame(fadeTime, { a: 0 }, easeIn)
-      .start(tick);
+      .start(start);
 
     const speed = Math.floor(1000 * randInt(0, dynamic.maxSpikeFadeDistance) / fadeTime);
     const spikeVector = toVector({ angle, speed });
@@ -302,7 +304,7 @@ const getSpikeFader = (tick, velocity) => {
         x3: spike.x3 + deltaX,
         y3: spike.y3 + deltaY,
       }, easeOut)
-      .start(tick);
+      .start(start);
 
     tweens.push(fadeTween, driftTween);
   };

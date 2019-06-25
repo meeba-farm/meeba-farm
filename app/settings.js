@@ -170,7 +170,7 @@ export const settings = {
     maxBodies: 1000,
     spikeHighlightTime: 333,
     averageSpikeFadeTime: 1750,
-    averageSpikeFadeDistance: 60,
+    averageSpikeFadeDistance: 40,
     bodyRemovalFadeTime: 333,
     bodySpawnInactiveTime: 1500,
   },
