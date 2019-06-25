@@ -65,7 +65,9 @@ import {
  * @prop {number} averageSpikeFadeTime
  * @prop {number} averageSpikeFadeDistance
  * @prop {number} bodyRemovalFadeTime
- * @prop {number} bodySpawnFadeTime
+ * @prop {number} spawnSwellTime
+ * @prop {number} spawnSwellFactor
+ * @prop {number} bodySpawnDelay
  * @prop {number} bodySpawnInactiveTime
  */
 
@@ -171,8 +173,11 @@ export const settings = {
     maxBodies: 1000,
     spikeHighlightTime: 333,
     averageSpikeFadeTime: 1750,
-    averageSpikeFadeDistance: 60,
+    averageSpikeFadeDistance: 40,
     bodyRemovalFadeTime: 333,
+    spawnSwellTime: 500,
+    spawnSwellFactor: 2,
+    bodySpawnDelay: 167,
     bodySpawnInactiveTime: 1500,
   },
   spikes: {

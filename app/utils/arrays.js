@@ -21,6 +21,18 @@ export const range = len => Array(...Array(len)).map((_, i) => i);
 export const flatten = arr => arr.reduce((flat, nested) => flat.concat(nested), []);
 
 /**
+ * Maps over an array with a provided callback, flattening out nested arrays returned
+ *
+ * @template T
+ * @param {T[]} arr - the array to map over
+ * @param {function(T, number, T[]): any} callback
+ * @returns {array}
+ */
+export const flatMap = (arr, callback) => (
+  arr.reduce((flat, item, i) => flat.concat(callback(item, i, arr)), [])
+);
+
+/**
  * Creates a new 2D array split into evenly sized chunks
  *
  * @param {array} arr - the array to chunk

@@ -14,7 +14,7 @@ import {
 } from './meebas/vitals.js';
 import {
   range,
-  flatten,
+  flatMap,
 } from './utils/arrays.js';
 import {
   isShorter,
@@ -30,6 +30,7 @@ import {
 import {
   easeIn,
   easeOut,
+  getOnCompleteTransformer,
   getTweener,
 } from './utils/tweens.js';
 import {
@@ -216,9 +217,12 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
     for (const spike of body.spikes) {
       if (isSpikeOverlapping(spike)) {
         const { fill } = spike;
+
         fill.l = 50;
-        const lightnessTween = getTweener(fill, { l: 0 }, tick, fixed.spikeHighlightTime);
-        tweens.push(lightnessTween);
+        const highlightTween = getTweener(fill)
+          .addFrame(fixed.spikeHighlightTime, { l: 0 })
+          .start(tick);
+        tweens.push(highlightTween);
 
         const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
         body.vitals.calories += drainAmount;
@@ -280,23 +284,29 @@ const getSpikeFader = (tick, velocity) => {
   return (spike) => {
     const { angle, fill } = spike;
     const fadeTime = randInt(dynamic.minSpikeFadeTime, dynamic.maxSpikeFadeTime);
+    // Start spike fade with a random delay, but before body fades
+    const start = tick + randInt(0, fixed.bodyRemovalFadeTime);
 
-    fill.a = 1;
-    tweens.push(getTweener(fill, { a: 0 }, tick, fadeTime, easeIn));
+    const fadeTween = getTweener(fill)
+      .addFrame(fadeTime, { a: 0 }, easeIn)
+      .start(start);
 
     const speed = Math.floor(1000 * randInt(0, dynamic.maxSpikeFadeDistance) / fadeTime);
     const spikeVector = toVector({ angle, speed });
     const deltaX = originalVector.x + spikeVector.x;
     const deltaY = originalVector.y + spikeVector.y;
+    const driftTween = getTweener(spike)
+      .addFrame(fadeTime, {
+        x1: spike.x1 + deltaX,
+        y1: spike.y1 + deltaY,
+        x2: spike.x2 + deltaX,
+        y2: spike.y2 + deltaY,
+        x3: spike.x3 + deltaX,
+        y3: spike.y3 + deltaY,
+      }, easeOut)
+      .start(start);
 
-    tweens.push(getTweener(spike, {
-      x1: spike.x1 + deltaX,
-      y1: spike.y1 + deltaY,
-      x2: spike.x2 + deltaX,
-      y2: spike.y2 + deltaY,
-      x3: spike.x3 + deltaX,
-      y3: spike.y3 + deltaY,
-    }, tick, fadeTime, easeOut));
+    tweens.push(fadeTween, driftTween);
   };
 };
 
@@ -315,8 +325,10 @@ const getDeathChecker = (tick) => (body) => {
     const fadeSpike = getSpikeFader(tick, velocity);
     spikes.forEach(fadeSpike);
 
-    // Remove spikes after last one has faded
-    tweens.push(getTweener(body, { spikes: [] }, tick, dynamic.maxSpikeFadeTime));
+    const removeSpikesTween = getTweener(body)
+      .addFrame(dynamic.maxSpikeFadeTime, { spikes: getOnCompleteTransformer([]) })
+      .start(tick);
+    tweens.push(removeSpikesTween);
   }
 };
 
@@ -331,9 +343,14 @@ const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
   if (meta.canInteract && vitals.calories <= 0) {
     meta.canInteract = false;
 
-    fill.a = 1;
-    tweens.push(getTweener(fill, { a: 0 }, tick, fixed.bodyRemovalFadeTime));
-    tweens.push(getTweener(meta, { isSimulated: false }, tick, dynamic.maxSpikeFadeTime));
+    const fadeTween = getTweener(fill)
+      .addFrame(fixed.bodyRemovalFadeTime, { a: 0 })
+      .start(tick);
+    const removeTween = getTweener(meta)
+      .addFrame(dynamic.maxSpikeFadeTime, { isSimulated: false })
+      .start(tick);
+
+    tweens.push(fadeTween, removeTween);
   }
 };
 
@@ -345,22 +362,40 @@ const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
  * @returns {function(Body): Body[]}
  */
 const getChildSpawner = (tick) => (body) => {
-  if (body.vitals.calories < body.vitals.spawnsAt) {
+  if (body.vitals.calories < body.vitals.spawnsAt || !body.meta.canInteract) {
     return [];
   }
 
-  body.meta.isSimulated = false;
+  body.meta.canInteract = false;
   const children = [
     replicateParent(body, body.velocity.angle + 0.125),
     replicateParent(body, body.velocity.angle - 0.125),
   ];
 
-  for (const { fill, meta } of children) {
-    fill.a = 0;
-    tweens.push(getTweener(fill, { a: 1 }, tick, fixed.bodySpawnInactiveTime, easeOut));
+  const swellTween = getTweener(body)
+    .addFrame(fixed.spawnSwellTime, {
+      radius: body.radius * fixed.spawnSwellFactor,
+      fill: { a: 0 },
+      spikes: body.spikes.map(() => ({ fill: { a: 0 } })),
+      meta: { isSimulated: false },
+    }, easeIn)
+    .start(tick);
+  tweens.push(swellTween);
 
-    meta.canInteract = false;
-    tweens.push(getTweener(meta, { canInteract: true }, tick, fixed.bodySpawnInactiveTime));
+  for (const child of children) {
+    child.fill.a = 0;
+    child.spikes.forEach(({ fill }) => { fill.a = 0; });
+    child.meta.canInteract = false;
+
+    const spawnTween = getTweener(child)
+      .addFrame(fixed.bodySpawnInactiveTime, {
+        fill: { a: 1 },
+        spikes: child.spikes.map(() => ({ fill: { a: 1 } })),
+        meta: { canInteract: true },
+      }, easeOut)
+      .start(tick + fixed.bodySpawnDelay);
+
+    tweens.push(spawnTween);
   }
 
   return children;
@@ -423,7 +458,7 @@ export const simulateFrame = (bodies, start, stop) => {
   tweens = tweens.filter(tween => tween(stop));
 
   const newMotes = bodies.length < dynamic.bodyLimit ? getNewMotes(delay) : [];
-  const newChildren = flatten(bodies.map(spawnChildren));
+  const newChildren = flatMap(bodies, spawnChildren);
 
   return bodies
     .filter(({ meta }) => meta.isSimulated)

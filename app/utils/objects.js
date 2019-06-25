@@ -1,5 +1,5 @@
 import {
-  flatten,
+  flatMap,
 } from './arrays.js';
 
 /**
@@ -76,16 +76,15 @@ export const setNested = (obj, path, value) => {
  * @param {string[]} [parentKeys]
  * @returns {string[]}
  */
-export const listKeys = (obj, parentKeys = []) => {
-  const nested = Object.entries(obj).map(([key, val]) => {
+export const listKeys = (obj, parentKeys = []) => flatMap(
+  Object.entries(obj),
+  ([key, val]) => {
     const keyList = [...parentKeys, key];
     return isObject(val) && !isEmpty(val)
       ? listKeys(val, keyList)
       : keyList.join('.');
-  });
-
-  return flatten(nested).sort();
-};
+  },
+).sort();
 
 /**
  * Recursively lists all values in an object, following the same sorting as listKeys

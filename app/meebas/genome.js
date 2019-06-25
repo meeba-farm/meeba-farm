@@ -8,7 +8,7 @@ import {
   range,
   findIndexes,
   chunkBy,
-  flatten,
+  flatMap,
   concatBytes,
 } from '../utils/arrays.js';
 import {
@@ -133,8 +133,8 @@ const randGene = () => {
  * @returns {Uint8Array}
  */
 export const createGenome = () => {
-  const genes = range(randInt(1, dynamic.maxGeneCount)).map(randGene);
-  return Uint8Array.from(flatten(genes));
+  const size = randInt(1, dynamic.maxGeneCount);
+  return Uint8Array.from(flatMap(range(size), randGene));
 };
 
 /**

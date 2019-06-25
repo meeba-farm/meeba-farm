@@ -19,7 +19,7 @@ const expectIsValidNewBody = (body) => {
   expect(body.fill.h).to.be.within(0, 360);
   expect(body.fill.s).to.be.within(0, 100);
   expect(body.fill.l).to.be.within(0, 100);
-
+  expect(body.fill.a).to.be.within(0, 1);
 
   expect(body.radius).to.be.a('number').greaterThan(0);
   expect(body.mass).to.be.within(getCircleArea(body.radius), getCircleArea(body.radius + 1));

@@ -1,12 +1,14 @@
 'use strict';
 
 const { expect } = require('chai');
+const sinon = require('sinon');
 const {
   map,
   filter,
   reduce,
   range,
   flatten,
+  flatMap,
   chunk,
   findIndexes,
   chunkBy,
@@ -60,6 +62,27 @@ describe('Array utils', () => {
 
     it('should not deeply flatten a highly nested array', () => {
       expect(flatten([[[1, 2], 3], 4])).to.deep.equal([[1, 2], 3, 4]);
+    });
+  });
+
+  describe('flatMap', () => {
+    it('should map over values in an array', () => {
+      expect(flatMap([1, 2, 3], n => n + 1)).to.deep.equal([2, 3, 4]);
+    });
+
+    it('should flatten out returned arrays', () => {
+      expect(flatMap([1, 3], n => [n, n + 1])).to.deep.equal([1, 2, 3, 4]);
+    });
+
+    it('should pass as arguments the value, key, and original array', () => {
+      const spy = sinon.spy();
+      const arr = [1, 2, 3];
+      flatMap(arr, spy);
+
+      expect(spy).to.have.been.calledThrice;
+      expect(spy).to.have.been.calledWith(1, 0, arr);
+      expect(spy).to.have.been.calledWith(2, 1, arr);
+      expect(spy).to.have.been.calledWith(3, 2, arr);
     });
   });
 

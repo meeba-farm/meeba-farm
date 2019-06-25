@@ -1,9 +1,17 @@
 import {
+  flatMap,
+} from './arrays.js';
+import {
   pipe,
 } from './functions.js';
 import {
   roundRange,
 } from './math.js';
+import {
+  isObject,
+  getNested,
+  setNested,
+} from './objects.js';
 
 /**
  * @callback Easer
@@ -16,7 +24,49 @@ import {
  * @callback Tweener
  *
  * @param {number} now - the current scaling value, for example a timestamp
- * @returns {boolean} done - whether or not the tween has finished
+ * @returns {boolean} more - whether or not there is more to transform
+ */
+
+
+/**
+ * @callback PropTransformer
+ *
+ * @param {number} [delta] - current delta from 0 to 1
+ * @param {any} [base] - value of property as of the previous frame or start
+ * @param {string} [key] - key of the property
+ * @param {Object<string, any>} [target] - object being mutated
+ * @returns {any} the new value to set at that property
+ */
+
+/**
+ * @typedef TweenBuilder
+ *
+ * @prop {AddFrame} addFrame - method for adding new frames
+ * @prop {StartTween} start - returns the final tween function
+ */
+
+/**
+ * @callback AddFrame
+ *
+ * @param {number} duration - the duration for the frame
+ * @param {Object<string, any>} transform - the new properties and values
+ * @param {Easer} [ease] - a function to ease the delta, defaults to linear
+ * @returns {TweenBuilder}
+ */
+
+/**
+ * @callback StartTween
+ *
+ * @param {number} start - the starting point, typically timestamp
+ * @returns {Tweener} tween - progressively applies transforms
+ */
+
+/**
+ * @typedef TweenFrame
+ *
+ * @prop {number} duration - the duration for the frame
+ * @prop {Object<string, any>} transform - the new properties and values
+ * @prop {Easer} ease - a function to ease the delta
  */
 
 /**
@@ -48,53 +98,159 @@ export const easeIn = delta => delta * delta;
 export const easeOut = delta => -delta * (delta - 2);
 
 /**
- * Returns a function which will mutate an object's properties over time
+ * Takes the difference between the original and final value of a number and returns
+ * a transform function for it
+ *
+ * @param {number} diff - amount to change the number
+ * @returns {PropTransformer}
+ */
+export const getNumberTransformer = (diff) => (delta, base) => base + delta * diff;
+
+/**
+ * Takes a final value and returns a function which only returns the value after
+ * a delta of 1 is reached
+ *
+ * @param {any} final - value of the property at the end of the frame
+ * @returns {PropTransformer}
+ */
+export const getOnCompleteTransformer = (final) => (delta, base) => (delta < 1 ? base : final);
+
+/**
+ * Builds a function which will set a property based the return value of a transform function
+ *
+ * @param {any} base - value of property as of the previous frame or start
+ * @param {string[]} path - path of the nested property in the target
+ * @param {Object<string, any>} target - object being mutated
+ * @returns {function(PropTransformer): function(number): void}
+ */
+const getTransformCaller = (base, path, target) => (transform) => (delta) => {
+  const key = path[path.length - 1];
+  const transformed = transform(delta, base, key, target);
+
+  setNested(target, path, transformed);
+};
+
+/**
+ * Parses a transform object into a series of functions, which when called with a
+ * delta will transform an individual property using enclosed values
+ *
+ * @param {Object<string, any>} target - the object being mutated
+ * @param {Object<string, any>} transform - the transform object
+ * @param {string[]} [parents] - keys of parent properties
+ * @returns {PropTransformer[]}
+ */
+const parseTransform = (target, transform, parents = []) => flatMap(
+  Object.entries(transform),
+  ([key, prop]) => {
+    const path = [...parents, key];
+
+    if (isObject(prop)) {
+      return parseTransform(target, prop, path);
+    }
+
+    const base = getNested(target, path);
+    const callTransformer = getTransformCaller(base, path, target);
+
+    if (typeof prop === 'function') {
+      return callTransformer(prop);
+    }
+
+    if (typeof prop === 'number') {
+      return callTransformer(getNumberTransformer(prop - base));
+    }
+
+    return callTransformer(getOnCompleteTransformer(prop));
+  },
+);
+
+
+/**
+ * Builds the final tween function from a target object, a series of key frames,
+ * and an initial start value
  *
  * @param {Object<string, any>} target - the object to mutate
- * @param {Object<string, any>} transform - the new properties and values
- * @param {number} start - the starting point, for example a timestamp
- * @param {number} duration - the length of the tween
- * @param {Easer} [ease] - a function to ease the delta, defaults to linear
- * @returns {Tweener} tween - progressively applies transforms
+ * @param {TweenFrame[]} frames - the frames already added
+ * @param {number} firstStart - the initial start value, typically a timestamp
+ * @returns {Tweener} tween
  */
-export const getTweener = (target, transform, start, duration, ease = easeLinear) => {
-  let targetRef = /** @type {Object<string, any>|null} */ (target);
-  const transforms = Object.entries(transform);
+const buildTweener = (target, frames, firstStart) => {
+  const frameStack = frames.slice().reverse();
+  const firstFrame = frameStack.pop();
 
-  const numbers = /** @type {{ key: string, original: number, diff: number }[]} */ (transforms
-    .filter(([_, value]) => typeof value === 'number')
-    .map(([key, final]) => {
-      const original = target[key];
-      return { key, original, diff: final - original };
-    }));
-  const others = /** @type {[string, string|boolean|null][]} */ (transforms
-    .filter(([_, value]) => typeof value !== 'number'));
+  if (!firstFrame) {
+    throw new Error('Invalid tween function: must add at least one frame');
+  }
 
-  return (current) => {
+  /**
+  * Enclosing a nullable reference to the target
+  * @type {Object<string, any>|null}
+  */
+  let targetRef = target;
+
+  let start = firstStart;
+  let { duration, transform, ease } = firstFrame;
+  let propTransforms = parseTransform(target, transform);
+
+  return /** @type {Tweener} */ function tween(current) {
     if (!targetRef) {
       return false;
     }
 
-    // Tween numbers
     const delta = pipe((current - start) / duration)
       .into(roundRange, 0, 1)
       .into(ease)
       .done();
 
-    for (const { key, original, diff } of numbers) {
-      targetRef[key] = original + delta * diff;
+    for (const transformEnclosedProp of propTransforms) {
+      transformEnclosedProp(delta);
     }
 
-    if (delta < 1) {
+    if (current < start + duration) {
+      // More to go in the current frame
       return true;
     }
 
-    // Tween other primitives only after delta has reached 1
-    for (const [key, value] of others) {
-      targetRef[key] = value;
+    const nextFrame = frameStack.pop();
+    if (nextFrame) {
+      // Time for next frame, update closure variables and run again
+      start += duration;
+      ({ duration, transform, ease } = nextFrame);
+      propTransforms = parseTransform(targetRef, transform);
+      return tween(current);
     }
 
+    // No more frames, clean up references so they can be garbage collected
     targetRef = null;
+    transform = {};
+    ease = easeLinear;
+    propTransforms = [];
+
     return false;
   };
 };
+
+/**
+ * Gets a builder object to create a tweener function
+ *
+ * @param {Object<string, any>} target - the object to mutate
+ * @param {TweenFrame[]} frames - the frames already added
+ * @returns {TweenBuilder}
+ */
+const getTweenBuilder = (target, frames) => ({
+  addFrame: (duration, transform, ease = easeLinear) => (
+    getTweenBuilder(target, [...frames, { duration, transform, ease }])
+  ),
+
+  start: start => buildTweener(target, frames, start),
+});
+
+/**
+ * Uses the builder pattern to create a tweening function which can mutate
+ * a target object's top-level properties over multiple key frames
+ *
+ * See tweens.test.js for example usage
+ *
+ * @param {Object<string, any>} target - the object to mutate
+ * @returns {TweenBuilder}
+ */
+export const getTweener = target => getTweenBuilder(target, []);

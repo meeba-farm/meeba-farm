@@ -27,6 +27,7 @@ describe('Spike methods', () => {
       expect(spike.fill.h).to.be.within(0, 360);
       expect(spike.fill.s).to.be.within(0, 100);
       expect(spike.fill.l).to.be.within(0, 100);
+      expect(spike.fill.a).to.be.within(0, 1);
 
       expect(spike.x1).to.be.a('number');
       expect(spike.y1).to.be.a('number');
