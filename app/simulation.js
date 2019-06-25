@@ -362,26 +362,38 @@ const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
  * @returns {function(Body): Body[]}
  */
 const getChildSpawner = (tick) => (body) => {
-  if (body.vitals.calories < body.vitals.spawnsAt) {
+  if (body.vitals.calories < body.vitals.spawnsAt || !body.meta.canInteract) {
     return [];
   }
 
-  body.meta.isSimulated = false;
+  body.meta.canInteract = false;
   const children = [
     replicateParent(body, body.velocity.angle + 0.125),
     replicateParent(body, body.velocity.angle - 0.125),
   ];
 
+  const swellTween = getTweener(body)
+    .addFrame(fixed.spawnSwellTime, {
+      radius: body.radius * fixed.spawnSwellFactor,
+      fill: { a: 0 },
+      spikes: body.spikes.map(() => ({ fill: { a: 0 } })),
+      meta: { isSimulated: false },
+    }, easeIn)
+    .start(tick);
+  tweens.push(swellTween);
+
   for (const child of children) {
     child.fill.a = 0;
+    child.spikes.forEach(({ fill }) => { fill.a = 0; });
     child.meta.canInteract = false;
 
     const spawnTween = getTweener(child)
       .addFrame(fixed.bodySpawnInactiveTime, {
         fill: { a: 1 },
+        spikes: child.spikes.map(() => ({ fill: { a: 1 } })),
         meta: { canInteract: true },
       }, easeOut)
-      .start(tick);
+      .start(tick + fixed.bodySpawnDelay);
 
     tweens.push(spawnTween);
   }
