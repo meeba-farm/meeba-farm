@@ -241,6 +241,9 @@ describe('Tweening utils', () => {
           .addFrame(100, { foo: -5 })
           .start(1000);
 
+        tween(1000);
+        expect(target.foo).to.equal(1);
+
         tween(1050);
         expect(target.foo).to.equal(3);
 
@@ -288,10 +291,52 @@ describe('Tweening utils', () => {
         expect(target.foo).to.equal(5);
       });
 
-      it('should throw an error if started with no frames', () => {
+      it('should tween from a base value not set until mid-tween', () => {
         const target = { foo: 1 };
+        const tween = getTweener(target)
+          .addFrame(100, { foo: 5 })
+          .start(1000);
 
-        expect(() => getTweener(target).start(1000)).to.throw;
+        target.foo = 3;
+
+        tween(1050);
+        expect(target.foo).to.equal(4);
+
+        tween(1075);
+        expect(target.foo).to.equal(4.5);
+
+        tween(1100);
+        expect(target.foo).to.equal(5);
+      });
+
+      it('should tween from a base value set before start but after tween is built', () => {
+        const target = { foo: 1 };
+        const tween = getTweener(target)
+          .addFrame(100, { foo: 5 })
+          .start(1100);
+
+        tween(1050);
+        target.foo = 3;
+
+        tween(1100);
+        expect(target.foo).to.equal(3);
+
+        tween(1150);
+        expect(target.foo).to.equal(4);
+
+        tween(1200);
+        expect(target.foo).to.equal(5);
+      });
+
+      it('should handle no frames without any transformation', () => {
+        const target = { foo: 1 };
+        const tween = getTweener(target)
+          .start(1000);
+
+        expect(tween(950)).to.equal(true);
+        expect(tween(1050)).to.equal(false);
+        expect(tween(950)).to.equal(false);
+
         expect(target).to.deep.equal({ foo: 1 });
       });
 
