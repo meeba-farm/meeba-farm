@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const sinon = require('sinon');
 const {
   easeLinear,
   easeIn,
@@ -8,6 +9,8 @@ const {
   getNumberTransformer,
   getOnCompleteTransformer,
   getTweener,
+  getTimeout,
+  getInterval,
 } = require('./tweens.common.js');
 
 describe('Tweening utils', () => {
@@ -86,7 +89,6 @@ describe('Tweening utils', () => {
       expect(fooOnComplete(1, 'bar')).to.equal('foo');
     });
   });
-
 
   describe('getTweener', () => {
     describe('basic functionality', () => {
@@ -170,7 +172,6 @@ describe('Tweening utils', () => {
         expect(target.bar).to.equal('quux');
         expect(target.baz).to.equal(null);
       });
-
 
       it('should return true if there is more tweening left to do', () => {
         const target = { foo: 1 };
@@ -383,6 +384,106 @@ describe('Tweening utils', () => {
         expect(target.foo).to.equal(5);
         expect(target.bar).to.equal(-105);
       });
+    });
+  });
+
+  describe('getTimeout', () => {
+    it('should take a callback function and a delay and return a function', () => {
+      const timeout = getTimeout(() => {}, 100);
+
+      expect(timeout).to.be.a('function');
+    });
+
+    it('should call the passed callback with a timestamp once the delay is reached', () => {
+      const callback = sinon.spy();
+      const timeout = getTimeout(callback, 100);
+
+      timeout(1000);
+      expect(callback).to.have.not.been.called;
+
+      timeout(1050);
+      expect(callback).to.have.not.been.called;
+
+      timeout(1100);
+      expect(callback).to.have.been.calledWith(1100);
+    });
+
+    it('should return true if the callback is still waiting to be called', () => {
+      const timeout = getTimeout(() => {}, 100);
+
+      expect(timeout(1000)).to.equal(true);
+    });
+
+    it('should always return false once the callback has already been called', () => {
+      const timeout = getTimeout(() => {}, 100);
+
+      timeout(1000);
+      expect(timeout(1100)).to.equal(false);
+
+      expect(timeout(1200)).to.equal(false);
+      expect(timeout(900)).to.equal(false);
+      expect(timeout(-1)).to.equal(false);
+      expect(timeout(Infinity)).to.equal(false);
+    });
+  });
+
+  describe('getInterval', () => {
+    it('should take a callback function and a duration and return a function', () => {
+      const interval = getInterval(() => {}, 100);
+
+      expect(interval).to.be.a('function');
+    });
+
+    it('should call the callback with the timestamp each time the duration is passed', () => {
+      const callback = sinon.spy();
+      const interval = getInterval(callback, 100);
+
+      interval(1000);
+      expect(callback).to.have.not.been.called;
+
+      interval(1050);
+      expect(callback).to.have.not.been.called;
+
+      interval(1100);
+      expect(callback).to.have.been.calledWith(1100);
+
+      interval(1200);
+      interval(1300);
+
+      expect(callback).to.have.been.calledThrice;
+    });
+
+    it('should not re-call the callback for the same timestamp', () => {
+      const callback = sinon.spy();
+      const interval = getInterval(callback, 100);
+
+      interval(1000);
+
+      interval(1100);
+      interval(1100);
+      interval(900);
+      interval(1000);
+      interval(1100);
+
+      expect(callback).to.have.been.calledOnce;
+    });
+
+    it('should call the callback repeatedly if enough time has passed', () => {
+      const callback = sinon.spy();
+      const interval = getInterval(callback, 100);
+
+      interval(1000);
+      interval(1300);
+
+      expect(callback).to.have.been.calledThrice;
+    });
+
+    it('should return always return true', () => {
+      const interval = getInterval(() => {}, 100);
+
+      expect(interval(1000)).to.equal(true);
+      expect(interval(1100)).to.equal(true);
+      expect(interval(-1)).to.equal(true);
     });
   });
 });

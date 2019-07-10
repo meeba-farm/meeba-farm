@@ -39,6 +39,12 @@ import {
  */
 
 /**
+ * @callback TimedCallback
+ *
+ * @param {number} [current] - the current value being tweened with (i.e. timestamp)
+ */
+
+/**
  * @typedef TweenBuilder
  *
  * @prop {AddFrame} addFrame - method for adding new frames
@@ -256,3 +262,67 @@ const getTweenBuilder = (target, frames) => ({
  * @returns {TweenBuilder}
  */
 export const getTweener = target => getTweenBuilder(target, []);
+
+/**
+ * Creates a tweener that replicates the behavior of setTimeout, calling a callback
+ * after a certain start value is reached
+ *
+ * @param {TimedCallback} callback - a function to call once the start is reached
+ * @param {number} delay - wait before triggering the callback
+ * @returns {Tweener}
+ */
+export const getTimeout = (callback, delay) => {
+  /**
+  * Enclosing a nullable reference to the callback
+  * @type {TimedCallback|null}
+  */
+  let callbackRef = callback;
+
+  /** @type {number} */
+  let start;
+
+  return function timeout(current) {
+    if (!callbackRef) {
+      return false;
+    }
+
+    if (start === undefined) {
+      start = current + delay;
+    }
+
+    if (current >= start) {
+      callbackRef(current);
+      callbackRef = null;
+      return false;
+    }
+
+    return true;
+  };
+};
+
+/**
+ * Creates a tweener that replicates the behavior of setInterval, repeatedly calling
+ * a callback each time a duration is passed
+ *
+ * @param {TimedCallback} callback - a function to call once the start is reached
+ * @param {number} duration - how long each interval should last
+ * @returns {Tweener}
+ */
+export const getInterval = (callback, duration) => {
+  /** @type {number} */
+  let next;
+
+  return function interval(current) {
+    if (next === undefined) {
+      next = current + duration;
+    }
+
+    if (current >= next) {
+      next += duration;
+      callback(current);
+      interval(current);
+    }
+
+    return true;
+  };
+};
