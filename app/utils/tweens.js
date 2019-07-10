@@ -175,11 +175,6 @@ const parseTransform = (target, transform, parents = []) => flatMap(
  */
 const buildTweener = (target, frames, firstStart) => {
   const frameStack = frames.slice().reverse();
-  const firstFrame = frameStack.pop();
-
-  if (!firstFrame) {
-    throw new Error('Invalid tween function: must add at least one frame');
-  }
 
   /**
   * Enclosing a nullable reference to the target
@@ -187,22 +182,30 @@ const buildTweener = (target, frames, firstStart) => {
   */
   let targetRef = target;
 
+  let duration = 0;
   let start = firstStart;
-  let { duration, transform, ease } = firstFrame;
-  let propTransforms = parseTransform(target, transform);
+
+  /** @type {Easer} */
+  let ease;
+
+  /** @type {PropTransformer[]} */
+  let propTransforms = [];
+
 
   return /** @type {Tweener} */ function tween(current) {
     if (!targetRef) {
       return false;
     }
 
-    const delta = pipe((current - start) / duration)
-      .into(roundRange, 0, 1)
-      .into(ease)
-      .done();
+    if (propTransforms.length > 0) {
+      const delta = pipe((current - start) / duration)
+        .into(roundRange, 0, 1)
+        .into(ease)
+        .done();
 
-    for (const transformEnclosedProp of propTransforms) {
-      transformEnclosedProp(delta);
+      for (const transformEnclosedProp of propTransforms) {
+        transformEnclosedProp(delta);
+      }
     }
 
     if (current < start + duration) {
@@ -214,14 +217,13 @@ const buildTweener = (target, frames, firstStart) => {
     if (nextFrame) {
       // Time for next frame, update closure variables and run again
       start += duration;
-      ({ duration, transform, ease } = nextFrame);
-      propTransforms = parseTransform(targetRef, transform);
+      ({ duration, ease } = nextFrame);
+      propTransforms = parseTransform(targetRef, nextFrame.transform);
       return tween(current);
     }
 
     // No more frames, clean up references so they can be garbage collected
     targetRef = null;
-    transform = {};
     ease = easeLinear;
     propTransforms = [];
 
