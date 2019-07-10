@@ -30,6 +30,7 @@ import {
 import {
   easeIn,
   easeOut,
+  getNumberTransformer,
   getOnCompleteTransformer,
   getTweener,
 } from './utils/tweens.js';
@@ -68,6 +69,7 @@ import {
  * @prop {number} minSpikeFadeTime
  * @prop {number} maxSpikeFadeTime
  * @prop {number} maxSpikeFadeDistance
+ * @prop {number} maxTotalFadeTime
  */
 
 const MAX_TIME_PER_FRAME = 0.1;
@@ -83,6 +85,8 @@ addUpdateListener(() => {
   dynamic.minSpikeFadeTime = Math.floor(0.5 * fixed.averageSpikeFadeTime);
   dynamic.maxSpikeFadeTime = Math.floor(1.5 * fixed.averageSpikeFadeTime);
   dynamic.maxSpikeFadeDistance = 2 * fixed.averageSpikeFadeDistance;
+
+  dynamic.maxTotalFadeTime = fixed.bodyRemovalFadeTime + dynamic.maxSpikeFadeTime;
 });
 
 /** @type {Tweener[]} */
@@ -293,16 +297,16 @@ const getSpikeFader = (tick, velocity) => {
 
     const speed = Math.floor(1000 * randInt(0, dynamic.maxSpikeFadeDistance) / fadeTime);
     const spikeVector = toVector({ angle, speed });
-    const deltaX = originalVector.x + spikeVector.x;
-    const deltaY = originalVector.y + spikeVector.y;
+    const tweenX = getNumberTransformer(originalVector.x + spikeVector.x);
+    const tweenY = getNumberTransformer(originalVector.y + spikeVector.y);
     const driftTween = getTweener(spike)
       .addFrame(fadeTime, {
-        x1: spike.x1 + deltaX,
-        y1: spike.y1 + deltaY,
-        x2: spike.x2 + deltaX,
-        y2: spike.y2 + deltaY,
-        x3: spike.x3 + deltaX,
-        y3: spike.y3 + deltaY,
+        x1: tweenX,
+        y1: tweenY,
+        x2: tweenX,
+        y2: tweenY,
+        x3: tweenX,
+        y3: tweenY,
       }, easeOut)
       .start(start);
 
@@ -326,7 +330,7 @@ const getDeathChecker = (tick) => (body) => {
     spikes.forEach(fadeSpike);
 
     const removeSpikesTween = getTweener(body)
-      .addFrame(dynamic.maxSpikeFadeTime, { spikes: getOnCompleteTransformer([]) })
+      .addFrame(dynamic.maxTotalFadeTime, { spikes: getOnCompleteTransformer([]) })
       .start(tick);
     tweens.push(removeSpikesTween);
   }
@@ -347,7 +351,7 @@ const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
       .addFrame(fixed.bodyRemovalFadeTime, { a: 0 })
       .start(tick);
     const removeTween = getTweener(meta)
-      .addFrame(dynamic.maxSpikeFadeTime, { isSimulated: false })
+      .addFrame(dynamic.maxTotalFadeTime, { isSimulated: false })
       .start(tick);
 
     tweens.push(fadeTween, removeTween);
