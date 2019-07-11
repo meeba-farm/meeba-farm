@@ -29,6 +29,9 @@ import {
   seedPrng,
 } from './utils/math.js';
 import {
+  getInterval,
+} from './utils/tweens.js';
+import {
   getFrameRenderer,
 } from './view/animation.js';
 import {
@@ -48,6 +51,10 @@ import {
 
 /**
  * @typedef {import('./utils/diagnostics.js').Snapshot} Snapshot
+ */
+
+/**
+ * @typedef {import('./utils/tweens.js').Tweener} Tweener
  */
 
 const APP_ID = 'app';
@@ -80,16 +87,16 @@ MeebaFarm.bodies = [];
 // ------ Setup Loop ------
 /** @type {Snapshot[]} */
 let snapshots = [];
-let nextSnapshot = Infinity;
-let snapshotFrequency = 0;
+
+/** @type {Tweener|null} */
+let snapshotAtInterval = null;
 
 const { start, stop, reset } = createLoop((tick, delay) => {
   MeebaFarm.bodies = simulateFrame(MeebaFarm.bodies, tick, delay);
   renderFrame(MeebaFarm.bodies);
 
-  if (tick > nextSnapshot) {
-    nextSnapshot = tick + snapshotFrequency;
-    snapshots.push(getSnapshot(tick, MeebaFarm.bodies));
+  if (snapshotAtInterval) {
+    snapshotAtInterval(tick);
   }
 });
 
@@ -112,12 +119,13 @@ MeebaFarm.restoreDefaultSettings = restoreDefaultSettings;
 
 MeebaFarm.snapshots = {
   start(frequency = 5000) {
-    nextSnapshot = 0;
-    snapshotFrequency = frequency;
+    snapshotAtInterval = getInterval((tick) => {
+      snapshots.push(getSnapshot(tick, MeebaFarm.bodies));
+    }, frequency);
   },
 
   stop() {
-    nextSnapshot = Infinity;
+    snapshotAtInterval = null;
   },
 
   clear() {
