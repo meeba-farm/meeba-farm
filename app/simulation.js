@@ -212,10 +212,9 @@ const collideIfOverlapping = (body1, body2) => {
  * drains calories as needed
  *
  * @param {number} delay - the time since the last tick
- * @param {number} tick - the current timestamp
  * @returns {function(Body, Body): void} - mutates bodies and spikes as needed
  */
-const getSpikeActivator = (delay, tick) => (body, other) => {
+const getSpikeActivator = (delay) => (body, other) => {
   if (!body.vitals.isDead) {
     const isSpikeOverlapping = getSpikeOverlapChecker(body, other);
     for (const spike of body.spikes) {
@@ -225,7 +224,7 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
         fill.l = 50;
         const highlightTween = getTweener(fill)
           .addFrame(fixed.spikeHighlightTime, { l: 0 })
-          .start(tick);
+          .start();
         tweens.push(highlightTween);
 
         const drainAmount = drainCalories(other.vitals, Math.floor(spike.drain * delay));
@@ -243,12 +242,11 @@ const getSpikeActivator = (delay, tick) => (body, other) => {
  *
  * @param {Body[]} bodies - all bodies in the simulation
  * @param {number} delay - the time since the last tick
- * @param {number} tick - the current timestamp
  * @returns {function(Body): void} - mutates bodies as needed
  */
-const getBodyInteractor = (bodies, delay, tick) => {
+const getBodyInteractor = (bodies, delay) => {
   const interactiveBodies = bodies.filter(({ meta }) => meta.canInteract);
-  const activateSpikesIfValid = getSpikeActivator(delay, tick);
+  const activateSpikesIfValid = getSpikeActivator(delay);
 
   return (body) => {
     if (body.meta.canInteract) {
@@ -337,22 +335,21 @@ const getDeathChecker = (tick) => (body) => {
 };
 
 /**
- * Gets a function which will checks if a body should be removed, if so
- * adds removal tweens which will eventually mark the body to be removed
+ * A function to check if a body should be removed, and if so adds tweens
+ * which will eventually mark the body to be removed
  *
- * @param {number} tick - the current timestamp
- * @returns {function(Body): void}
+ * @param {Body} body - the current timestamp
  */
-const getRemovalChecker = (tick) => ({ fill, vitals, meta }) => {
+const checkBodyRemoval = ({ fill, vitals, meta }) => {
   if (meta.canInteract && vitals.calories <= 0) {
     meta.canInteract = false;
 
     const fadeTween = getTweener(fill)
       .addFrame(fixed.bodyRemovalFadeTime, { a: 0 })
-      .start(tick);
+      .start();
     const removeTween = getTweener(meta)
       .addFrame(dynamic.maxTotalFadeTime, { isSimulated: false })
-      .start(tick);
+      .start();
 
     tweens.push(fadeTween, removeTween);
   }
@@ -443,11 +440,10 @@ const getNewMotes = (delay) => {
 export const simulateFrame = (bodies, tick, msDelay) => {
   const delay = Math.min(msDelay / 1000, MAX_TIME_PER_FRAME);
 
-  const interactBodies = getBodyInteractor(bodies, delay, tick);
+  const interactBodies = getBodyInteractor(bodies, delay);
   const moveBody = getBodyMover(delay);
   const upkeepCalories = getCalorieUpkeeper(delay);
   const checkDeath = getDeathChecker(tick);
-  const checkRemoval = getRemovalChecker(tick);
   const spawnChildren = getChildSpawner(tick);
 
   bodies.forEach(bounceWallIfPast);
@@ -456,7 +452,7 @@ export const simulateFrame = (bodies, tick, msDelay) => {
   bodies.forEach(upkeepCalories);
   bodies.forEach(adjustSaturation);
   bodies.forEach(checkDeath);
-  bodies.forEach(checkRemoval);
+  bodies.forEach(checkBodyRemoval);
 
   // Run tweens and remove if done
   tweens = tweens.filter(tween => tween(tick));

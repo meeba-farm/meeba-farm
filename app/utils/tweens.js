@@ -63,7 +63,7 @@ import {
 /**
  * @callback StartTween
  *
- * @param {number} start - the starting point, typically timestamp
+ * @param {number} [start] - starting point, typically a timestamp, set on first tween if omitted
  * @returns {Tweener} tween - progressively applies transforms
  */
 
@@ -172,11 +172,12 @@ const parseTransform = (target, transform, parents = []) => flatMap(
 
 /**
  * Builds the final tween function from a target object, a series of key frames,
- * and an initial start value
+ * and an optional initial start value
  *
  * @param {Object<string, any>} target - the object to mutate
  * @param {TweenFrame[]} frames - the frames already added
- * @param {number} firstStart - the initial start value, typically a timestamp
+ * @param {number} [firstStart] - the initial start value, typically a timestamp,
+ *                                set on first tween if omitted
  * @returns {Tweener} tween
  */
 const buildTweener = (target, frames, firstStart) => {
@@ -201,6 +202,10 @@ const buildTweener = (target, frames, firstStart) => {
   return /** @type {Tweener} */ function tween(current) {
     if (!targetRef) {
       return false;
+    }
+
+    if (start === undefined) {
+      start = current;
     }
 
     if (propTransforms.length > 0) {

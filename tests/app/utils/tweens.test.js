@@ -263,6 +263,22 @@ describe('Tweening utils', () => {
         tween(1300);
         expect(target.foo).to.equal(-5);
       });
+
+      it('should use the first tween call as a start value if not passed explicitly', () => {
+        const target = { foo: 1 };
+        const tween = getTweener(target)
+          .addFrame(100, { foo: 5 })
+          .start();
+
+        tween(500);
+        expect(target.foo).to.equal(1);
+
+        tween(550);
+        expect(target.foo).to.equal(3);
+
+        tween(600);
+        expect(target.foo).to.equal(5);
+      });
     });
 
     describe('handling edge cases', () => {
