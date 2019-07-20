@@ -436,19 +436,19 @@ const getNewMotes = (delay) => {
  * Gets a function to calculate a "frame" of the simulation
  *
  * @param {Body[]} bodies - all the bodies to simulate
- * @param {number} start - the timestamp of the previous frame
- * @param {number} stop - the timestamp of the current frame
+ * @param {number} tick - the timestamp of the current frame
+ * @param {number} msDelay - time elapsed since last frame
  * @returns {Body[]} - new array with inactive bodies removed
  */
-export const simulateFrame = (bodies, start, stop) => {
-  const delay = Math.min((stop - start) / 1000, MAX_TIME_PER_FRAME);
+export const simulateFrame = (bodies, tick, msDelay) => {
+  const delay = Math.min(msDelay / 1000, MAX_TIME_PER_FRAME);
 
-  const interactBodies = getBodyInteractor(bodies, delay, stop);
+  const interactBodies = getBodyInteractor(bodies, delay, tick);
   const moveBody = getBodyMover(delay);
   const upkeepCalories = getCalorieUpkeeper(delay);
-  const checkDeath = getDeathChecker(stop);
-  const checkRemoval = getRemovalChecker(stop);
-  const spawnChildren = getChildSpawner(stop);
+  const checkDeath = getDeathChecker(tick);
+  const checkRemoval = getRemovalChecker(tick);
+  const spawnChildren = getChildSpawner(tick);
 
   bodies.forEach(bounceWallIfPast);
   bodies.forEach(interactBodies);
@@ -459,7 +459,7 @@ export const simulateFrame = (bodies, start, stop) => {
   bodies.forEach(checkRemoval);
 
   // Run tweens and remove if done
-  tweens = tweens.filter(tween => tween(stop));
+  tweens = tweens.filter(tween => tween(tick));
 
   const newMotes = bodies.length < dynamic.bodyLimit ? getNewMotes(delay) : [];
   const newChildren = flatMap(bodies, spawnChildren);

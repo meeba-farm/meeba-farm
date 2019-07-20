@@ -23,6 +23,9 @@ import {
   toCsv,
 } from './utils/diagnostics.js';
 import {
+  createLoop,
+} from './utils/loop.js';
+import {
   seedPrng,
 } from './utils/math.js';
 import {
@@ -74,58 +77,38 @@ anyWindow.MeebaFarm = MeebaFarm;
 /** @type {Body[]} */
 MeebaFarm.bodies = [];
 
-// ------ Setup Loops ------
-let isRunning = false;
-
+// ------ Setup Loop ------
 /** @type {Snapshot[]} */
 let snapshots = [];
 let nextSnapshot = Infinity;
 let snapshotFrequency = 0;
 
-/**
- * @param {number} lastTick
- * @returns {function(number): void}
- */
-const run = (lastTick) => (thisTick) => {
-  if (isRunning) {
-    MeebaFarm.bodies = simulateFrame(MeebaFarm.bodies, lastTick, thisTick);
-    renderFrame(MeebaFarm.bodies);
+const { start, stop, reset } = createLoop((tick, delay) => {
+  MeebaFarm.bodies = simulateFrame(MeebaFarm.bodies, tick, delay);
+  renderFrame(MeebaFarm.bodies);
 
-    if (thisTick > nextSnapshot) {
-      nextSnapshot = thisTick + snapshotFrequency;
-      snapshots.push(getSnapshot(thisTick, MeebaFarm.bodies));
-    }
-
-    requestAnimationFrame(run(thisTick));
+  if (tick > nextSnapshot) {
+    nextSnapshot = tick + snapshotFrequency;
+    snapshots.push(getSnapshot(tick, MeebaFarm.bodies));
   }
-};
+});
 
 // ------ Setup Debug API ------
-MeebaFarm.updateSetting = updateSetting;
-MeebaFarm.getSetting = getSetting;
-MeebaFarm.getSavedSettings = getSavedSettings;
-MeebaFarm.loadSettings = loadSettings;
-MeebaFarm.restoreDefaultSettings = restoreDefaultSettings;
-
-MeebaFarm.pause = () => {
-  if (isRunning) {
-    isRunning = false;
-  }
-};
-MeebaFarm.resume = () => {
-  if (!isRunning) {
-    isRunning = true;
-    requestAnimationFrame((thisTick) => {
-      requestAnimationFrame(run(thisTick));
-    });
-  }
-};
+MeebaFarm.pause = stop;
+MeebaFarm.resume = start;
 MeebaFarm.reset = () => {
   // eslint-disable-next-line no-console
   console.log('Starting simulation with seed:', core.seed);
   seedPrng(core.seed);
   MeebaFarm.bodies = range(core.startingMeebaCount).map(getRandomBody);
+  reset();
 };
+
+MeebaFarm.updateSetting = updateSetting;
+MeebaFarm.getSetting = getSetting;
+MeebaFarm.getSavedSettings = getSavedSettings;
+MeebaFarm.loadSettings = loadSettings;
+MeebaFarm.restoreDefaultSettings = restoreDefaultSettings;
 
 MeebaFarm.snapshots = {
   start(frequency = 5000) {
