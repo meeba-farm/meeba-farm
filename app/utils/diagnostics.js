@@ -9,6 +9,10 @@ import {
   mean,
   mode,
 } from './math.js';
+import {
+  listKeys,
+  listValues,
+} from './objects.js';
 
 /**
  * @typedef PropertyStats
@@ -108,9 +112,9 @@ export const toCsv = (objArray) => {
     return '';
   }
 
-  const keys = Object.keys(objArray[0]).sort();
+  const keys = listKeys(objArray[0]);
   const csValues = objArray
-    .map(obj => stringify(keys.map(key => obj[key])))
+    .map(obj => stringify(listValues(obj)))
     .join('\n');
 
   return `${stringify(keys)}\n${csValues}`;

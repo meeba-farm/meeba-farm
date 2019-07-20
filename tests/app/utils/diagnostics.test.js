@@ -333,7 +333,7 @@ describe('Diagnostics module', () => {
   });
 
   describe('toCsv', () => {
-    it('should convert an array of objects into a CSV string', () => {
+    it('should convert an array of objects into a sorted CSV string', () => {
       const objects = [
         { foo: 1, bar: 2, baz: 'qux' },
         { foo: 3, bar: 4, baz: 'quux' },
@@ -341,6 +341,17 @@ describe('Diagnostics module', () => {
       ];
 
       expect(toCsv(objects)).to.equal('"bar","baz","foo"\n2,"qux",1\n4,"quux",3\n6,"quuz",5');
+    });
+
+    it('should convert an array of nested objects into a flat CSV string', () => {
+      const objects = [
+        { foo: 1, bar: { baz: 2, corge: 'qux' } },
+        { foo: 3, bar: { baz: 4, corge: 'quux' } },
+        { foo: 5, bar: { baz: 6, corge: 'quuz' } },
+      ];
+
+      expect(toCsv(objects))
+        .to.equal('"bar.baz","bar.corge","foo"\n2,"qux",1\n4,"quux",3\n6,"quuz",5');
     });
   });
 });
