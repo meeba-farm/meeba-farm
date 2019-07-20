@@ -14,6 +14,7 @@ import {
 } from './simulation.js';
 import {
   getRandomBody,
+  spawnMote,
 } from './meebas/bodies.js';
 import {
   range,
@@ -27,9 +28,13 @@ import {
 } from './utils/loop.js';
 import {
   seedPrng,
+  sqr,
 } from './utils/math.js';
 import {
+  easeIn,
   getInterval,
+  getTimeout,
+  getTweener,
 } from './utils/tweens.js';
 import {
   getFrameRenderer,
@@ -59,13 +64,17 @@ import {
 
 const APP_ID = 'app';
 const VIEW_ID = 'view';
-const { core } = settings;
+const { core, bodies, startup } = settings;
 
 const view = canvas(VIEW_ID, core.width, core.height);
 const renderFrame = getFrameRenderer(view);
 
 let oldWidth = core.width;
 let oldHeight = core.height;
+
+/** @type {number} */
+let startupMoteCount;
+
 addUpdateListener(() => {
   const { width, height } = core;
   if (width !== oldWidth || height !== oldHeight) {
@@ -74,6 +83,9 @@ addUpdateListener(() => {
     oldWidth = width;
     oldHeight = height;
   }
+
+  const moteCalories = Math.PI * sqr(bodies.moteRadius) * bodies.moteCalorieAdjustment;
+  startupMoteCount = Math.floor(width * height * startup.moteCalorieDensity / moteCalories);
 });
 
 /** @type {Object<string, any>} */
@@ -85,6 +97,9 @@ anyWindow.MeebaFarm = MeebaFarm;
 MeebaFarm.bodies = [];
 
 // ------ Setup Loop ------
+/** @type {Tweener[]} */
+let tweens = [];
+
 /** @type {Snapshot[]} */
 let snapshots = [];
 
@@ -94,6 +109,9 @@ let snapshotAtInterval = null;
 const { start, stop, reset } = createLoop((tick, delay) => {
   MeebaFarm.bodies = simulateFrame(MeebaFarm.bodies, tick, delay);
   renderFrame(MeebaFarm.bodies);
+
+  // Run tweens, discarding those which are complete
+  tweens = tweens.filter(tween => tween(tick));
 
   if (snapshotAtInterval) {
     snapshotAtInterval(tick);
@@ -107,7 +125,29 @@ MeebaFarm.reset = () => {
   // eslint-disable-next-line no-console
   console.log('Starting simulation with seed:', core.seed);
   seedPrng(core.seed);
-  MeebaFarm.bodies = range(core.startingMeebaCount).map(getRandomBody);
+
+  const { moteSpawnDelay, moteFadeInTime } = startup;
+
+  const motes = range(startupMoteCount).map(spawnMote);
+  motes.forEach(({ fill }) => { fill.a = 0; });
+  const moteTweens = motes.map(({ fill }) => (
+    getTweener(fill)
+      .addFrame(moteSpawnDelay, {})
+      .addFrame(moteFadeInTime, { a: 1 }, easeIn)
+      .start()
+  ));
+
+  const { moteSpawnRate } = core;
+  core.moteSpawnRate = 0;
+  const spawnRateReset = getTimeout(() => {
+    core.moteSpawnRate = moteSpawnRate;
+  }, moteSpawnDelay + moteFadeInTime);
+
+  const meebas = range(core.startingMeebaCount).map(getRandomBody);
+
+  MeebaFarm.bodies = [...motes, ...meebas];
+  tweens = [...moteTweens, spawnRateReset];
+
   reset();
 };
 
