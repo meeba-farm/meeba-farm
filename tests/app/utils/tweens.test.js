@@ -236,6 +236,29 @@ describe('Tweening utils', () => {
         expect(target.foo).to.equal(3);
       });
 
+      it('should accept a top-level callback for custom frame behavior', () => {
+        const target = { foo: 1 };
+        const callback = sinon.spy();
+        const tween = getTweener(target)
+          .addFrame(100, callback)
+          .addFrame(100, { foo: 5 })
+          .start(1000);
+
+        tween(1050);
+        expect(callback).to.have.been.calledOnce;
+        expect(callback).to.have.been.calledWith(0.5, target);
+        expect(target).to.deep.equal({ foo: 1 });
+
+        tween(1100);
+        expect(callback).to.have.been.calledTwice;
+        expect(callback).to.have.been.calledWith(1, target);
+        expect(target).to.deep.equal({ foo: 1 });
+
+        tween(1200);
+        expect(callback).to.have.been.calledTwice;
+        expect(target).to.deep.equal({ foo: 5 });
+      });
+
       it('should optionally add an easing function to a frame', () => {
         const target = { foo: 1 };
         const tween = getTweener(target)

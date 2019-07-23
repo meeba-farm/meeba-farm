@@ -27,7 +27,6 @@ import {
  * @returns {boolean} more - whether or not there is more to transform
  */
 
-
 /**
  * @callback PropTransformer
  *
@@ -36,6 +35,19 @@ import {
  * @param {string} [key] - key of the property
  * @param {Object<string, any>} [target] - object being mutated
  * @returns {any} the new value to set at that property
+ */
+
+/**
+ * @callback FrameCallback
+ *
+ * @param {number} [delta] - current delta from 0 to 1
+ * @param {Object<string, any>} [target] - object being mutated
+ */
+
+/**
+ * @callback FrameUpdater
+ *
+ * @param {number} delta - current delta from 0 to 1
  */
 
 /**
@@ -141,13 +153,18 @@ const getTransformCaller = (base, path, target) => (transform) => (delta) => {
  * delta will transform an individual property using enclosed values
  *
  * @param {Object<string, any>} target - the object being mutated
- * @param {Object<string, any>} transform - the transform object
+ * @param {Object<string, any>|FrameCallback} transform - the transform object or function
  * @param {string[]} [parents] - keys of parent properties
- * @returns {PropTransformer[]}
+ * @returns {FrameUpdater}
  */
-const parseTransform = (target, transform, parents = []) => flatMap(
-  Object.entries(transform),
-  ([key, prop]) => {
+const parseTransform = (target, transform, parents = []) => {
+  if (typeof transform === 'function') {
+    return (delta) => {
+      transform(delta, target);
+    };
+  }
+
+  const propTransforms = flatMap(Object.entries(transform), ([key, prop]) => {
     const path = [...parents, key];
 
     if (isObject(prop)) {
@@ -166,9 +183,14 @@ const parseTransform = (target, transform, parents = []) => flatMap(
     }
 
     return callTransformer(getOnCompleteTransformer(prop));
-  },
-);
+  });
 
+  return (delta) => {
+    for (const propTransform of propTransforms) {
+      propTransform(delta);
+    }
+  };
+};
 
 /**
  * Builds the final tween function from a target object, a series of key frames,
@@ -195,8 +217,8 @@ const buildTweener = (target, frames, firstStart) => {
   /** @type {Easer} */
   let ease;
 
-  /** @type {PropTransformer[]} */
-  let propTransforms = [];
+  /** @type {FrameUpdater|null} */
+  let updateFrame = null;
 
 
   return /** @type {Tweener} */ function tween(current) {
@@ -208,15 +230,12 @@ const buildTweener = (target, frames, firstStart) => {
       start = current;
     }
 
-    if (propTransforms.length > 0) {
+    if (updateFrame) {
       const delta = pipe((current - start) / duration)
         .into(roundRange, 0, 1)
         .into(ease)
         .done();
-
-      for (const transformEnclosedProp of propTransforms) {
-        transformEnclosedProp(delta);
-      }
+      updateFrame(delta);
     }
 
     if (current < start + duration) {
@@ -229,14 +248,14 @@ const buildTweener = (target, frames, firstStart) => {
       // Time for next frame, update closure variables and run again
       start += duration;
       ({ duration, ease } = nextFrame);
-      propTransforms = parseTransform(targetRef, nextFrame.transform);
+      updateFrame = parseTransform(targetRef, nextFrame.transform);
       return tween(current);
     }
 
     // No more frames, clean up references so they can be garbage collected
     targetRef = null;
     ease = easeLinear;
-    propTransforms = [];
+    updateFrame = null;
 
     return false;
   };
