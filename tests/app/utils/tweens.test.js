@@ -218,6 +218,24 @@ describe('Tweening utils', () => {
         expect(target.bar.qux).to.equal(100);
       });
 
+      it('should accept a transform function for a property', () => {
+        const target = { foo: 1 };
+        const transformFn = sinon.stub().returns(3);
+        const tween = getTweener(target)
+          .addFrame(100, { foo: transformFn })
+          .start(1000);
+
+        tween(1050);
+        expect(transformFn).to.have.been.calledOnce;
+        expect(transformFn).to.have.been.calledWith(0.5, 1, 'foo', target);
+        expect(target.foo).to.equal(3);
+
+        tween(1100);
+        expect(transformFn).to.have.been.calledTwice;
+        expect(transformFn).to.have.been.calledWith(1, 1, 'foo', target);
+        expect(target.foo).to.equal(3);
+      });
+
       it('should optionally add an easing function to a frame', () => {
         const target = { foo: 1 };
         const tween = getTweener(target)
