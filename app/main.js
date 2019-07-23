@@ -32,6 +32,7 @@ import {
 } from './utils/math.js';
 import {
   easeIn,
+  easeOut,
   getInterval,
   getTimeout,
   getTweener,
@@ -64,7 +65,7 @@ import {
 
 const APP_ID = 'app';
 const VIEW_ID = 'view';
-const { core, bodies, startup } = settings;
+const { core, bodies, simulation, startup } = settings;
 
 const view = canvas(VIEW_ID, core.width, core.height);
 const renderFrame = getFrameRenderer(view);
@@ -126,7 +127,8 @@ MeebaFarm.reset = () => {
   console.log('Starting simulation with seed:', core.seed);
   seedPrng(core.seed);
 
-  const { moteSpawnDelay, moteFadeInTime } = startup;
+  const { meebaSpawnDelay, moteSpawnDelay, moteFadeInTime } = startup;
+  const meebaTotalDelay = meebaSpawnDelay + moteSpawnDelay + moteFadeInTime;
 
   const motes = range(startupMoteCount).map(spawnMote);
   motes.forEach(({ fill }) => { fill.a = 0; });
@@ -141,12 +143,25 @@ MeebaFarm.reset = () => {
   core.moteSpawnRate = 0;
   const spawnRateReset = getTimeout(() => {
     core.moteSpawnRate = moteSpawnRate;
-  }, moteSpawnDelay + moteFadeInTime);
+  }, meebaTotalDelay);
 
   const meebas = range(core.startingMeebaCount).map(getRandomBody);
+  meebas.forEach((meeba) => {
+    meeba.fill.a = 0;
+    meeba.spikes.forEach(({ fill }) => { fill.a = 0; });
+    meeba.meta.canInteract = false;
+  });
+  const meebaTweens = meebas.map(meeba => getTweener(meeba)
+    .addFrame(meebaTotalDelay, {})
+    .addFrame(simulation.bodySpawnInactiveTime, {
+      fill: { a: 1 },
+      spikes: meeba.spikes.map(() => ({ fill: { a: 1 } })),
+      meta: { canInteract: true },
+    }, easeOut)
+    .start());
 
   MeebaFarm.bodies = [...motes, ...meebas];
-  tweens = [...moteTweens, spawnRateReset];
+  tweens = [...moteTweens, ...meebaTweens, spawnRateReset];
 
   reset();
 };
