@@ -81,6 +81,7 @@ import {
 /**
  * @typedef StartupSettings
  * @prop {number} meebaSpawnDelay
+ * @prop {number} meebaSpawnDuration
  * @prop {number} moteCalorieDensity
  * @prop {number} moteFadeInTime
  * @prop {number} moteSpawnDelay
@@ -196,6 +197,7 @@ export const settings = {
   },
   startup: {
     meebaSpawnDelay: 1000,
+    meebaSpawnDuration: 6000,
     moteCalorieDensity: 0.05,
     moteFadeInTime: 2500,
     moteSpawnDelay: 500,
