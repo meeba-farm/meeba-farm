@@ -75,12 +75,10 @@ population responds.
 
 ### Debug Settings
 
-Warning! These settings are pare of the core functionality of the simulation,
-and are not really intended to be modified by users. They would normally be
-hard-coded, and messing with them too much can pretty easily wreck the
-simulation. However, tweaking the balance to be just right is a tough task, so
-while Meeba Farm is still in "beta", these settings are exposed for users to
-mess with live.
+Every low-level setting in Meeba Farm is exposed to users through this drop
+down menu. Under normal operation its probably best just to stick to the core
+settings above, but you can potentially create some very interesting
+environments. Or completely wreck the simulation. Have fun!
 
 ### Sharing Your Settings
 

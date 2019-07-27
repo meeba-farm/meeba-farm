@@ -72,7 +72,7 @@ const debugSettings = () => {
   }, ...debugKeys);
 
   return row(
-    header('Beta Debug Settings', { title: TOOL_TIPS.DEBUG }),
+    header('Debug Settings', { title: TOOL_TIPS.DEBUG }),
     debugSelect,
     debugInput,
     button('Set', withValue(debugInput, (value) => {
