@@ -130,7 +130,7 @@ run all of these together use:
 npm test
 ```
 
-### Linter
+#### Linter
 
 The linter is [ESLint](https://eslint.org/) with a very slightly modified
 version of [AirBnB's Style Guide ](https://github.com/airbnb/javascript)
@@ -146,7 +146,7 @@ To run _just_ the linter use:
 npm run lint
 ```
 
-### Type Checker
+#### Type Checker
 
 Throughout the code, types are meticulously documented with JSDoc comments and
 then checked in "strict" mode using the CLI for TypeScript. This is honestly
@@ -160,7 +160,7 @@ To run _just_ the type checker use:
 npm run type-check
 ```
 
-### Unit Tests
+#### Unit Tests
 
 The unit tests are written with
 [Mocha](https://mochajs.org/)/[Chai](https://www.chaijs.com/) and can be found
@@ -176,7 +176,7 @@ To run _just_ the unit tests use:
 npm run unit-tests
 ```
 
-### Headless Simulation
+#### Headless Simulation
 
 To better evaluate the health of the simulation under default settings, it is
 possible to run Meeba Farm in "headless" mode. This will run the simulation
