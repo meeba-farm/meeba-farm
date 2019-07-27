@@ -177,7 +177,7 @@ export const settings = {
   },
   settings: {
     baseMoteSpawn: 36,
-    baseStartingMeebas: 100,
+    baseStartingMeebas: 50,
   },
   simulation: {
     maxBodies: 1000,
