@@ -153,7 +153,7 @@ const run = (duration, width, height, framerate) => {
   let nextLog = 0;
 
   while (time < duration) {
-    bodies = simulateFrame(bodies, time, time + frameDuration);
+    bodies = simulateFrame(bodies, time, frameDuration);
     time += frameDuration;
 
     if (time > nextSnapshot) {

@@ -15,6 +15,15 @@ const stubWindow = () => {
 
   global.innerWidth = 0;
   global.innerHeight = 0;
+
+  const frameDuration = 16.67;
+  let timePassed = 0;
+  global.requestAnimationFrame = (callback) => {
+    setTimeout(() => {
+      timePassed += frameDuration;
+      callback(timePassed);
+    }, frameDuration);
+  };
 };
 
 module.exports = {

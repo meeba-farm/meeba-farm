@@ -79,6 +79,15 @@ import {
  */
 
 /**
+ * @typedef StartupSettings
+ * @prop {number} meebaSpawnDelay
+ * @prop {number} meebaSpawnDuration
+ * @prop {number} moteCalorieDensity
+ * @prop {number} moteFadeInTime
+ * @prop {number} moteSpawnDelay
+ */
+
+/**
  * @typedef VitalsModuleSettings
  * @prop {number} percentDiesAt
  * @prop {number} percentSpawnsAt
@@ -100,6 +109,7 @@ import {
  * @prop {SettingsModuleSettings} settings
  * @prop {SimulationModuleSettings} simulation
  * @prop {SpikesModuleSettings} spikes
+ * @prop {StartupSettings} startup
  * @prop {VitalsModuleSettings} vitals
  */
 
@@ -167,7 +177,7 @@ export const settings = {
   },
   settings: {
     baseMoteSpawn: 36,
-    baseStartingMeebas: 100,
+    baseStartingMeebas: 50,
   },
   simulation: {
     maxBodies: 1000,
@@ -184,6 +194,13 @@ export const settings = {
     baseSpikeDrain: 160000,
     drainLengthExponent: 1.75,
     spikeWidth: 6,
+  },
+  startup: {
+    meebaSpawnDelay: 1000,
+    meebaSpawnDuration: 6000,
+    moteCalorieDensity: 0.05,
+    moteFadeInTime: 2500,
+    moteSpawnDelay: 500,
   },
   vitals: {
     percentDiesAt: 0.5,
