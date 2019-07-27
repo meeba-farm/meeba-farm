@@ -133,12 +133,12 @@ npm test
 #### Linter
 
 The linter is [ESLint](https://eslint.org/) with a very slightly modified
-version of [AirBnB's Style Guide ](https://github.com/airbnb/javascript)
+version of [AirBnB's Style Guide](https://github.com/airbnb/javascript)
 installed. The biggest addition is a
 [spell checker](https://github.com/aotaduy/eslint-plugin-spellcheck). Feel free
-to add new "skipWords" to `.eslintrc.json` as needed. The default dictionary is
-missing quite a few technical words, but I find having a spell checker
-eliminates a whole class of silly typos.
+to add new "skipWords" to [.eslintrc.json](./.eslintrc.json#L44) as needed. The
+default dictionary is missing quite a few technical words, but I find having a
+spell checker eliminates a whole class of silly typos.
 
 To run _just_ the linter use:
 
