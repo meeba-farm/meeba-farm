@@ -75,12 +75,10 @@ population responds.
 
 ### Debug Settings
 
-Warning! These settings are pare of the core functionality of the simulation,
-and are not really intended to be modified by users. They would normally be
-hard-coded, and messing with them too much can pretty easily wreck the
-simulation. However, tweaking the balance to be just right is a tough task, so
-while Meeba Farm is still in "beta", these settings are exposed for users to
-mess with live.
+Every low-level setting in Meeba Farm is exposed to users through this drop
+down menu. Under normal operation its probably best just to stick to the core
+settings above, but you can potentially create some very interesting
+environments. Or completely wreck the simulation. Have fun!
 
 ### Sharing Your Settings
 
@@ -130,15 +128,15 @@ run all of these together use:
 npm test
 ```
 
-### Linter
+#### Linter
 
 The linter is [ESLint](https://eslint.org/) with a very slightly modified
-version of [AirBnB's Style Guide ](https://github.com/airbnb/javascript)
+version of [AirBnB's Style Guide](https://github.com/airbnb/javascript)
 installed. The biggest addition is a
 [spell checker](https://github.com/aotaduy/eslint-plugin-spellcheck). Feel free
-to add new "skipWords" to `.eslintrc.json` as needed. The default dictionary is
-missing quite a few technical words, but I find having a spell checker
-eliminates a whole class of silly typos.
+to add new "skipWords" to [.eslintrc.json](./.eslintrc.json#L44) as needed. The
+default dictionary is missing quite a few technical words, but I find having a
+spell checker eliminates a whole class of silly typos.
 
 To run _just_ the linter use:
 
@@ -146,7 +144,7 @@ To run _just_ the linter use:
 npm run lint
 ```
 
-### Type Checker
+#### Type Checker
 
 Throughout the code, types are meticulously documented with JSDoc comments and
 then checked in "strict" mode using the CLI for TypeScript. This is honestly
@@ -160,7 +158,7 @@ To run _just_ the type checker use:
 npm run type-check
 ```
 
-### Unit Tests
+#### Unit Tests
 
 The unit tests are written with
 [Mocha](https://mochajs.org/)/[Chai](https://www.chaijs.com/) and can be found
@@ -176,7 +174,7 @@ To run _just_ the unit tests use:
 npm run unit-tests
 ```
 
-### Headless Simulation
+#### Headless Simulation
 
 To better evaluate the health of the simulation under default settings, it is
 possible to run Meeba Farm in "headless" mode. This will run the simulation
