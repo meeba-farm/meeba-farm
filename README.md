@@ -15,6 +15,7 @@ evolve into new and different species better suited to their environment.
     * [Core Settings](#core-settings)
     * [Debug Settings](#debug-settings)
     * [Sharing Your Settings](#sharing-your-settings)
+    * [Dev Controls](#dev-controls)
 - [Development](#development)
     * [Philosophy](#philosophy)
     * [Tools](#tools)
@@ -86,6 +87,40 @@ If you want to run the same simulation as a friend or save them for reuse, you
 can use the "Load Settings" text field. Simply copy the string written there
 and save it or send it to a friend. Later when you want to load saved settings,
 paste the string back into that same text field and click "Load".
+
+### Dev Controls
+
+In your browser, if you open your _developer tools_ and head to the _console_,
+you will find custom dev controls exposed through a global object called
+`MeebaFarm`. It contains a number of methods and properties to help debug the
+simulation. Of particular interest are the `bodies` and `snapshots` properties,
+which expose functionality not available to the UI:
+
+**`MeebaFarm`**
+
+- **`.bodies`** - the actual data for every meeba and mote in the system,
+  modify at your own risk
+- **`.snapshots`**
+    * **`.now()`** - returns metrics about current state of the system such as
+      total calories
+    * **`.start([frequency=5000])`** - begins saving snapshots of the
+      simulation metrics
+    * **`.stop()`** - stops saving new snapshots
+    * **`.clear()`** - deletes all recorded snapshots
+    * **`.getRaw()`** - returns the currently saved snapshots as JavaScript
+      objects
+    * **`.getCsv()`** - returns the current snapshots as a CSV string suitable
+      for copying into spreadsheet software
+
+There are also a handful of other methods which replicate UI functionality:
+
+- **`.pause()`** - pause the simulation
+- **`.resume()`** - resumes the simulation if paused
+- **`.reset()`** - resets the simulation
+- **`.restoreDefaultSettings()`** - clears saved settings, restoring defaults
+- **`.getSavedSettings()`** - returns current settings as custom base64 string
+- **`.loadSettings(settingsString)`** - loads a setting string into simulation
+- **`.getSetting(path)`** - gets the value for a particular setting by its path
 
 ## Development
 
