@@ -1,0 +1,23 @@
+name:Test Meeba Farm PRs
+
+on:
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      uses: actions/setup-node@v1
+      with:
+        node-version: 8
+    - name: check lint, types, and unit tests
+      run: |
+        npm install
+        npm test
+    - name: run a 1000x1000 tank for an hour of simulated time
+      run: npm run headless -- 1 1000 1000 30
