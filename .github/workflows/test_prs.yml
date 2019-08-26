@@ -1,4 +1,4 @@
-name:Test Meeba Farm PRs
+name: Test Meeba Farm PRs
 
 on:
   pull_request:
