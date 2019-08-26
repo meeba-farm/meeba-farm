@@ -96,6 +96,7 @@
                 "quux",
                 "quuz",
                 "readdir",
+                "readline",
                 "rect",
                 "renderer",
                 "rgb",
