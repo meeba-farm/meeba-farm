@@ -2,6 +2,7 @@
 
 const { writeFileSync } = require('fs');
 const { resolve } = require('path');
+const { clearLine, cursorTo } = require('readline');
 const { stubWindow } = require('./utils/browser-interop.js');
 
 stubWindow();
@@ -60,7 +61,7 @@ const msToTime = (ms) => {
 };
 
 const logInPlace = (message) => {
-  process.stdout.cursorTo(0);
+  cursorTo(process.stdout, 0);
   process.stdout.write(message);
 };
 
@@ -78,8 +79,8 @@ const logFormatted = (...args) => {
     .concat(COLOR_CODES.reset)
     .join('');
 
-  process.stdout.clearLine();
-  process.stdout.cursorTo(0);
+  clearLine(process.stdout);
+  cursorTo(process.stdout, 0);
   console.log(formatString, ...messages);
 };
 
