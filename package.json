@@ -29,7 +29,7 @@
     "eslint-plugin-curry": "^0.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-spellcheck": "0.0.11",
-    "http-server": "^0.11.1",
+    "http-server": "^0.11.2",
     "mocha": "^5.2.0",
     "sinon": "^7.4.1",
     "sinon-chai": "^3.3.0",
